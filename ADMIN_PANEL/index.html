@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brickstone Admin | Operations Platform</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="config.js"></script>
+</head>
+<body>
+
+    <!-- Login View -->
+    <div id="login-view" class="view-section active">
+        <div class="login-container">
+            <div class="login-box">
+                <div class="brand-logo">BRICKSTONE</div>
+                <p class="subtitle">Operations Platform</p>
+                <form id="login-form">
+                    <div class="input-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" placeholder="Enter your username" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Enter your password" required>
+                    </div>
+                    <div id="login-error" class="error-msg"></div>
+                    <button type="submit" class="btn-primary login-btn">Secure Sign In</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Shell (Hidden until auth) -->
+    <div id="app-view" class="view-section">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <h2>BRICKSTONE</h2>
+                    <span class="brand-sub">ADMIN / OPERATIONS</span>
+                </div>
+                <button class="toggle-sidebar" id="toggle-sidebar" aria-label="Toggle Sidebar">
+                    <i data-feather="menu"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-group">
+                    <div class="nav-group-title">OVERVIEW</div>
+                    <a href="#" class="nav-item active" data-target="dashboard-content">
+                        <i data-feather="layout"></i><span>Dashboard</span>
+                    </a>
+                </div>
+
+                <div class="nav-group">
+                    <div class="nav-group-title">CONTENT</div>
+                    <a href="#" class="nav-item" data-target="about-content">
+                        <i data-feather="monitor"></i><span>About Section</span>
+                    </a>
+                </div>
+
+                <div class="nav-group">
+                    <div class="nav-group-title">PROPERTY</div>
+                    <a href="#" class="nav-item" data-target="properties-content">
+                        <i data-feather="home"></i><span>Properties</span>
+                    </a>
+                </div>
+
+                <div class="nav-group">
+                    <div class="nav-group-title">CUSTOMERS</div>
+                    <a href="#" class="nav-item" data-target="leads-content">
+                        <i data-feather="users"></i><span>Leads & Enquiries</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar"><i data-feather="user"></i></div>
+                    <div class="admin-info">
+                        <span class="admin-name" id="current-username">Admin</span>
+                        <span class="admin-role" id="user-role-badge">Administrator</span>
+                    </div>
+                </div>
+                <button id="logout-btn" class="btn-ghost signout-btn">
+                    <i data-feather="log-out"></i><span>Sign Out</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Top Header -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <div class="breadcrumb" id="breadcrumb">Overview / Dashboard</div>
+                    <h1 id="page-title">Good evening, Admin</h1>
+                    <p class="topbar-subtitle" id="page-subtitle">Here's what's happening across Brickstone today.</p>
+                </div>
+                
+                <div class="topbar-right">
+                    <div class="date-indicator" id="current-date">Loading...</div>
+                    <div class="live-indicator">
+                        <span class="pulse-dot"></span> LIVE
+                    </div>
+                    <div class="topbar-actions">
+                        <button class="icon-btn" aria-label="Search"><i data-feather="search"></i></button>
+                        <button class="icon-btn" aria-label="Notifications"><i data-feather="bell"></i></button>
+                        <button class="icon-btn refresh-btn" id="global-refresh" aria-label="Refresh Data"><i data-feather="refresh-cw"></i></button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <section id="dashboard-content" class="content-panel active">
+                
+                <!-- Dashboard Hero / Filters -->
+                <div class="dashboard-controls">
+                    <div class="section-title">
+                        <h2>Business Overview</h2>
+                        <p>A live snapshot of website, properties, leads, and customer activity.</p>
+                    </div>
+                    <div class="date-filter">
+                        <select id="dashboard-date-filter" class="premium-select">
+                            <option value="today">Today</option>
+                            <option value="7days">Last 7 Days</option>
+                            <option value="30days" selected>Last 30 Days</option>
+                            <option value="90days">Last 90 Days</option>
+                            <option value="year">This Year</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Website Visits</span>
+                            <i data-feather="globe" class="kpi-icon"></i>
+                        </div>
+                        <div class="kpi-value" id="kpi-visits">--</div>
+                        <div class="kpi-trend">
+                            <span class="trend-indicator none">Data active</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Total Properties</span>
+                            <i data-feather="home" class="kpi-icon"></i>
+                        </div>
+                        <div class="kpi-value" id="kpi-properties">--</div>
+                        <div class="kpi-trend">
+                            <span class="trend-indicator none">Active Inventory</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Verified Properties</span>
+                            <i data-feather="check-circle" class="kpi-icon"></i>
+                        </div>
+                        <div class="kpi-value" id="kpi-verified">--</div>
+                        <div class="kpi-trend">
+                            <span class="trend-indicator none">Ready for market</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Total Enquiries</span>
+                            <i data-feather="message-circle" class="kpi-icon"></i>
+                        </div>
+                        <div class="kpi-value" id="kpi-enquiries">--</div>
+                        <div class="kpi-trend">
+                            <span class="trend-indicator none">Pipeline active</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Contact Forms</span>
+                            <i data-feather="mail" class="kpi-icon"></i>
+                        </div>
+                        <div class="kpi-value" id="kpi-contacts">--</div>
+                        <div class="kpi-trend">
+                            <span class="trend-indicator none">Lead generation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Charts Area -->
+                <div class="dashboard-grid">
+                    <div class="grid-item col-span-2">
+                        <div class="card premium-card">
+                            <div class="card-header">
+                                <h3>Website Traffic</h3>
+                            </div>
+                            <div class="card-body chart-container">
+                                <canvas id="trafficChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="card premium-card">
+                            <div class="card-header">
+                                <h3>Traffic Sources</h3>
+                            </div>
+                            <div class="card-body chart-container">
+                                <canvas id="sourcesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="card premium-card">
+                            <div class="card-header">
+                                <h3>Device Breakdown</h3>
+                            </div>
+                            <div class="card-body chart-container">
+                                <canvas id="devicesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid-item col-span-2">
+                        <div class="card premium-card">
+                            <div class="card-header">
+                                <h3>Most Visited Pages</h3>
+                            </div>
+                            <div class="card-body">
+                                <table class="premium-table" id="top-pages-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Page URL</th>
+                                            <th>Total Views</th>
+                                            <th>Unique Visitors</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Loaded via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- About Content -->
+            <section id="about-content" class="content-panel">
+                <div class="panel-header-flex">
+                    <div class="section-title">
+                        <h2>About Section</h2>
+                        <p>Manage the content displayed in the About Brickstone section of the public website.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline" onclick="restoreDefaultAboutSection()" id="restore-about-btn" style="margin-right: 1rem;">RESTORE DEFAULT</button>
+                        <button class="btn btn-primary" onclick="publishAboutSection()" id="publish-about-btn">SAVE & PUBLISH</button>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 2rem;">
+                    
+                    <!-- Form Area -->
+                    <div class="card premium-card" style="flex: 1 1 400px;">
+                        <div class="card-header">
+                            <h3>Content Editor</h3>
+                            <span class="text-secondary" style="font-size: 0.8rem; margin-top:0.5rem; display:block;" id="about-status-text">CURRENTLY LIVE (Loading...)</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>ABOUT HEADING</label>
+                                <input type="text" id="about-heading-input" class="premium-input" placeholder="e.g. About Brickstone">
+                                <small style="color:var(--text-secondary); font-size:0.75rem; margin-top:0.25rem; display:block;">Recommended: short</small>
+                            </div>
+                            <div class="form-group">
+                                <label>ABOUT SUBHEADING</label>
+                                <input type="text" id="about-subheading-input" class="premium-input" placeholder="e.g. More than a property...">
+                            </div>
+                            <div class="form-group">
+                                <label>ABOUT DESCRIPTION</label>
+                                <textarea id="about-description-input" class="premium-input" rows="5" placeholder="Description..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>ABOUT CLOSING LINE</label>
+                                <input type="text" id="about-closing-input" class="premium-input" placeholder="e.g. Find your space.">
+                            </div>
+                            
+                            <hr style="border:none; border-top:1px solid rgba(88, 55, 37, 0.1); margin: 2rem 0;">
+                            
+                            <div class="form-group">
+                                <label>ABOUT IMAGE URL</label>
+                                <input type="text" id="about-image-input" class="premium-input" placeholder="https://...">
+                                <small style="color:var(--text-secondary); font-size:0.75rem; margin-top:0.25rem; display:block;">Paste a URL or Base64 string for the image.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Preview Area -->
+                    <div style="flex: 1 1 400px;">
+                        <div class="card premium-card" style="position: sticky; top: 120px;">
+                            <div class="card-header" style="border-bottom:none; padding-bottom:0;">
+                                <h3 style="display:flex; align-items:center; gap:0.5rem;"><span style="display:inline-block; width:8px; height:8px; background:#4CAF50; border-radius:50%;"></span> LIVE PREVIEW</h3>
+                            </div>
+                            <div class="card-body" style="padding: 2rem;">
+                                <!-- Preview container designed to mimic public About section -->
+                                <div style="display:flex; flex-direction:column; gap:2rem;">
+                                    <div style="border-radius:12px; overflow:hidden; width:100%; aspect-ratio:16/9; background:#eee;">
+                                        <img id="about-preview-image" src="" style="width:100%; height:100%; object-fit:cover;" alt="Preview">
+                                    </div>
+                                    <div>
+                                        <h2 id="about-preview-heading" style="font-family:'Playfair Display', serif; font-size:2rem; color:var(--clr-espresso); margin-bottom:1rem; font-weight:400;">About Brickstone</h2>
+                                        <p id="about-preview-subheading" style="font-weight:600; color:var(--clr-bronze); margin-bottom:1rem;">More than a property. A place to belong.</p>
+                                        <p id="about-preview-description" style="color:var(--clr-espresso); opacity:0.8; line-height:1.6; margin-bottom:1.5rem;">Brickstone connects you...</p>
+                                        <p id="about-preview-closing" style="font-weight:500; color:var(--clr-espresso);">Find your space.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Properties Content -->
+            <section id="properties-content" class="content-panel">
+                <div class="panel-header-flex">
+                    <div class="section-title">
+                        <h2>Property Intelligence</h2>
+                        <p>Manage and verify Brickstone inventory.</p>
+                    </div>
+                    <button class="btn-primary" id="add-property-btn"><i data-feather="plus"></i> Add Property</button>
+                </div>
+                
+                <div class="card premium-card no-padding">
+                    <div class="table-responsive">
+                        <table class="premium-table full-width">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Location</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Verification</th>
+                                    <th class="text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="properties-tbody">
+                                <!-- Loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Leads Content -->
+            <section id="leads-content" class="content-panel">
+                <div class="panel-header-flex">
+                    <div class="section-title">
+                        <h2>Lead Pipeline</h2>
+                        <p>Track incoming property enquiries and contact forms.</p>
+                    </div>
+                    <div class="premium-tabs">
+                        <button class="tab-btn active" data-tab="enquiries-tab">Property Enquiries</button>
+                        <button class="tab-btn" data-tab="contacts-tab">General Contact Forms</button>
+                    </div>
+                </div>
+                
+                <div id="enquiries-tab" class="tab-content active">
+                    <div class="card premium-card no-padding">
+                        <div class="table-responsive">
+                            <table class="premium-table full-width">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Property Interest</th>
+                                        <th>Contact Details</th>
+                                        <th>Pipeline Stage</th>
+                                        <th class="text-right">Update Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="enquiries-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="contacts-tab" class="tab-content">
+                    <div class="card premium-card no-padding">
+                        <div class="table-responsive">
+                            <table class="premium-table full-width">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Prospect Name</th>
+                                        <th>Message Preview</th>
+                                        <th>Pipeline Stage</th>
+                                        <th class="text-right">Update Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="contacts-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="message-modal" class="modal-overlay">
+        <div class="modal-box premium-modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Message Details</h2>
+                <button type="button" class="close-modal-btn" onclick="closeModal('message-modal')">
+                    <i data-feather="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="full-message-content" class="message-content-block"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="property-modal" class="modal-overlay">
+        <div class="modal-box premium-modal">
+            <div class="modal-header">
+                <h2 id="prop-modal-title">Edit Property</h2>
+                <button type="button" class="close-modal-btn" onclick="closeModal('property-modal')">
+                    <i data-feather="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="property-form">
+                    <input type="hidden" id="prop-id">
+                    <div class="input-group">
+                        <label>Property Title</label>
+                        <input type="text" id="prop-title" required class="premium-input">
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Price / Value</label>
+                            <input type="text" id="prop-price" required class="premium-input">
+                        </div>
+                        <div class="input-group">
+                            <label>Location</label>
+                            <input type="text" id="prop-location" required class="premium-input">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Market Status</label>
+                            <select id="prop-status" class="premium-select">
+                                <option value="Available">Available</option>
+                                <option value="Sold">Sold</option>
+                                <option value="Rented">Rented</option>
+                            </select>
+                        </div>
+                        <div class="input-group checkbox-group">
+                            <label class="premium-checkbox">
+                                <input type="checkbox" id="prop-verified"> 
+                                <span class="checkmark"></span>
+                                Officially Verified Listing
+                            </label>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Featured Image URL</label>
+                        <input type="text" id="prop-image" placeholder="images/default.jpg" class="premium-input">
+                    </div>
+                    <div class="input-group">
+                        <label>Specifications (comma separated)</label>
+                        <input type="text" id="prop-specs" placeholder="3 Beds, 2 Baths, 1200 sqft" class="premium-input">
+                    </div>
+                    <div class="input-group">
+                        <label>Editorial Description</label>
+                        <textarea id="prop-description" rows="4" placeholder="Detailed property description..." class="premium-input"></textarea>
+                    </div>
+                    <div class="modal-actions-right">
+                        <button type="button" class="btn-ghost" onclick="closeModal('property-modal')">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Property</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+      feather.replace();
+    </script>
+</body>
+</html>

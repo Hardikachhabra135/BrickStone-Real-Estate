@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRICKSTONE | Curated Properties. Timeless Value.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=5">
+    <script src="config.js"></script>
+</head>
+
+<body>
+
+    <!-- Scroll progress indicator -->
+    <div class="scroll-progress"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="#home" class="logo"><img src="images/logo.png" alt="brickstone"></a>
+            <ul class="nav-links">
+                <li><a href="#home" class="active">Home</a></li>
+                <li><a href="allproperties.html">Properties</a></li>
+                <li class="nav-item-dropdown">
+                    <a href="#" class="dropdown-toggle">Category</a>
+                    <ul class="dropdown-menu">
+                        <li class="dropdown-item-has-sub">
+                            <a href="allproperties.html?category=Flat">Flat</a>
+                            <ul class="sub-dropdown-menu">
+                                <li><a href="allproperties.html?category=1BHK">1 BHK</a></li>
+                                <li><a href="allproperties.html?category=2BHK">2 BHK</a></li>
+                                <li><a href="allproperties.html?category=3BHK">3 BHK</a></li>
+                                <li><a href="allproperties.html?category=3BHK%2B">3 BHK+</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown-item-has-sub">
+                            <a href="allproperties.html?category=PG">PG</a>
+                            <ul class="sub-dropdown-menu">
+                                <li><a href="allproperties.html?category=Sharing">Sharing</a></li>
+                                <li><a href="allproperties.html?category=NonSharing">Non Sharing</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li><a href="#about">About Us</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <button class="mobile-menu-btn">☰</button>
+        </div>
+    </nav>
+
+    <!-- Hero / Home Section -->
+    <header class="hero" id="home">
+        <video autoplay loop muted playsinline class="hero-video">
+            <source src="images/hero-video.mp4" type="video/mp4">
+        </video>
+
+        <div class="container">
+            <div class="hero-content">
+                <h1>Curated Properties.<br>Timeless Value.</h1>
+                <hr class="hero-divider">
+                <p>Premium real estate. Personally curated for you.</p>
+                <a href="#properties" class="btn-primary">View Properties</a>
+            </div>
+
+            <div class="universal-search-container" id="universal-search-container">
+                <div class="universal-search-bar" id="universal-search-bar">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="universal-search-input" placeholder="Search properties, locations or categories" autocomplete="off" aria-label="Search Brickstone properties and website">
+                    <button class="search-clear-btn" id="search-clear-btn" aria-label="Clear search" style="display:none;">&times;</button>
+                </div>
+                <div class="search-results-dropdown" id="search-results-dropdown" style="display:none;">
+                    <div class="search-results-content" id="search-results-content">
+                        <!-- Results dynamically injected here -->
+                    </div>
+                    <div class="search-results-footer">
+                        <span class="keyboard-hints">
+                            <span class="hint-key">↑</span> <span class="hint-key">↓</span> Navigate &nbsp;&nbsp; <span class="hint-key">↵</span> Open &nbsp;&nbsp; <span class="hint-key">Esc</span> Close
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Properties Section -->
+    <section class="properties-section section-padding" id="properties">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2>Featured Properties</h2>
+                <p>A hand-picked selection of our finest listings</p>
+            </div>
+
+            <div class="properties-grid">
+                <article class="property-card reveal">
+                    <div class="card-img-wrapper">
+                        <span class="badge">For Sale</span>
+                        <img src="images/villa.jpg" alt="Hillside villa">
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <h3 class="property-title">Hillside Villa</h3>
+                            <span class="property-price">$2.4M</span>
+                        </div>
+                        <p class="property-location" style="display:inline-flex; align-items:center; gap:4px; margin-bottom:1rem;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.7;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        Malibu, California
+                    </p>
+                    <div class="property-specs" style="border:none; padding:0 0 1.5rem 0;">
+                        <span style="display:inline-flex; align-items:center; font-size:0.85rem; color:inherit;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; opacity:0.7;"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>4 Beds</span>
+                        <span style="display:inline-flex; align-items:center; font-size:0.85rem; color:inherit;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; opacity:0.7;"><path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><line x1="10" x2="8" y1="5" y2="7"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="7" x2="7" y1="19" y2="21"/><line x1="17" x2="17" y1="19" y2="21"/></svg>3 Baths</span>
+                        <span style="display:inline-flex; align-items:center; font-size:0.85rem; color:inherit;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; opacity:0.7;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>3,200 sqft</span>
+                    </div>
+                    <a href="allproperties.html?id=1" class="btn-primary"
+                        style="width:100%; border-radius:8px; padding:0.8rem; text-align:center;">Inquire Now</a>
+                    </div>
+                </article>
+
+                <article class="property-card reveal">
+                    <div class="card-img-wrapper">
+                        <span class="badge">For Rent</span>
+                        <img src="images/business.jpg" alt="Modern penthouse">
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <h3 class="property-title">Skyline Penthouse</h3>
+                            <span class="property-price">$8,500/mo</span>
+                        </div>
+                        <p class="property-location" style="display:inline-flex; align-items:center; gap:4px; margin-bottom:1rem;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.7;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        Downtown, Delhi
+                    </p>
+                    <div class="property-specs" style="border:none; padding:0 0 1.5rem 0;">
+                        <span style="display:inline-flex; align-items:center; font-size:0.85rem; color:inherit;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; opacity:0.7;"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>3 Beds</span>
+                        <span style="display:inline-flex; align-items:center; font-size:0.85rem; color:inherit;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; opacity:0.7;"><path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><line x1="10" x2="8" y1="5" y2="7"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="7" x2="7" y1="19" y2="21"/><line x1="17" x2="17" y1="19" y2="21"/></svg>2 Baths</span>
+                        <span style="display:inline-flex; align-items:center; font-size:0.85rem; color:inherit;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; opacity:0.7;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>2,100 sqft</span>
+                    </div>
+                    <a href="allproperties.html?id=2" class="btn-primary"
+                        style="width:100%; border-radius:8px; padding:0.8rem; text-align:center;">Inquire Now</a>
+                    </div>
+                </article>
+
+                <article class="property-card reveal">
+                    <div class="card-img-wrapper">
+                        <span class="badge">For Sale</span>
+                        <img src="images/about.jpg" alt="Coastal retreat">
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <h3 class="property-title">Coastal Retreat</h3>
+                            <span class="property-price">$1.8M</span>
+                        </div>
+                        <p class="property-location" style="display:inline-flex; align-items:center; gap:4px; margin-bottom:1rem;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.7;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        Goa, India
+                    </p>
+                    <div class="property-specs" style="border:none; padding:0 0 1.5rem 0;">
+                        <span style="display:inline-flex; align-items:center; font-size:0.85rem; color:inherit;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; opacity:0.7;"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>5 Beds</span>
+                        <span style="display:inline-flex; align-items:center; font-size:0.85rem; color:inherit;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; opacity:0.7;"><path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><line x1="10" x2="8" y1="5" y2="7"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="7" x2="7" y1="19" y2="21"/><line x1="17" x2="17" y1="19" y2="21"/></svg>4 Baths</span>
+                        <span style="display:inline-flex; align-items:center; font-size:0.85rem; color:inherit;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; opacity:0.7;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>4,000 sqft</span>
+                    </div>
+                    <a href="allproperties.html?id=3" class="btn-primary"
+                        style="width:100%; border-radius:8px; padding:0.8rem; text-align:center;">Inquire Now</a>
+                    </div>
+                </article>
+            </div>
+
+            <div class="text-center reveal">
+                <a href="allproperties.html" class="btn-primary">View All Properties</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section section-padding" id="about">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-img-container reveal">
+                    <img id="public-about-image" src="images/about.jpg" alt="Brickstone team">
+                </div>
+                <div class="about-content reveal">
+                    <h2 id="public-about-heading">About Brickstone</h2>
+                    <p><strong id="public-about-subheading">More than a property. A place to belong.</strong></p>
+                    <p id="public-about-description">Brickstone connects you with carefully selected spaces defined by character, comfort, and convenience. From finding a new home to discovering your next opportunity, we make every search feel simpler and more considered.</p>
+                    <p id="public-about-closing">Find your space. Make it yours.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section section-padding" id="contact">
+        <div class="container">
+            <div class="section-header reveal">
+                <h2>Let's Talk</h2>
+                <p>Tell us what you're looking for and we'll take it from there</p>
+            </div>
+
+            <div class="contact-grid reveal">
+                <div class="contact-form-container">
+                    <div id="form-success">Thank you! Your message has been sent — we'll be in touch shortly.</div>
+                    <form class="contact-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" placeholder="Jane Doe" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone</label>
+                                <input type="tel" id="phone" placeholder="+91 7428 311 662">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" placeholder="jane@example.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>I'm interested in</label>
+                            <div class="radio-group">
+                                <label class="radio-label"><input type="radio" name="interest" value="buy" checked>
+                                    Buying</label>
+                                <label class="radio-label"><input type="radio" name="interest" value="rent">
+                                    Renting</label>
+                                <label class="radio-label"><input type="radio" name="interest" value="sell">
+                                    Selling</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Contact preference</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" name="pref" value="call">
+                                    Call</label>
+                                <label class="checkbox-label"><input type="checkbox" name="pref" value="whatsapp">
+                                    WhatsApp</label>
+                                <label class="checkbox-label"><input type="checkbox" name="pref" value="email">
+                                    Email</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message"
+                                placeholder="Tell us more about what you're looking for..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-primary">Send Message</button>
+                    </form>
+                </div>
+
+                <div class="contact-info-panel">
+                    <h3>Visit / Call Us</h3>
+                    <div class="info-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--clr-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        Mon - Sun ( 10:00 AM - 6:00 PM )
+                    </div>
+                    <div class="info-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--clr-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                        +91 7428 311 662
+                    </div>
+                    <div class="info-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--clr-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        brickstonerealestate01@gmail.com
+                    </div>
+                    <div class="direct-contact-box">
+                        <h4>Prefer to talk now?</h4>
+                        <p>Call us directly at <a href="tel:+917428311662">+91 7428 311 662</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-col brand-col">
+                <div class="footer-logo">Brickstone</div>
+                <p class="footer-desc">Connecting discerning clients with premier residential and commercial properties
+                    across the region.</p>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">QUICK LINKS</h4>
+                <ul class="footer-links-list">
+                    <li><a href="index.html#properties">Properties</a></li>
+                    <li><a href="allproperties.html">Projects</a></li>
+                    <li><a href="index.html#about">About Us</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">SERVICES</h4>
+                <ul class="footer-links-list">
+                    <li><a href="#">Rent Properties</a></li>
+                    <li><a href="#">Lease Properties</a></li>
+                    <li><a href="#">Property Management</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col contact-col">
+                <h4 class="footer-heading">CONTACT</h4>
+                <ul class="footer-contact-list">
+                    <li><span class="contact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--clr-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></span> +91 7428 311 662</li>
+                    <li><span class="contact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--clr-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></span> brickstonerealestate01@gmail.com</li>
+                </ul>
+            </div>
+        </div>
+        <div class="container">
+            <p class="copyright">© 2026 Brickstone. All rights reserved.</p>
+        </div>
+    </footer>
+
+
+    <!-- Property Details Modal -->
+    <div class="modal-overlay" id="property-modal">
+        <div class="modal-box">
+            <button class="modal-close" id="modal-close-btn" aria-label="Close">&times;</button>
+
+            <!-- Screen 1: Property details -->
+            <div class="modal-panel" id="modal-panel-details">
+                <div class="modal-img-wrapper">
+                    <span class="badge" id="modal-badge"></span>
+                    <img id="modal-img" src="" alt="">
+                </div>
+                <div class="modal-body">
+                    <div class="card-header">
+                        <h3 class="property-title" id="modal-title"></h3>
+                        <span class="property-price" id="modal-price"></span>
+                    </div>
+                    <p class="property-location" id="modal-location"></p>
+                    <div class="property-specs" id="modal-specs"></div>
+                    <p class="modal-description" id="modal-description"></p>
+                    <button class="btn-primary modal-full-btn" id="enquire-btn">Enquire Now</button>
+                </div>
+            </div>
+
+            <!-- Screen 2: Enquiry form -->
+            <div class="modal-panel" id="modal-panel-form" style="display:none;">
+                <div class="modal-body modal-body-form">
+                    <h3 class="modal-form-title">Enquire About <span id="enquire-property-name"></span></h3>
+                    <p class="modal-form-sub">Leave your details and our team will reach out shortly.</p>
+
+                    <div id="enquiry-success">Thank you! We've received your enquiry and will contact you soon.</div>
+
+                    <form id="enquiry-form">
+                        <div class="form-group">
+                            <label for="enquire-phone">Phone Number</label>
+                            <input type="tel" id="enquire-phone" placeholder="+91 7428 311 662" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="enquire-email">Email Address</label>
+                            <input type="email" id="enquire-email" placeholder="jane@example.com" required>
+                        </div>
+                        <div class="modal-form-actions">
+                            <button type="button" class="btn-secondary" id="back-to-details">← Back to details</button>
+                            <button type="submit" class="btn-primary">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

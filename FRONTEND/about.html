@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | BRICKSTONE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="config.js"></script>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo"><img src="images/logo.png" alt="brickstone"></a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="properties.html">Properties</a></li>
+                <li class="nav-item-dropdown">
+                    <a href="#" class="dropdown-toggle">Category</a>
+                    <ul class="dropdown-menu">
+                        <li class="dropdown-item-has-sub">
+                            <a href="allproperties.html?category=Flat">Flat</a>
+                            <ul class="sub-dropdown-menu">
+                                <li><a href="allproperties.html?category=1BHK">1 BHK</a></li>
+                                <li><a href="allproperties.html?category=2BHK">2 BHK</a></li>
+                                <li><a href="allproperties.html?category=3BHK">3 BHK</a></li>
+                                <li><a href="allproperties.html?category=3BHK%2B">3 BHK+</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown-item-has-sub">
+                            <a href="allproperties.html?category=PG">PG</a>
+                            <ul class="sub-dropdown-menu">
+                                <li><a href="allproperties.html?category=Sharing">Sharing</a></li>
+                                <li><a href="allproperties.html?category=NonSharing">Non Sharing</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <button class="mobile-menu-btn">☰</button>
+        </div>
+    </nav>
+
+    <!-- About Section -->
+    <main class="section-padding"
+        style="margin-top: 80px; min-height: calc(100vh - 80px); display: flex; align-items: center;">
+        <div class="container">
+            <div class="about-grid">
+
+                <div class="about-img-container reveal">
+                    <img src="images/about.jpg" alt="Modern luxury property poolside view">
+                </div>
+
+                <div class="about-content reveal" style="transition-delay: 0.3s;">
+                    <h2>About Us</h2>
+                    <p><strong>We are more than just a real estate company — we are curators of exceptional
+                            living.</strong></p>
+                    <p>With a passion for design, quality, and lasting value, we handpick properties that redefine
+                        comfort and elevate lifestyles.</p>
+                    <p>Our commitment is to transparency, integrity, and personalized service at every step of your
+                        journey. Whether you're buying, renting, or investing, we're here to help you find a space that
+                        truly feels like home.</p>
+                    <button class="btn-secondary"
+                        style="margin-top: 1rem; border-bottom: 1px solid var(--clr-espresso);">LEARN MORE &gt;</button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

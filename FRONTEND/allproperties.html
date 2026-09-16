@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Properties | BRICKSTONE</title>
+    <meta name="description"
+        content="Browse all available properties listed by Brickstone — curated homes, apartments, villas, and rentals across India.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=2">
+    <style>
+        /* ─── Page Hero ─────────────────────────────────── */
+        .page-hero {
+            background: linear-gradient(135deg, var(--clr-espresso) 0%, var(--clr-mocha) 100%);
+            color: var(--clr-cream-light);
+            padding: 7rem 0 4rem;
+            text-align: center;
+            margin-top: 70px;
+        }
+
+        .page-hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            color: var(--clr-cream-light);
+            margin-bottom: 0.75rem;
+        }
+
+        .page-hero p {
+            font-size: 1.1rem;
+            color: rgba(244, 238, 229, 0.75);
+            max-width: 540px;
+            margin: 0 auto;
+        }
+
+        /* ─── Loading spinner ─────────────────────────── */
+        .state-box {
+            text-align: center;
+            padding: 5rem 1rem;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--clr-beige);
+            border-top-color: var(--clr-bronze);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .state-box .state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: .55;
+        }
+
+        .state-box h3 {
+            font-size: 1.6rem;
+            margin-bottom: .6rem;
+            color: var(--clr-espresso);
+        }
+
+        .state-box p {
+            color: var(--clr-bronze);
+            font-size: .95rem;
+            line-height: 1.7;
+        }
+
+        .state-box .btn-primary {
+            margin-top: 1.5rem;
+        }
+
+        /* ─── Section meta (count) ───────────────────── */
+        .section-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .property-count {
+            font-family: var(--font-body);
+            font-size: .9rem;
+            color: var(--clr-bronze);
+            letter-spacing: .5px;
+        }
+
+        /* ─── Verified badge overlay ─────────────────── */
+        .verified-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #2d7a4f;
+            color: #fff;
+            font-size: .65rem;
+            font-weight: 600;
+            letter-spacing: .5px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            z-index: 2;
+        }
+
+        /* ─── Filter Pills ───────────────────────────── */
+        .browse-header-custom {
+            margin-bottom: 2.5rem;
+        }
+
+        .browse-subtitle {
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--clr-bronze);
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .browse-title {
+            font-size: 3rem;
+            font-family: var(--font-heading);
+            color: var(--clr-espresso);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .filter-pills {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-pill {
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            border: 1px solid rgba(58, 33, 21, 0.15);
+            background: rgba(255, 255, 255, 0.5);
+            color: var(--clr-espresso);
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-pill:hover {
+            background: rgba(58, 33, 21, 0.05);
+        }
+
+        .filter-pill.active {
+            background: var(--clr-espresso);
+            color: var(--clr-cream-light);
+            border-color: var(--clr-espresso);
+        }
+
+        .filter-pill .coming-soon-badge {
+            font-size: 0.65rem;
+            opacity: 0.85;
+            font-weight: 600;
+            margin-left: 8px;
+            letter-spacing: 0.5px;
+            background-color: rgba(0, 0, 0, 0.06);
+            color: rgba(58, 33, 21, 0.7);
+            padding: 3px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            vertical-align: middle;
+        }
+
+        .no-types-available {
+            padding: 0.5rem 1.2rem;
+            background: rgba(58, 33, 21, 0.05);
+            border-radius: 2rem;
+            color: var(--clr-bronze);
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        /* Reduce gap between hero and browse section */
+        #all-properties {
+            padding-top: 3.5rem;
+        }
+    </style>
+    <script src="config.js"></script>
+</head>
+
+<body>
+
+    <div class="scroll-progress"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo"><img src="images/logo.png" alt="brickstone"></a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="allproperties.html" class="active">Properties</a></li>
+                <li class="nav-item-dropdown">
+                    <a href="#" class="dropdown-toggle">Category</a>
+                    <ul class="dropdown-menu">
+                        <li class="dropdown-item-has-sub">
+                            <a href="allproperties.html?category=Flat">Flat</a>
+                            <ul class="sub-dropdown-menu">
+                                <li><a href="allproperties.html?category=1BHK">1 BHK</a></li>
+                                <li><a href="allproperties.html?category=2BHK">2 BHK</a></li>
+                                <li><a href="allproperties.html?category=3BHK">3 BHK</a></li>
+                                <li><a href="allproperties.html?category=3BHK%2B">3 BHK+</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown-item-has-sub">
+                            <a href="allproperties.html?category=PG">PG</a>
+                            <ul class="sub-dropdown-menu">
+                                <li><a href="allproperties.html?category=Sharing">Sharing</a></li>
+                                <li><a href="allproperties.html?category=NonSharing">Non Sharing</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li><a href="index.html#about">About Us</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+            </ul>
+            <button class="mobile-menu-btn">☰</button>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-hero">
+        <div class="container">
+            <h1 class="reveal">All Properties</h1>
+            <p class="reveal">Browse our complete, up-to-date collection of curated homes, apartments, and rentals.</p>
+            
+            <div class="universal-search-container reveal" id="universal-search-container" style="animation-delay: 0.4s; margin: 2.5rem auto 0 auto;">
+                <div class="universal-search-bar" id="universal-search-bar">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="universal-search-input" placeholder="Search properties, locations or categories" autocomplete="off" aria-label="Search Brickstone properties and website">
+                    <button class="search-clear-btn" id="search-clear-btn" aria-label="Clear search" style="display:none;">&times;</button>
+                </div>
+                <div class="search-results-dropdown" id="search-results-dropdown" style="display:none; text-align: left;">
+                    <div class="search-results-content" id="search-results-content">
+                        <!-- Results dynamically injected here -->
+                    </div>
+                    <div class="search-results-footer">
+                        <span class="keyboard-hints">
+                            <span class="hint-key">↑</span> <span class="hint-key">↓</span> Navigate &nbsp;&nbsp; <span class="hint-key">↵</span> Open &nbsp;&nbsp; <span class="hint-key">Esc</span> Close
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- All Properties Section — dynamically loaded from /api/properties -->
+    <section class="section-padding" id="all-properties">
+        <div class="container">
+
+            <!-- Loading -->
+            <div class="state-box" id="state-loading">
+                <div class="loading-spinner"></div>
+                <p>Loading properties…</p>
+            </div>
+
+            <!-- Error -->
+            <div class="state-box" id="state-error" style="display:none;">
+                <div class="state-icon">⚠️</div>
+                <h3>Couldn't Load Properties</h3>
+                <p>We had trouble reaching the server. Make sure the backend is running on port 5000 and try again.</p>
+                <button class="btn-primary" id="retry-btn">Try Again</button>
+            </div>
+
+            <!-- Empty -->
+            <div class="state-box" id="state-empty" style="display:none;">
+                <div class="state-icon">🏢</div>
+                <h3>No Properties Yet</h3>
+                <p>No listings have been added through the Admin Panel yet. Check back soon.</p>
+            </div>
+
+            <!-- Not Found -->
+            <div class="state-box" id="state-not-found" style="display:none;">
+                <div class="state-icon">🔍</div>
+                <h3>Property Not Found</h3>
+                <p>The requested property could not be found.</p>
+                <a href="allproperties.html" class="btn-primary" style="margin-top: 1rem; display: inline-block;">Back to Properties</a>
+            </div>
+
+            <!-- Properties Grid — populated by JS -->
+            <div id="properties-wrapper" style="display:none;">
+                <div class="browse-header-custom">
+                    <span class="browse-subtitle">BROWSE</span>
+                    <h2 class="browse-title">Properties</h2>
+                    <div class="filter-pills" id="property-filters">
+                        <button class="filter-pill active" data-filter="All">All</button>
+                        <button class="filter-pill" data-filter="Rent">Rent</button>
+                        <button class="filter-pill" data-filter="Buy">Buy <span class="coming-soon-badge">Coming Soon</span></button>
+                        <button class="filter-pill" data-filter="Lease">Lease <span class="coming-soon-badge">Coming Soon</span></button>
+                    </div>
+                </div>
+                <div class="section-meta">
+                    <span class="property-count" id="property-count-label"></span>
+                </div>
+                <div class="properties-grid" id="properties-grid"></div>
+                <!-- Coming Soon State -->
+                <div class="state-box" id="state-coming-soon" style="display:none; margin-top: 2rem;">
+                    <div class="state-icon" style="opacity: 0.8;">✨</div>
+                    <h3>Coming Soon</h3>
+                    <p>We are currently curating an exclusive collection of properties for this category. Stay tuned!</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Property Details Modal -->
+    <div class="modal-overlay" id="property-modal">
+        <div class="modal-box">
+            <button class="modal-close" id="modal-close-btn" aria-label="Close">&times;</button>
+
+            <!-- Screen 1: details -->
+            <div class="modal-panel" id="modal-panel-details">
+                <div class="modal-img-wrapper">
+                    <span class="badge" id="modal-badge"></span>
+                    <img id="modal-img" src="" alt="">
+                </div>
+                <div class="modal-body">
+                    <div class="card-header">
+                        <h3 class="property-title" id="modal-title"></h3>
+                        <span class="property-price" id="modal-price"></span>
+                    </div>
+                    <p class="property-location" id="modal-location"></p>
+                    <div class="property-specs" id="modal-specs"></div>
+                    <p class="modal-description" id="modal-description"></p>
+                    <button class="btn-primary modal-full-btn" id="enquire-btn">Enquire Now</button>
+                </div>
+            </div>
+
+            <!-- Screen 2: enquiry form -->
+            <div class="modal-panel" id="modal-panel-form" style="display:none;">
+                <div class="modal-body modal-body-form">
+                    <h3 class="modal-form-title">Enquire About <span id="enquire-property-name"></span></h3>
+                    <p class="modal-form-sub">Leave your details and our team will reach out shortly.</p>
+                    <div id="enquiry-success" style="display:none;">Thank you! We've received your enquiry and will
+                        contact you soon.</div>
+                    <form id="enquiry-form">
+                        <div class="form-group">
+                            <label for="enquire-phone">Phone Number</label>
+                            <input type="tel" id="enquire-phone" placeholder="+91 7428 311 662" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="enquire-email">Email Address</label>
+                            <input type="email" id="enquire-email" placeholder="jane@example.com" required>
+                        </div>
+                        <div class="modal-form-actions">
+                            <button type="button" class="btn-secondary" id="back-to-details">← Back to details</button>
+                            <button type="submit" class="btn-primary">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-col brand-col">
+                <div class="footer-logo">Brickstone</div>
+                <p class="footer-desc">Connecting discerning clients with premier residential and commercial properties
+                    across the region.</p>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">QUICK LINKS</h4>
+                <ul class="footer-links-list">
+                    <li><a href="index.html#properties">Properties</a></li>
+                    <li><a href="allproperties.html">Projects</a></li>
+                    <li><a href="index.html#about">About Us</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">SERVICES</h4>
+                <ul class="footer-links-list">
+                    <li><a href="#">Rent Properties</a></li>
+                    <li><a href="#">Lease Properties</a></li>
+                    <li><a href="#">Property Management</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col contact-col">
+                <h4 class="footer-heading">CONTACT</h4>
+                <ul class="footer-contact-list">
+                    <li><span class="contact-icon">📞</span> +917428311662</li>
+                    <li><span class="contact-icon">✉️</span> brickstonerealestate01@gmail.com</li>
+                </ul>
+            </div>
+        </div>
+        <div class="container">
+            <p class="copyright">© 2026 Brickstone. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Shared UI script (mobile menu, scroll-reveal, etc.) -->
+    <script src="script.js?v=2"></script>
+
+    <!-- All Properties dynamic loader -->
+    <script>
+        (function () {
+            'use strict';
+
+            /* ── Config ─────────────────────────────────────── */
+            const API_URL = window.ENV.API_URL + '/properties';
+            const ENQUIRY_URL = window.ENV.API_URL + '/enquiries';
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const categoryParam = urlParams.get('category');
+            const qParam = urlParams.get('q');
+
+            if (qParam) {
+                const heroH1 = document.querySelector('.page-hero h1');
+                const heroP = document.querySelector('.page-hero p');
+                if (heroH1) heroH1.textContent = `Search results for "${qParam}"`;
+                if (heroP) heroP.textContent = 'Found matching properties across Brickstone.';
+            } else if (categoryParam) {
+                const titles = {
+                    'Flat': 'Flats',
+                    'PG': 'PG',
+                    '1BHK': '1 BHK Properties',
+                    '2BHK': '2 BHK Properties',
+                    '3BHK': '3 BHK Properties',
+                    '3BHK+': '3 BHK+ Properties',
+                    'Sharing': 'Sharing PG',
+                    'NonSharing': 'Non Sharing PG'
+                };
+                const displayTitle = titles[categoryParam] || categoryParam + ' Properties';
+                const heroH1 = document.querySelector('.page-hero h1');
+                if (heroH1) heroH1.textContent = displayTitle;
+
+                // Move active underline from Properties to Category
+                const propsLink = document.querySelector('.nav-links a[href="allproperties.html"]');
+                const categoryLink = document.querySelector('.dropdown-toggle');
+                if (propsLink && categoryLink) {
+                    propsLink.classList.remove('active');
+                    categoryLink.classList.add('active');
+                }
+            }
+
+            function filterBySearch(list, q) {
+                if (!q) return list;
+                const lowerQ = q.toLowerCase();
+                return list.filter(p => {
+                    const searchStr = `${p.title} ${p.location} ${p.description} ${p.price} ${p.specs?p.specs.join(' '):''}`.toLowerCase();
+                    return searchStr.includes(lowerQ);
+                });
+            }
+
+            function filterByCategory(list, category) {
+                if (!category) return list;
+                const lowerCat = category.toLowerCase();
+                return list.filter(prop => {
+                    const searchableText = (prop.title + ' ' + (prop.description || '') + ' ' + (prop.specs || []).join(' ')).toLowerCase();
+
+                    if (lowerCat === 'flat') return searchableText.includes('flat') || searchableText.includes('apartment') || searchableText.includes('bhk') || searchableText.includes('villa');
+                    if (lowerCat === 'pg') return searchableText.includes('pg') || searchableText.includes('paying guest');
+                    if (lowerCat === '1bhk') return searchableText.includes('1 bhk') || searchableText.includes('1 bed');
+                    if (lowerCat === '2bhk') return searchableText.includes('2 bhk') || searchableText.includes('2 bed');
+                    if (lowerCat === '3bhk') return searchableText.includes('3 bhk') || searchableText.includes('3 bed');
+                    if (lowerCat === '3bhk+') return searchableText.includes('4 bhk') || searchableText.includes('5 bhk') || searchableText.includes('4 bed') || searchableText.includes('5 bed') || searchableText.includes('3 bhk+');
+                    if (lowerCat === 'sharing') return searchableText.includes('sharing');
+                    if (lowerCat === 'nonsharing') return searchableText.includes('non sharing') || searchableText.includes('single');
+
+                    return searchableText.includes(lowerCat);
+                });
+            }
+
+            /* ── State storage for modal ─────────────────────── */
+            // Keyed by property DB id
+            const propertyStore = {};
+
+            /* ── DOM refs ─────────────────────────────────────── */
+            const stateLoading = document.getElementById('state-loading');
+            const stateError = document.getElementById('state-error');
+            const stateEmpty = document.getElementById('state-empty');
+            const wrapper = document.getElementById('properties-wrapper');
+            const grid = document.getElementById('properties-grid');
+            const countLabel = document.getElementById('property-count-label');
+            const retryBtn = document.getElementById('retry-btn');
+
+            const modalOverlay = document.getElementById('property-modal');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const panelDetails = document.getElementById('modal-panel-details');
+            const panelForm = document.getElementById('modal-panel-form');
+            const enquireBtn = document.getElementById('enquire-btn');
+            const backBtn = document.getElementById('back-to-details');
+            const enquiryForm = document.getElementById('enquiry-form');
+            const enquiryOk = document.getElementById('enquiry-success');
+
+            /* ── Helpers ──────────────────────────────────────── */
+
+            /** Show exactly one state panel */
+            function showState(which) {
+                const stateNotFound = document.getElementById('state-not-found');
+                [stateLoading, stateError, stateEmpty, stateNotFound, wrapper].forEach(el => {
+                    if (el) el.style.display = (el === which) ? 'block' : 'none';
+                });
+            }
+
+            /**
+             * Derive a human-readable badge label.
+             * The admin stores badge="For Sale" when status="Available".
+             * For older/seeded rows badge may be null — derive from status.
+             */
+            function getBadge(prop) {
+                if (prop.badge && prop.badge.trim()) return prop.badge.trim();
+                const s = (prop.status || '').toLowerCase();
+                if (s === 'rented') return 'For Rent';
+                if (s === 'sold') return 'Sold';
+                return 'For Sale';
+            }
+
+            /**
+             * Format price from raw number string (e.g. "23000", "2400000")
+             * to human-friendly Indian format.
+             */
+            function formatPrice(rawPrice) {
+                if (!rawPrice) return 'Price on request';
+                const num = parseFloat(rawPrice);
+                if (isNaN(num)) return rawPrice; // already formatted
+                if (num >= 10000000) return '₹' + (num / 10000000).toFixed(2) + ' Cr';
+                if (num >= 100000) return '₹' + (num / 100000).toFixed(0) + ' L';
+                if (num >= 1000) return '₹' + num.toLocaleString('en-IN');
+                // Small numbers are likely monthly rents
+                return '₹' + num.toLocaleString('en-IN') + '/mo';
+            }
+
+            /**
+             * Resolve image src.
+             * - null / undefined  → fallback image
+             * - absolute URL       → use as-is
+             * - relative path      → use as-is (relative to FRONTEND folder)
+             */
+            function getImage(prop) {
+                const img = prop.image;
+                if (!img || img.trim() === '' || img === 'images/default.jpg') {
+                    // Pick a thematic fallback based on property type
+                    const title = (prop.title || '').toLowerCase();
+                    if (title.includes('villa') || title.includes('bungalow')) return 'images/villa.jpg';
+                    if (title.includes('business') || title.includes('hub') || title.includes('penthouse')) return 'images/business.jpg';
+                    return 'images/villa.jpg';
+                }
+                return img;
+            }
+
+            /** Build specs array from DB specs + fallback derivation */
+            function getSpecs(prop) {
+                // specs is already parsed to an array by the backend
+                const dbSpecs = Array.isArray(prop.specs) ? prop.specs.filter(s => s && s.trim()) : [];
+                return dbSpecs;
+            }
+
+            /* ── Card builder ─────────────────────────────────── */
+            function formatSpecWithIcon(specText) {
+                const textLower = specText.toLowerCase();
+                let iconSvg = '';
+                if (textLower.includes('bed') || textLower.includes('bhk')) {
+                    iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; opacity:0.7;"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>`;
+                } else if (textLower.includes('bath')) {
+                    iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; opacity:0.7;"><path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><line x1="10" x2="8" y1="5" y2="7"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="7" x2="7" y1="19" y2="21"/><line x1="17" x2="17" y1="19" y2="21"/></svg>`;
+                } else if (textLower.includes('sq')) {
+                    iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; opacity:0.7;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>`;
+                }
+                return `<span style="display:inline-flex; align-items:center; font-size:0.85rem; color:inherit;">${iconSvg}${specText}</span>`;
+            }
+
+            function buildCard(prop) {
+                const badge = getBadge(prop);
+                const price = formatPrice(prop.price);
+                const imageSrc = getImage(prop);
+                const title = prop.title || 'Untitled Property';
+                const location = prop.location || '';
+                const specs = getSpecs(prop);
+                const isVerified = !!prop.is_verified;
+                const propId = prop.id;
+
+                // Store full data for modal
+                propertyStore[propId] = {
+                    id: propId,
+                    badge,
+                    image: imageSrc,
+                    title,
+                    price,
+                    location,
+                    specs,
+                    description: prop.description || '',
+                    isVerified
+                };
+
+                const specsHtml = specs.length
+                    ? specs.map(s => formatSpecWithIcon(s)).join('')
+                    : '';
+
+                const article = document.createElement('article');
+                article.className = 'property-card reveal';
+                article.innerHTML = `
+                <div class="card-img-wrapper" style="position:relative;">
+                    <span class="badge">${badge}</span>
+                    ${isVerified ? '<span class="verified-tag">✓ Verified</span>' : ''}
+                    <img src="${imageSrc}"
+                         alt="${title}"
+                         loading="lazy"
+                         onerror="this.src='images/villa.jpg'">
+                </div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <h3 class="property-title">${title}</h3>
+                        <span class="property-price">${price}</span>
+                    </div>
+                    <p class="property-location" style="display:inline-flex; align-items:center; gap:4px; margin-bottom:1rem;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.7;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        ${location}
+                    </p>
+                    <div class="property-specs" style="border:none; padding:0 0 1.5rem 0;">${specsHtml}</div>
+                    <a href="javascript:void(0)"
+                       class="btn-primary view-details-btn"
+                       style="width:100%; border-radius:8px; padding:0.8rem;"
+                       data-prop-id="${propId}">Inquire Now</a>
+                </div>
+            `;
+
+                // Wire up the View Details button immediately
+                article.querySelector('.view-details-btn')
+                    .addEventListener('click', () => openModal(propId));
+
+                return article;
+            }
+
+            /* ── Scroll-reveal for new cards ─────────────────── */
+            function observeCards() {
+                const io = new IntersectionObserver((entries) => {
+                    entries.forEach(e => {
+                        if (e.isIntersecting) {
+                            e.target.classList.add('active');
+                            io.unobserve(e.target);
+                        }
+                    });
+                }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+                grid.querySelectorAll('.property-card').forEach(c => io.observe(c));
+            }
+
+            /* ── Modal ────────────────────────────────────────── */
+            // Track which property is currently open (for enquiry submission)
+            let activePropertyId = null;
+
+            function openModal(propId) {
+                const d = propertyStore[propId];
+                if (!d) return;
+                activePropertyId = propId;
+
+                document.getElementById('modal-badge').textContent = d.badge;
+                document.getElementById('modal-img').src = d.image;
+                document.getElementById('modal-img').alt = d.title;
+                document.getElementById('modal-title').textContent = d.title;
+                document.getElementById('modal-price').textContent = d.price;
+                document.getElementById('modal-location').innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; opacity:0.7;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    ${d.location}
+                `;
+                document.getElementById('modal-description').textContent = d.description;
+                document.getElementById('enquire-property-name').textContent = d.title;
+
+                document.getElementById('modal-specs').innerHTML =
+                    d.specs.map(s => formatSpecWithIcon(s)).join('');
+
+                // Always start on the details screen
+                panelDetails.style.display = 'block';
+                panelForm.style.display = 'none';
+                enquiryOk.style.display = 'none';
+                enquiryForm.style.display = 'block';
+                enquiryForm.reset();
+
+                modalOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeModal() {
+                modalOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+                activePropertyId = null;
+            }
+
+            modalCloseBtn.addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && modalOverlay.classList.contains('active')) closeModal();
+            });
+
+            enquireBtn.addEventListener('click', () => {
+                panelDetails.style.display = 'none';
+                panelForm.style.display = 'block';
+            });
+
+            backBtn.addEventListener('click', () => {
+                panelForm.style.display = 'none';
+                panelDetails.style.display = 'block';
+            });
+
+            /* ── Enquiry form submission → /api/enquiries ─────── */
+            enquiryForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const phone = document.getElementById('enquire-phone').value;
+                const email = document.getElementById('enquire-email').value;
+                const prop = propertyStore[activePropertyId] || {};
+
+                try {
+                    await fetch(ENQUIRY_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            property_id: prop.id || activePropertyId,
+                            property_title: prop.title || '',
+                            phone,
+                            email
+                        })
+                    });
+                } catch (_) {
+                    // Network error — still show success to user
+                }
+
+                enquiryForm.style.display = 'none';
+                enquiryOk.style.display = 'block';
+            });
+
+            /* ── Fetch & render properties ─────────────────────── */
+            let allLoadedProperties = [];
+
+            function renderFilteredProperties(filterType) {
+                grid.innerHTML = '';
+                const comingSoonEl = document.getElementById('state-coming-soon');
+                const metaEl = document.querySelector('.section-meta');
+
+                if (filterType === 'Buy' || filterType === 'Lease') {
+                    grid.style.display = 'none';
+                    metaEl.style.display = 'none';
+                    if(comingSoonEl) comingSoonEl.style.display = 'block';
+                    return;
+                } else {
+                    grid.style.display = '';
+                    metaEl.style.display = 'flex';
+                    if(comingSoonEl) comingSoonEl.style.display = 'none';
+                }
+
+                let listToRender = filterByCategory(allLoadedProperties, categoryParam);
+                if (qParam) {
+                    listToRender = filterBySearch(listToRender, qParam);
+                }
+
+                const filteredList = listToRender.filter(prop => {
+                    if (filterType === 'All') return true;
+                    const status = (prop.status || '').toLowerCase();
+                    const filterLower = filterType.toLowerCase();
+                    if (filterLower === 'buy') return status.includes('sale') || status.includes('available') || status.includes('buy');
+                    return status.includes(filterLower);
+                });
+
+                if (filteredList.length === 0) {
+                    countLabel.textContent = '0 properties found';
+                } else {
+                    filteredList.forEach(prop => grid.appendChild(buildCard(prop)));
+                    countLabel.textContent = filteredList.length === 1
+                        ? '1 property found'
+                        : `${filteredList.length} properties found`;
+                    observeCards();
+                }
+            }
+
+            // Filter button event listeners
+            document.querySelectorAll('.filter-pill').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
+                    renderFilteredProperties(e.currentTarget.dataset.filter);
+                });
+            });
+
+            async function loadProperties() {
+                showState(stateLoading);
+                grid.innerHTML = '';
+                Object.keys(propertyStore).forEach(k => delete propertyStore[k]);
+
+                try {
+                    const res = await fetch(API_URL);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                    const json = await res.json();
+                    const list = Array.isArray(json) ? json : (json.data || json.properties || []);
+
+                    if (list.length === 0) {
+                        showState(stateEmpty);
+                        return;
+                    }
+
+                    allLoadedProperties = list;
+
+                    // Handle exact property lookup
+                    const idParam = urlParams.get('id');
+                    if (idParam) {
+                        const targetProp = allLoadedProperties.find(p => String(p.id) === String(idParam));
+                        if (targetProp) {
+                            showState(wrapper);
+                            renderFilteredProperties('All');
+                            openModal(targetProp.id);
+                        } else {
+                            showState(document.getElementById('state-not-found'));
+                        }
+                        return;
+                    }
+
+                    showState(wrapper);
+                    renderFilteredProperties('All');
+
+                } catch (err) {
+                    console.error('[Brickstone] Failed to load properties:', err);
+                    showState(stateError);
+                }
+            }
+
+            retryBtn.addEventListener('click', loadProperties);
+
+            // Kick off on page load
+            loadProperties();
+
+        })();
+    </script>
+
+</body>
+
+</html>
