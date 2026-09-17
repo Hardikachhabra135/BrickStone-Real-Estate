@@ -1,4 +1,4 @@
-﻿const API_BASE = window.ENV.API_URL;
+const API_BASE = window.ENV.API_URL;
 let authToken = localStorage.getItem('brickstone_admin_token') || null;
 let currentUser = JSON.parse(localStorage.getItem('brickstone_admin_user')) || null;
 let currentRange = '30days';
@@ -423,10 +423,28 @@ async function editProperty(id) {
             document.getElementById('prop-title').value = p.title;
             document.getElementById('prop-price').value = p.price;
             document.getElementById('prop-location').value = p.location;
+            
+            let catValue = '';
+            let subValue = '';
+            let displaySpecs = [];
+            if (p.specs && Array.isArray(p.specs)) {
+                p.specs.forEach(s => {
+                    if (s.startsWith('__CAT:')) catValue = s.replace('__CAT:', '');
+                    else if (s.startsWith('__SUB:')) subValue = s.replace('__SUB:', '');
+                    else displaySpecs.push(s);
+                });
+            }
+
+            // Set Category and Subcategory
+            const catSelect = document.getElementById('prop-category');
+            catSelect.value = catValue;
+            window.updateSubcategories && window.updateSubcategories();
+            document.getElementById('prop-subcategory').value = subValue;
+            
             document.getElementById('prop-status').value = p.status;
             document.getElementById('prop-verified').checked = !!p.is_verified;
             document.getElementById('prop-image').value = p.image || '';
-            document.getElementById('prop-specs').value = p.specs ? p.specs.join(', ') : '';
+            document.getElementById('prop-specs').value = displaySpecs.join(', ');
             document.getElementById('prop-description').value = p.description || '';
             document.getElementById('prop-modal-title').textContent = 'Edit Property';
             
@@ -446,6 +464,12 @@ document.getElementById('property-form').addEventListener('submit', async (e) =>
     e.preventDefault();
     const id = document.getElementById('prop-id').value;
     
+    const rawSpecs = document.getElementById('prop-specs').value.split(',').map(s => s.trim()).filter(s => s);
+    const cat = document.getElementById('prop-category').value;
+    const sub = document.getElementById('prop-subcategory').value;
+    if (cat) rawSpecs.push(`__CAT:${cat}`);
+    if (sub) rawSpecs.push(`__SUB:${sub}`);
+
     const data = {
         title: document.getElementById('prop-title').value,
         price: document.getElementById('prop-price').value,
@@ -453,7 +477,7 @@ document.getElementById('property-form').addEventListener('submit', async (e) =>
         status: document.getElementById('prop-status').value,
         is_verified: document.getElementById('prop-verified').checked,
         image: document.getElementById('prop-image').value || 'images/default.jpg',
-        specs: document.getElementById('prop-specs').value.split(',').map(s => s.trim()).filter(s => s),
+        specs: rawSpecs,
         description: document.getElementById('prop-description').value || 'Updated via Admin',
         badge: document.getElementById('prop-status').value === 'Available' ? 'For Sale' : document.getElementById('prop-status').value
     };
@@ -925,3 +949,22 @@ function handleImageUpload(event) {
         reader.readAsDataURL(file);
     }
 }
+
+window.updateSubcategories = function() {
+    const category = document.getElementById('prop-category').value;
+    const subSelect = document.getElementById('prop-subcategory');
+    subSelect.innerHTML = '<option value="">Select Subcategory</option>';
+    let subs = [];
+    if (category === 'FLAT') {
+        subs = ['1 BHK', '2 BHK', '3 BHK', '3 BHK+'];
+    } else if (category === 'PG') {
+        subs = ['Sharing', 'Non Sharing'];
+    }
+    
+    subs.forEach(sub => {
+        const opt = document.createElement('option');
+        opt.value = sub;
+        opt.textContent = sub;
+        subSelect.appendChild(opt);
+    });
+};

@@ -448,20 +448,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch(`${API_BASE}/properties`);
         const data = await res.json();
         
-        const apiProperties = data.success ? data.data.map(p => ({
-          id: p.id,
-          type: 'property',
-          title: p.title,
-          subtitle: `${p.location} • ${p.price}`,
-          status: p.badge || p.status,
-          image: p.image,
-          url: getPropertyUrl(p.id),
-          searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${p.specs ? p.specs.join(' ') : ''}`.toLowerCase()
-        })) : [];
+        const apiProperties = data.success ? data.data.map(p => {
+          const cleanSpecs = (p.specs || []).filter(s => !s.startsWith('__CAT:') && !s.startsWith('__SUB:'));
+          return {
+            id: p.id,
+            type: 'property',
+            title: p.title,
+            subtitle: `${p.location} • ${p.price}`,
+            status: p.badge || p.status,
+            image: p.image,
+            url: getPropertyUrl(p.id),
+            searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${cleanSpecs.join(' ')}`.toLowerCase()
+          };
+        }) : [];
         
         // Also map hardcoded fallback if API fails or returns few
         const localProperties = Object.keys(propertiesData).map(k => {
           const p = propertiesData[k];
+          const cleanSpecs = (p.specs || []).filter(s => !s.startsWith('__CAT:') && !s.startsWith('__SUB:'));
           return {
             id: k,
             type: 'property',
@@ -470,7 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
             status: p.badge,
             image: p.image,
             url: getPropertyUrl(k),
-            searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${p.specs.join(' ')}`.toLowerCase(),
+            searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${cleanSpecs.join(' ')}`.toLowerCase(),
             isLocal: true
           };
         });
