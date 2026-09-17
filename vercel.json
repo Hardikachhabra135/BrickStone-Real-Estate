@@ -1,0 +1,24 @@
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": ".*admin.*"
+        }
+      ],
+      "destination": "/ADMIN_PANEL/$1"
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": ".*frontend.*"
+        }
+      ],
+      "destination": "/FRONTEND/$1"
+    }
+  ]
+}
