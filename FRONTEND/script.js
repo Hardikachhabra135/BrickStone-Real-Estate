@@ -773,4 +773,141 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   loadPublicAbout();
 
+
+  /* ---------- Testimonials Section ---------- */
+  const SEED_TESTIMONIALS = [
+    {
+      id: "bt-1",
+      name: "Vikramaditya Singhania",
+      role: "DLF Magnolias, Gurugram",
+      serviceType: "Buying",
+      rating: 5,
+      quote: "Brickstone secured an off-market penthouse for our family within three weeks. Complete discretion, swift closing, and peerless market insight.",
+      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      isActive: true
+    },
+    {
+      id: "bt-2",
+      name: "Dr. Ananya Sengupta",
+      role: "Jor Bagh, New Delhi",
+      serviceType: "Selling",
+      rating: 5,
+      quote: "Their white-glove advisory navigated title due diligence and high-net-worth negotiations seamlessly. The benchmark for luxury estate consultancy.",
+      image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      isActive: true
+    },
+    {
+      id: "bt-3",
+      name: "Rohan & Meera Khurana",
+      role: "Lutyens' Bungalow Zone",
+      serviceType: "Buying",
+      rating: 5,
+      quote: "Acquiring a heritage property in Central Delhi felt impossible until Brickstone stepped in. Truly refined client hospitality from start to finish.",
+      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+      isActive: true
+    },
+    {
+      id: "bt-4",
+      name: "Kavita Ramachandran",
+      role: "Aerocity Commercial Suite",
+      serviceType: "Renting",
+      rating: 5,
+      quote: "From initial lease terms to key handover, their attention to architectural detail and contract safety was remarkable.",
+      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+      isActive: true
+    },
+    {
+      id: "bt-5",
+      name: "Sameer Vohra",
+      role: "Civil Lines, New Delhi",
+      serviceType: "Advisory",
+      rating: 5,
+      quote: "Exceptional insight on prime asset acquisition. They provided clear comparative analyses that saved us months of speculative viewings.",
+      image: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80",
+      isActive: true
+    }
+  ];
+
+  function loadTestimonials() {
+    let stored = localStorage.getItem('brickstone_testimonials');
+    if (!stored) {
+      localStorage.setItem('brickstone_testimonials', JSON.stringify(SEED_TESTIMONIALS));
+      stored = JSON.stringify(SEED_TESTIMONIALS);
+    }
+    const allTests = JSON.parse(stored);
+    const activeTests = allTests.filter(t => t.isActive);
+
+    const ticker = document.getElementById('testimonial-ticker');
+    if (!ticker) return;
+
+    if (activeTests.length === 0) {
+      document.getElementById('testimonials').style.display = 'none';
+      return;
+    } else {
+      document.getElementById('testimonials').style.display = '';
+    }
+
+    let cardsHtml = '';
+    const renderCard = (t) => `
+      <div class="spotlight-card">
+        <div class="sc-content">
+          <div class="sc-stars">${'★'.repeat(t.rating)}${'☆'.repeat(5 - t.rating)}</div>
+          <div class="sc-quote">"${t.quote}"</div>
+          <div class="sc-author-area">
+            ${t.image ? `<img src="${t.image}" alt="${t.name}" class="sc-author-img">` : ''}
+            <div class="sc-author-info">
+              <h4>${t.name}</h4>
+              <p>${t.role}</p>
+              <span class="sc-badge">${t.serviceType}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    activeTests.forEach(t => cardsHtml += renderCard(t));
+    activeTests.forEach(t => cardsHtml += renderCard(t)); // Duplicate for infinite scroll
+
+    ticker.innerHTML = cardsHtml;
+
+    // Spotlight effect
+    document.querySelectorAll('.spotlight-card').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+      });
+    });
+  }
+
+  // Reload when localstorage changes (for admin preview)
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'brickstone_testimonials') {
+      loadTestimonials();
+    }
+  });
+
+  loadTestimonials();
+
+  // Drag to scroll
+  const tickerWrap = document.querySelector('.ticker-wrapper');
+  if (tickerWrap) {
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+    tickerWrap.addEventListener('mousedown', (e) => {
+      isDown = true;
+      startX = e.pageX - tickerWrap.offsetLeft;
+      scrollLeft = tickerWrap.scrollLeft;
+    });
+    tickerWrap.addEventListener('mouseleave', () => { isDown = false; });
+    tickerWrap.addEventListener('mouseup', () => { isDown = false; });
+    tickerWrap.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - tickerWrap.offsetLeft;
+      const walk = (x - startX) * 2;
+      tickerWrap.scrollLeft = scrollLeft - walk;
+    });
+  }
 });

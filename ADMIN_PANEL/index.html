@@ -63,10 +63,14 @@
                     </a>
                 </div>
 
+                
                 <div class="nav-group">
                     <div class="nav-group-title">CONTENT</div>
                     <a href="#" class="nav-item" data-target="about-content">
                         <i data-feather="monitor"></i><span>About Section</span>
+                    </a>
+                    <a href="#" class="nav-item" data-target="testimonials-content">
+                        <i data-feather="message-square"></i><span>Testimonials</span>
                     </a>
                 </div>
 
@@ -412,6 +416,43 @@
                     </div>
                 </div>
             </section>
+        
+            <!-- Testimonials Content Panel -->
+            <section id="testimonials-content" class="content-panel">
+                <div class="panel-header-flex">
+                    <div class="section-title">
+                        <h2>Client Testimonials</h2>
+                        <p>Manage the spotlight reviews displayed on the main landing page.</p>
+                    </div>
+                    <button class="btn-primary" id="add-testimonial-btn" onclick="openTestimonialModal()"><i data-feather="plus"></i> Add Testimonial</button>
+                </div>
+
+                <div class="card stat-card" style="margin-bottom: 2rem;">
+                    <div class="stat-info">
+                        <h3>Active Testimonials</h3>
+                        <p class="stat-value" id="test-count">0/6</p>
+                        <p class="stat-label">Maximum 6 permitted.</p>
+                    </div>
+                </div>
+
+                <div class="table-container card">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Transaction</th>
+                                <th>Rating</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="testimonials-table-body">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
         </main>
     </div>
 
@@ -487,6 +528,62 @@
                     <div class="modal-actions-right">
                         <button type="button" class="btn-ghost" onclick="closeModal('property-modal')">Cancel</button>
                         <button type="submit" class="btn-primary">Save Property</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Testimonial Modal -->
+    <div id="testimonial-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Testimonial Details</h3>
+                <button class="modal-close" onclick="closeModal('testimonial-modal')"><i data-feather="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="testimonial-form">
+                    <input type="hidden" id="test-id">
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <input type="text" id="test-name" class="premium-input" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Role / Location</label>
+                        <input type="text" id="test-role" class="premium-input" placeholder="e.g. Villa Owner, South Delhi" required>
+                    </div>
+                    <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                        <div class="input-group">
+                            <label>Transaction Type</label>
+                            <select id="test-service" class="premium-input">
+                                <option value="Buying">Buying</option>
+                                <option value="Selling">Selling</option>
+                                <option value="Renting">Renting</option>
+                                <option value="Advisory">Advisory</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Rating (1-5)</label>
+                            <input type="number" id="test-rating" class="premium-input" min="1" max="5" value="5" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Quote (<span id="test-char-count">0</span>/280)</label>
+                        <textarea id="test-quote" class="premium-input" rows="4" maxlength="280" required></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>Image URL (Optional)</label>
+                        <input type="text" id="test-image" class="premium-input" placeholder="https://...">
+                    </div>
+                    <div class="input-group">
+                        <label class="checkbox-label" style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                            <input type="checkbox" id="test-active"> Publish to frontend
+                        </label>
+                    </div>
+                    <div class="modal-actions-right" style="margin-top:1.5rem; display:flex; justify-content:flex-end; gap:1rem;">
+                        <button type="button" class="btn-ghost" onclick="closeModal('testimonial-modal')">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Testimonial</button>
                     </div>
                 </form>
             </div>

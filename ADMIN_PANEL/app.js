@@ -58,6 +58,7 @@ function loadAllData() {
     loadEnquiries();
     loadContacts();
     loadAboutSection();
+    loadAdminTestimonials();
 }
 
 // Navigation
@@ -708,3 +709,171 @@ window.restoreDefaultAboutSection = async function() {
     // Trigger publish immediately
     publishAboutSection();
 };
+
+
+// --- TESTIMONIALS MANAGER ---
+const SEED_TESTIMONIALS = [
+  { id: "bt-1", name: "Vikramaditya Singhania", role: "DLF Magnolias, Gurugram", serviceType: "Buying", rating: 5, quote: "Brickstone secured an off-market penthouse for our family within three weeks. Complete discretion, swift closing, and peerless market insight.", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80", isActive: true },
+  { id: "bt-2", name: "Dr. Ananya Sengupta", role: "Jor Bagh, New Delhi", serviceType: "Selling", rating: 5, quote: "Their white-glove advisory navigated title due diligence and high-net-worth negotiations seamlessly. The benchmark for luxury estate consultancy.", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80", isActive: true },
+  { id: "bt-3", name: "Rohan & Meera Khurana", role: "Lutyens' Bungalow Zone", serviceType: "Buying", rating: 5, quote: "Acquiring a heritage property in Central Delhi felt impossible until Brickstone stepped in. Truly refined client hospitality from start to finish.", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80", isActive: true },
+  { id: "bt-4", name: "Kavita Ramachandran", role: "Aerocity Commercial Suite", serviceType: "Renting", rating: 5, quote: "From initial lease terms to key handover, their attention to architectural detail and contract safety was remarkable.", image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80", isActive: true },
+  { id: "bt-5", name: "Sameer Vohra", role: "Civil Lines, New Delhi", serviceType: "Advisory", rating: 5, quote: "Exceptional insight on prime asset acquisition. They provided clear comparative analyses that saved us months of speculative viewings.", image: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80", isActive: true }
+];
+
+function getTestimonials() {
+  let data = localStorage.getItem('brickstone_testimonials');
+  if (!data) {
+    localStorage.setItem('brickstone_testimonials', JSON.stringify(SEED_TESTIMONIALS));
+    return SEED_TESTIMONIALS;
+  }
+  return JSON.parse(data);
+}
+
+function saveTestimonials(data) {
+  localStorage.setItem('brickstone_testimonials', JSON.stringify(data));
+  loadAdminTestimonials();
+  // dispatch storage event for frontend if they are in same origin
+  window.dispatchEvent(new Event('storage'));
+}
+
+function loadAdminTestimonials() {
+  const tests = getTestimonials();
+  document.getElementById('test-count').textContent = `${tests.length}/6`;
+  
+  const addBtn = document.getElementById('add-testimonial-btn');
+  if (tests.length >= 6) {
+    addBtn.classList.add('btn-disabled');
+    addBtn.style.opacity = '0.5';
+  } else {
+    addBtn.classList.remove('btn-disabled');
+    addBtn.style.opacity = '1';
+  }
+
+  const tbody = document.getElementById('testimonials-table-body');
+  if (!tbody) return;
+
+  tbody.innerHTML = '';
+  tests.forEach(t => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <div style="display:flex; align-items:center; gap:0.8rem;">
+          ${t.image ? `<img src="${t.image}" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">` : ''}
+          <div>
+            <strong>${t.name}</strong><br>
+            <small style="color:var(--clr-text-light)">${t.role}</small>
+          </div>
+        </div>
+      </td>
+      <td><span class="status-badge" style="background:#F7F4EE; color:#D4AF37;">${t.serviceType}</span></td>
+      <td>${t.rating}/5</td>
+      <td>
+        ${t.isActive ? '<span class="status-badge status-active">Published</span>' : '<span class="status-badge status-inactive">Draft</span>'}
+      </td>
+      <td>
+        <div class="action-buttons">
+          <button class="action-btn" title="Toggle Status" onclick="toggleTestimonial('${t.id}')">
+            <i data-feather="${t.isActive ? 'eye-off' : 'eye'}"></i>
+          </button>
+          <button class="action-btn edit-btn" title="Edit" onclick="editTestimonial('${t.id}')">
+            <i data-feather="edit-2"></i>
+          </button>
+          <button class="action-btn delete-btn" title="Delete" onclick="deleteTestimonial('${t.id}')">
+            <i data-feather="trash-2"></i>
+          </button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  if(window.feather) feather.replace();
+}
+
+function openTestimonialModal() {
+  if (getTestimonials().length >= 6) {
+    alert("Maximum limit reached (6/6). Delete or modify an existing review to add another.");
+    return;
+  }
+  document.getElementById('testimonial-form').reset();
+  document.getElementById('test-id').value = '';
+  document.getElementById('test-char-count').textContent = '0';
+  document.getElementById('test-active').checked = true;
+  document.getElementById('testimonial-modal').classList.add('active');
+}
+
+function editTestimonial(id) {
+  const tests = getTestimonials();
+  const t = tests.find(x => x.id === id);
+  if (!t) return;
+  
+  document.getElementById('test-id').value = t.id;
+  document.getElementById('test-name').value = t.name;
+  document.getElementById('test-role').value = t.role;
+  document.getElementById('test-service').value = t.serviceType;
+  document.getElementById('test-rating').value = t.rating;
+  document.getElementById('test-quote').value = t.quote;
+  document.getElementById('test-image').value = t.image || '';
+  document.getElementById('test-active').checked = t.isActive;
+  document.getElementById('test-char-count').textContent = t.quote.length;
+  
+  document.getElementById('testimonial-modal').classList.add('active');
+}
+
+function toggleTestimonial(id) {
+  const tests = getTestimonials();
+  const t = tests.find(x => x.id === id);
+  if (t) {
+    t.isActive = !t.isActive;
+    saveTestimonials(tests);
+  }
+}
+
+function deleteTestimonial(id) {
+  if (confirm('Are you sure you want to delete this testimonial?')) {
+    let tests = getTestimonials();
+    tests = tests.filter(x => x.id !== id);
+    saveTestimonials(tests);
+  }
+}
+
+// Quote character counter
+document.addEventListener('DOMContentLoaded', () => {
+    const qInput = document.getElementById('test-quote');
+    if (qInput) {
+        qInput.addEventListener('input', () => {
+            document.getElementById('test-char-count').textContent = qInput.value.length;
+        });
+    }
+
+    const testForm = document.getElementById('testimonial-form');
+    if (testForm) {
+        testForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('test-id').value;
+            const newT = {
+                id: id || 'bt-' + Date.now(),
+                name: document.getElementById('test-name').value,
+                role: document.getElementById('test-role').value,
+                serviceType: document.getElementById('test-service').value,
+                rating: parseInt(document.getElementById('test-rating').value) || 5,
+                quote: document.getElementById('test-quote').value,
+                image: document.getElementById('test-image').value,
+                isActive: document.getElementById('test-active').checked
+            };
+            
+            let tests = getTestimonials();
+            if (id) {
+                const idx = tests.findIndex(x => x.id === id);
+                if (idx !== -1) tests[idx] = newT;
+            } else {
+                if (tests.length >= 6) {
+                    alert("Maximum limit reached (6/6). Delete or modify an existing review to add another.");
+                    return;
+                }
+                tests.unshift(newT);
+            }
+            saveTestimonials(tests);
+            closeModal('testimonial-modal');
+        });
+    }
+});
