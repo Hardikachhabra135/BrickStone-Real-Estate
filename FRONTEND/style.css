@@ -47,7 +47,8 @@ html {
 
 body {
   font-family: var(--font-body);
-  background-color: var(--clr-cream);
+  background-color: var(--scroll-bg, var(--clr-cream));
+  transition: background-color 0.15s ease-out;
   color: var(--clr-espresso);
   line-height: 1.6;
   overflow-x: hidden;
@@ -90,7 +91,7 @@ img {
 .section-padding {
   padding: var(--spacing-lg) 0;
   /* Fix fractional pixel boundaries causing visible white lines on scaled screens */
-  margin-top: -1px;
+  
   padding-top: calc(var(--spacing-lg) + 1px);
   position: relative;
   z-index: 1;
@@ -217,7 +218,7 @@ img {
   height: 100vh;
   min-height: 700px;
   position: relative;
-  background-color: var(--clr-cream);
+  background-color: transparent;
   overflow: hidden;
 }
 
@@ -955,7 +956,7 @@ footer {
   background-color: var(--clr-espresso);
   color: var(--clr-cream-light);
   padding: calc(4rem + 1px) 0 2rem;
-  margin-top: -1px;
+  
   position: relative;
   z-index: 1;
 }
@@ -1412,7 +1413,7 @@ footer {
 
 /* --- Section rhythm --- */
 .about-section {
-  background: var(--clr-beige);
+  background: transparent;
 }
 
 /* --- Staggered reveal for property cards --- */
@@ -1597,7 +1598,7 @@ footer {
   padding: 180px 0 calc(4rem + 1px);
   background: var(--clr-beige);
   text-align: center;
-  margin-bottom: -1px;
+  
   position: relative;
   z-index: 1;
 }
@@ -1628,7 +1629,7 @@ footer {
    TESTIMONIALS SECTION
    ========================================================================== */
 .testimonials-section {
-  background-color: #F7F4EE;
+  background: transparent;
   overflow: hidden;
 }
 .testimonials-header {
@@ -1690,10 +1691,8 @@ footer {
 /* Spotlight Card Ticker */
 .ticker-wrapper {
   width: 100%;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding: 2rem 0;
-  cursor: grab;
+  overflow-x: hidden; /* Hide scrollbar for seamless loop */
+  padding: 2rem 5vw;
 }
 .ticker-wrapper::-webkit-scrollbar {
   display: none;
@@ -1703,17 +1702,20 @@ footer {
 }
 .ticker-track {
   display: flex;
-  gap: 2rem;
   width: max-content;
   animation: tickerLoop 40s linear infinite;
-  padding: 0 5vw;
+}
+.ticker-group {
+  display: flex;
+  gap: 2rem;
+  padding-right: 2rem; /* The gap between groups */
 }
 .ticker-wrapper:hover .ticker-track {
   animation-play-state: paused !important;
 }
 @keyframes tickerLoop {
   0% { transform: translateX(0); }
-  100% { transform: translateX(calc(-50% - 1rem)); }
+  100% { transform: translateX(-50%); }
 }
 .spotlight-card {
   position: relative;
@@ -1796,3 +1798,7 @@ footer {
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+
+
+
+

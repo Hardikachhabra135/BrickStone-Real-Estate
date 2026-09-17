@@ -1,4 +1,4 @@
-const API_BASE = window.ENV.API_URL;
+﻿const API_BASE = window.ENV.API_URL;
 let authToken = localStorage.getItem('brickstone_admin_token') || null;
 let currentUser = JSON.parse(localStorage.getItem('brickstone_admin_user')) || null;
 let currentRange = '30days';
@@ -738,10 +738,10 @@ function saveTestimonials(data) {
 
 function loadAdminTestimonials() {
   const tests = getTestimonials();
-  document.getElementById('test-count').textContent = `${tests.length}/6`;
+  document.getElementById('test-count').textContent = `${tests.length}/10`;
   
   const addBtn = document.getElementById('add-testimonial-btn');
-  if (tests.length >= 6) {
+  if (tests.length >= 10) {
     addBtn.classList.add('btn-disabled');
     addBtn.style.opacity = '0.5';
   } else {
@@ -790,13 +790,17 @@ function loadAdminTestimonials() {
 }
 
 function openTestimonialModal() {
-  if (getTestimonials().length >= 6) {
-    alert("Maximum limit reached (6/6). Delete or modify an existing review to add another.");
+  if (getTestimonials().length >= 10) {
+    alert("Maximum limit reached (10/10). Delete or modify an existing review to add another.");
     return;
   }
   document.getElementById('testimonial-form').reset();
   document.getElementById('test-id').value = '';
   document.getElementById('test-char-count').textContent = '0';
+  document.getElementById('test-image-base64').value = '';
+  document.getElementById('test-image-preview').style.display = 'none';
+  document.getElementById('test-image-preview').src = '';
+  document.getElementById('test-image-file').value = '';
   document.getElementById('test-active').checked = true;
   document.getElementById('testimonial-modal').classList.add('active');
 }
@@ -812,7 +816,13 @@ function editTestimonial(id) {
   document.getElementById('test-service').value = t.serviceType;
   document.getElementById('test-rating').value = t.rating;
   document.getElementById('test-quote').value = t.quote;
-  document.getElementById('test-image').value = t.image || '';
+  document.getElementById('test-image-base64').value = t.image || '';
+  if (t.image) {
+    document.getElementById('test-image-preview').src = t.image;
+    document.getElementById('test-image-preview').style.display = 'block';
+  } else {
+    document.getElementById('test-image-preview').style.display = 'none';
+  }
   document.getElementById('test-active').checked = t.isActive;
   document.getElementById('test-char-count').textContent = t.quote.length;
   
@@ -836,44 +846,82 @@ function deleteTestimonial(id) {
   }
 }
 
-// Quote character counter
-document.addEventListener('DOMContentLoaded', () => {
-    const qInput = document.getElementById('test-quote');
-    if (qInput) {
-        qInput.addEventListener('input', () => {
-            document.getElementById('test-char-count').textContent = qInput.value.length;
-        });
-    }
 
-    const testForm = document.getElementById('testimonial-form');
-    if (testForm) {
-        testForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const id = document.getElementById('test-id').value;
-            const newT = {
-                id: id || 'bt-' + Date.now(),
-                name: document.getElementById('test-name').value,
-                role: document.getElementById('test-role').value,
-                serviceType: document.getElementById('test-service').value,
-                rating: parseInt(document.getElementById('test-rating').value) || 5,
-                quote: document.getElementById('test-quote').value,
-                image: document.getElementById('test-image').value,
-                isActive: document.getElementById('test-active').checked
-            };
-            
-            let tests = getTestimonials();
-            if (id) {
-                const idx = tests.findIndex(x => x.id === id);
-                if (idx !== -1) tests[idx] = newT;
-            } else {
-                if (tests.length >= 6) {
-                    alert("Maximum limit reached (6/6). Delete or modify an existing review to add another.");
-                    return;
-                }
-                tests.unshift(newT);
-            }
-            saveTestimonials(tests);
-            closeModal('testimonial-modal');
-        });
+// Quote character counter
+const qInput = document.getElementById('test-quote');
+if (qInput) {
+    qInput.addEventListener('input', () => {
+        document.getElementById('test-char-count').textContent = qInput.value.length;
+    });
+}
+
+function handleTestimonialSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('test-id').value;
+    const newT = {
+        id: id || 'bt-' + Date.now(),
+        name: document.getElementById('test-name').value,
+        role: document.getElementById('test-role').value,
+        serviceType: document.getElementById('test-service').value,
+        rating: parseInt(document.getElementById('test-rating').value) || 5,
+        quote: document.getElementById('test-quote').value,
+        image: document.getElementById('test-image-base64').value,
+        isActive: document.getElementById('test-active').checked
+    };
+    
+    let tests = getTestimonials();
+    if (id) {
+        const idx = tests.findIndex(x => x.id === id);
+        if (idx !== -1) tests[idx] = newT;
+    } else {
+        if (tests.length >= 10) {
+            alert("Maximum limit reached (10/10). Delete or modify an existing review to add another.");
+            return;
+        }
+        tests.unshift(newT);
     }
-});
+    saveTestimonials(tests);
+    closeModal('testimonial-modal');
+}
+
+function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 150;
+                const MAX_HEIGHT = 150;
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                const base64 = canvas.toDataURL('image/jpeg', 0.8);
+                document.getElementById('test-image-base64').value = base64;
+                const preview = document.getElementById('test-image-preview');
+                preview.src = base64;
+                preview.style.display = 'block';
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+}

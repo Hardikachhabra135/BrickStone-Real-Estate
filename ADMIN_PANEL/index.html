@@ -27,11 +27,11 @@
                 <form id="login-form">
                     <div class="input-group">
                         <label for="username">Username</label>
-                        <input type="text" id="username" placeholder="Enter your username" required>
+                        <input type="text" id="username" placeholder="Enter your username">
                     </div>
                     <div class="input-group">
                         <label for="password">Password</label>
-                        <input type="password" id="password" placeholder="Enter your password" required>
+                        <input type="password" id="password" placeholder="Enter your password">
                     </div>
                     <div id="login-error" class="error-msg"></div>
                     <button type="submit" class="btn-primary login-btn">Secure Sign In</button>
@@ -63,17 +63,6 @@
                     </a>
                 </div>
 
-                
-                <div class="nav-group">
-                    <div class="nav-group-title">CONTENT</div>
-                    <a href="#" class="nav-item" data-target="about-content">
-                        <i data-feather="monitor"></i><span>About Section</span>
-                    </a>
-                    <a href="#" class="nav-item" data-target="testimonials-content">
-                        <i data-feather="message-square"></i><span>Testimonials</span>
-                    </a>
-                </div>
-
                 <div class="nav-group">
                     <div class="nav-group-title">PROPERTY</div>
                     <a href="#" class="nav-item" data-target="properties-content">
@@ -85,6 +74,16 @@
                     <div class="nav-group-title">CUSTOMERS</div>
                     <a href="#" class="nav-item" data-target="leads-content">
                         <i data-feather="users"></i><span>Leads & Enquiries</span>
+                    </a>
+                </div>
+
+                <div class="nav-group">
+                    <div class="nav-group-title">CONTENT</div>
+                    <a href="#" class="nav-item" data-target="about-content">
+                        <i data-feather="monitor"></i><span>About Section</span>
+                    </a>
+                    <a href="#" class="nav-item" data-target="testimonials-content">
+                        <i data-feather="message-square"></i><span>Testimonials</span>
                     </a>
                 </div>
             </nav>
@@ -430,8 +429,8 @@
                 <div class="card stat-card" style="margin-bottom: 2rem;">
                     <div class="stat-info">
                         <h3>Active Testimonials</h3>
-                        <p class="stat-value" id="test-count">0/6</p>
-                        <p class="stat-label">Maximum 6 permitted.</p>
+                        <p class="stat-value" id="test-count">0/10</p>
+                        <p class="stat-label">Maximum 10 permitted.</p>
                     </div>
                 </div>
 
@@ -537,21 +536,21 @@
 
     <!-- Testimonial Modal -->
     <div id="testimonial-modal" class="modal-overlay">
-        <div class="modal-content">
+        <div class="premium-modal" style="max-width: 550px;">
             <div class="modal-header">
                 <h3>Testimonial Details</h3>
-                <button class="modal-close" onclick="closeModal('testimonial-modal')"><i data-feather="x"></i></button>
+                <button class="close-modal-btn" onclick="closeModal('testimonial-modal')"><i data-feather="x"></i></button>
             </div>
             <div class="modal-body">
-                <form id="testimonial-form">
+                <form id="testimonial-form" onsubmit="handleTestimonialSubmit(event)">
                     <input type="hidden" id="test-id">
                     <div class="input-group">
                         <label>Full Name</label>
-                        <input type="text" id="test-name" class="premium-input" required>
+                        <input type="text" id="test-name" class="premium-input">
                     </div>
                     <div class="input-group">
                         <label>Role / Location</label>
-                        <input type="text" id="test-role" class="premium-input" placeholder="e.g. Villa Owner, South Delhi" required>
+                        <input type="text" id="test-role" class="premium-input" placeholder="e.g. Villa Owner, South Delhi">
                     </div>
                     <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
                         <div class="input-group">
@@ -565,16 +564,23 @@
                         </div>
                         <div class="input-group">
                             <label>Rating (1-5)</label>
-                            <input type="number" id="test-rating" class="premium-input" min="1" max="5" value="5" required>
+                            <input type="number" id="test-rating" class="premium-input" min="1" max="5" value="5">
                         </div>
                     </div>
                     <div class="input-group">
                         <label>Quote (<span id="test-char-count">0</span>/280)</label>
-                        <textarea id="test-quote" class="premium-input" rows="4" maxlength="280" required></textarea>
+                        <textarea id="test-quote" class="premium-input" rows="4" maxlength="280"></textarea>
                     </div>
                     <div class="input-group">
-                        <label>Image URL (Optional)</label>
-                        <input type="text" id="test-image" class="premium-input" placeholder="https://...">
+                        <label>Client Photo (Optional)</label>
+                        <div style="display:flex; gap:1rem; align-items:center;">
+                            <input type="file" id="test-image-file" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
+                            <button type="button" class="btn-ghost" onclick="document.getElementById('test-image-file').click()" style="padding: 0.4rem 1rem; font-size: 0.85rem; display:flex; align-items:center;">
+                                <i data-feather="upload" style="width:14px; height:14px; margin-right:0.4rem;"></i> Upload
+                            </button>
+                            <img id="test-image-preview" src="" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; display: none; border: 1px solid var(--border-color);">
+                            <input type="hidden" id="test-image-base64">
+                        </div>
                     </div>
                     <div class="input-group">
                         <label class="checkbox-label" style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">

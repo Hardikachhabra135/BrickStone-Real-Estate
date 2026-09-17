@@ -865,17 +865,44 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
-    activeTests.forEach(t => cardsHtml += renderCard(t));
-    activeTests.forEach(t => cardsHtml += renderCard(t)); // Duplicate for infinite scroll
+    
+    let groupHtml = '';
+    activeTests.forEach(t => groupHtml += renderCard(t));
+    ticker.innerHTML = `<div class="ticker-group">${groupHtml}</div><div class="ticker-group" aria-hidden="true">${groupHtml}</div>`;
 
-    ticker.innerHTML = cardsHtml;
 
-    // Spotlight effect
+    // TiltedCard & Spotlight effect
     document.querySelectorAll('.spotlight-card').forEach(card => {
+      // Smooth reset transition state
+      card.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      
       card.addEventListener('mousemove', e => {
         const rect = card.getBoundingClientRect();
-        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Spotlight calculation
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+
+        // TiltedCard 3D calculation
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        // Dampen rotation amplitude
+        const rotateX = ((y - centerY) / centerY) * -12;
+        const rotateY = ((x - centerX) / centerX) * 12;
+
+        // Temporarily disable transition during mousemove for instant tracking
+        card.style.transition = 'none';
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+      });
+      
+      card.addEventListener('mouseleave', () => {
+        // Re-enable smooth transition for reset
+        card.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+        card.style.setProperty('--mouse-x', `0px`);
+        card.style.setProperty('--mouse-y', `0px`);
       });
     });
   }
@@ -910,4 +937,83 @@ document.addEventListener('DOMContentLoaded', () => {
       tickerWrap.scrollLeft = scrollLeft - walk;
     });
   }
+});
+
+// ==========================================
+// SEAMLESS SCROLL COLOR FLOW
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const sections = [
+        { id: 'home', color: '#F4EEE5' },
+        { id: 'properties', color: '#F4EEE5' },
+        { id: 'about', color: '#E8DED0' },
+        { id: 'contact', color: '#F4EEE5' },
+        { id: 'testimonials', color: '#F7F4EE' } // footer
+    ];
+
+    const elements = [];
+    sections.forEach(s => {
+        const el = s.id === 'footer' ? document.querySelector('footer') : document.getElementById(s.id);
+        if (el) elements.push({ el, color: s.color });
+    });
+
+    function hexToRgb(hex) {
+        let r = parseInt(hex.slice(1, 3), 16),
+            g = parseInt(hex.slice(3, 5), 16),
+            b = parseInt(hex.slice(5, 7), 16);
+        return [r, g, b];
+    }
+
+    function interpolateColor(c1, c2, factor) {
+        const rgb1 = hexToRgb(c1);
+        const rgb2 = hexToRgb(c2);
+        const r = Math.round(rgb1[0] + factor * (rgb2[0] - rgb1[0]));
+        const g = Math.round(rgb1[1] + factor * (rgb2[1] - rgb1[1]));
+        const b = Math.round(rgb1[2] + factor * (rgb2[2] - rgb1[2]));
+        return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    let ticking = false;
+
+    function updateColor() {
+        const scrollCenter = window.scrollY + (window.innerHeight / 2);
+        let targetColor = elements[0].color;
+
+        for (let i = 0; i < elements.length; i++) {
+            const current = elements[i];
+            const next = elements[i + 1];
+
+            const rect = current.el.getBoundingClientRect();
+            const topAbs = rect.top + window.scrollY;
+            const bottomAbs = rect.bottom + window.scrollY;
+
+            if (scrollCenter >= topAbs && scrollCenter <= bottomAbs) {
+                targetColor = current.color;
+                
+                if (next) {
+                    const blendStart = bottomAbs - (window.innerHeight * 0.3);
+                    if (scrollCenter > blendStart) {
+                        let factor = (scrollCenter - blendStart) / (window.innerHeight * 0.3);
+                        factor = Math.max(0, Math.min(1, factor));
+                        targetColor = interpolateColor(current.color, next.color, factor);
+                    }
+                }
+                break;
+            } else if (next && scrollCenter > bottomAbs && scrollCenter < next.el.getBoundingClientRect().top + window.scrollY) {
+                targetColor = interpolateColor(current.color, next.color, 0.5);
+                break;
+            }
+        }
+        
+        document.body.style.setProperty('--scroll-bg', targetColor);
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(updateColor);
+            ticking = true;
+        }
+    });
+    updateColor();
 });
