@@ -1,10 +1,7 @@
 <div align="center">
   <br>
-  <img src="FRONTEND/images/logo.png" alt="Brickstone Logo" height="100">
-  
-  <p align="center">
-    <strong>Curated Properties. Timeless Value.</strong>
-  </p>
+  <h1 style="border-bottom: none; margin-bottom: 0;">B R I C K S T O N E</h1>
+  <p style="font-family: serif; font-size: 1.2rem; font-style: italic; color: #555;">Curated Properties. Timeless Value.</p>
 
   <p align="center">
     <a href="#overview">Overview</a> •
@@ -18,7 +15,7 @@
 <br>
 
 <div align="center">
-  <img src="FRONTEND/images/villa.jpg" alt="Luxury Villa" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+  <img src="https://images.unsplash.com/photo-1613490908676-e1754020c99a?auto=format&fit=crop&w=2000&q=80" alt="Luxury Real Estate Exterior" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
 </div>
 
 ## ✧ Overview
@@ -47,7 +44,7 @@ The platform handles real-time property listings, dynamic content management (CM
 <br>
 
 <div align="center">
-  <img src="FRONTEND/images/business.jpg" alt="Brickstone Business" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+  <img src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=2000&q=80" alt="Luxury Interior Architecture" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
 </div>
 
 ---
