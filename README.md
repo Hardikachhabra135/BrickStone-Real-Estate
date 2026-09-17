@@ -1,30 +1,111 @@
-# BRICKSTONE | Luxury Real Estate
+<div align="center">
+  <br>
+  <img src="FRONTEND/images/logo.png" alt="Brickstone Logo" height="100">
+  
+  <p align="center">
+    <strong>Curated Properties. Timeless Value.</strong>
+  </p>
 
-A premium, single-page luxury real estate web application designed with a cinematic, editorial aesthetic. This project features a modern UI with smooth scroll animations, a looping video background, and a fully functional Python backend to handle user inquiries.
+  <p align="center">
+    <a href="#overview">Overview</a> •
+    <a href="#features">Features</a> •
+    <a href="#architecture">Architecture</a> •
+    <a href="#admin-panel">Admin Panel</a> •
+    <a href="#getting-started">Getting Started</a>
+  </p>
+</div>
 
-## ✨ Features
+<br>
 
-* **Cinematic Video Background:** A high-quality, seamlessly looping background video on the hero section for a highly immersive user experience.
-* **Modern Single-Page Architecture:** Smooth scrolling navigation with an active-state tracker that updates as the user moves through different sections (`#home`, `#properties`, `#about`, `#contact`).
-* **Scroll-Triggered Animations:** Utilizes JavaScript's `IntersectionObserver` to reveal property cards and text gracefully as they enter the viewport.
-* **Responsive Design:** A fully responsive flexbox grid layout with a mobile-friendly hamburger navigation menu.
-* **Smart Navigation Bar:** A sticky, translucent navigation bar with dynamic scroll-progress tracking.
-* **Integrated Backend:** A Python backend configured to capture, process, and handle data submitted through the "Let's Talk" contact form.
+<div align="center">
+  <img src="FRONTEND/images/villa.jpg" alt="Luxury Villa" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+</div>
 
-## 🛠️ Tech Stack
+## ✧ Overview
 
-**Frontend:**
-* HTML5 (Semantic Structure)
-* CSS3 (Custom variables, Flexbox, CSS Grid, Glassmorphism)
-* Vanilla JavaScript (DOM manipulation, IntersectionObserver)
+**BRICKSTONE** is a premium, full-stack luxury real estate operations platform. Designed with a cinematic, editorial aesthetic, it seamlessly blends a stunning public-facing showcase with a powerful, secure internal operations dashboard for property management and analytics.
 
-**Backend:**
-* Python
+The platform handles real-time property listings, dynamic content management (CMS), and lead generation, powered by an integrated Node.js/PostgreSQL backend architecture.
 
-## 🚀 Running the Project Locally
+---
 
-To run this project on your local machine, follow these steps:
+## ✧ Key Features
 
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/iamritikarsh/BRICKSTONE-REAL-ESTATE.git](https://github.com/iamritikarsh/BRICKSTONE-REAL-ESTATE.git)
+### Public Experience
+- **Cinematic Presentation:** High-quality looping video hero sections and immersive scroll-triggered animations.
+- **Dynamic Property Engine:** Real-time property listings fetched seamlessly from a remote database.
+- **Smart Universal Search:** Instantly filter properties, locations, and categories with a bespoke glassmorphic UI.
+- **Editorial About CMS:** A beautifully structured "About Brickstone" section that reads like a high-end magazine.
+- **Frictionless Lead Capture:** Elegant "Let's Talk" integrated inquiry forms.
+
+### Internal Operations (Admin Panel)
+- **Live Traffic Analytics:** Monitor daily pageviews, unique visitors, and top-performing property pages in real time.
+- **Content Management System (CMS):** Update the public "About" section imagery and copy instantly without deploying code.
+- **Lead Management:** Securely view and process client inquiries directly from the dashboard.
+- **Property Management:** (Coming Soon) Seamlessly list new curated properties to the public feed.
+
+<br>
+
+<div align="center">
+  <img src="FRONTEND/images/business.jpg" alt="Brickstone Business" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+</div>
+
+---
+
+## ✧ Architecture & Tech Stack
+
+BRICKSTONE is built for scale, speed, and elegance.
+
+**Frontend Layer:**
+- **Markup & Styling:** HTML5, CSS3 (Custom Variables, Flexbox, CSS Grid, Glassmorphism).
+- **Interactivity:** Vanilla ES6 JavaScript (IntersectionObserver, Fetch API).
+- **Routing:** Hybrid API routing (directing public traffic and admin traffic intelligently).
+
+**Backend Layer:**
+- **Server:** Node.js & Express.js.
+- **Database:** PostgreSQL (Hosted on Render/Supabase) for live data persistence.
+- **Authentication:** JWT-based secure auth for the Admin Panel.
+- **API:** RESTful architecture for decoupled frontend-backend communication.
+
+---
+
+## ✧ Getting Started
+
+To run the Brickstone platform locally:
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/iamritikarsh/BRICKSTONE-REAL-ESTATE.git
+cd BRICKSTONE-REAL-ESTATE
+```
+
+### 2. Start the Backend Server
+```bash
+cd BACKEND
+npm install
+npm start
+```
+*The backend API will run on `http://localhost:5000`.*
+
+### 3. Launch the Frontend
+You can use any local web server (like Python's `http.server` or VS Code Live Server) to serve the static frontend.
+```bash
+# Example using Python
+cd ../FRONTEND
+python -m http.server 8000
+```
+*Visit `http://localhost:8000` to view the public site.*
+
+### 4. Launch the Admin Panel
+```bash
+cd ../ADMIN_PANEL
+python -m http.server 8001
+```
+*Visit `http://localhost:8001` to access the operations dashboard.*
+
+---
+
+<div align="center">
+  <p><em>Built with uncompromising attention to detail.</em></p>
+  <p>© 2026 Brickstone Real Estate</p>
+</div>
