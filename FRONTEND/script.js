@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
 
   const API_BASE = window.ENV.API_URL;
 
@@ -88,7 +88,7 @@
     });
   }
 
-  /* ---------- Contact form â†’ POST /api/contact ---------- */
+  /* ---------- Contact form → POST /api/contact ---------- */
   const contactForm = document.querySelector('.contact-form');
   const formSuccess = document.querySelector('#form-success');
 
@@ -107,7 +107,7 @@
 
       const submitBtn = contactForm.querySelector('button[type="submit"]');
       const originalText = submitBtn.textContent;
-      submitBtn.textContent = 'Sendingâ€¦';
+      submitBtn.textContent = 'Sending…';
       submitBtn.disabled = true;
 
       try {
@@ -146,7 +146,7 @@
     });
   }
 
-  /* ---------- Property Modal (Featured Properties â€” hardcoded) ---------- */
+  /* ---------- Property Modal (Featured Properties — hardcoded) ---------- */
   const propertiesData = {
     "hillside-villa": {
       badge: "For Sale",
@@ -200,13 +200,13 @@
       price: "$980K",
       location: "Jaipur, Rajasthan",
       specs: ["4 Beds", "3 Baths", "2,600 sqft"],
-      description: "A restored heritage townhouse blending traditional Rajasthani architecture with modern interiors â€” carved balconies, courtyard light wells, and a fully updated kitchen and bathrooms."
+      description: "A restored heritage townhouse blending traditional Rajasthani architecture with modern interiors — carved balconies, courtyard light wells, and a fully updated kitchen and bathrooms."
     },
     "skyline-penthouse-mumbai": {
       badge: "For Sale",
       image: "images/business.jpg",
       title: "Skyline Penthouse",
-      price: "â‚¹3.5 Cr",
+      price: "₹3.5 Cr",
       location: "Bandra West, Mumbai",
       specs: ["4 Beds", "3 Baths", "2,800 sq.ft"],
       description: "A refined penthouse in the heart of Bandra West, with floor-to-ceiling glass, panoramic city and sea-facing views, and a private terrace built for entertaining."
@@ -215,7 +215,7 @@
       badge: "For Rent",
       image: "images/villa.jpg",
       title: "Heritage Row Villa",
-      price: "â‚¹85,000/mo",
+      price: "₹85,000/mo",
       location: "Koregaon Park, Pune",
       specs: ["5 Beds", "4 Baths", "4,200 sqft"],
       description: "A spacious heritage-style villa in one of Pune's most sought-after neighbourhoods, featuring a private pool, landscaped garden, and generous entertaining spaces indoors and out."
@@ -224,7 +224,7 @@
       badge: "For Lease",
       image: "images/business.jpg",
       title: "Metro Business Hub",
-      price: "â‚¹1.2 Cr",
+      price: "₹1.2 Cr",
       location: "BKC, Mumbai",
       specs: ["2 Baths", "3,500 sq.ft"],
       description: "A premium commercial space in Mumbai's BKC business district, with a striking glass facade, column-free floor plates, and flexible layout options for corporate offices."
@@ -321,7 +321,7 @@
     panelDetails.style.display = 'block';
   });
 
-  /* ---------- Featured Properties Enquiry form â†’ POST /api/enquiries ---------- */
+  /* ---------- Featured Properties Enquiry form → POST /api/enquiries ---------- */
   if (enquiryForm) {
     enquiryForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -332,7 +332,7 @@
 
       const submitBtn = enquiryForm.querySelector('button[type="submit"]');
       const originalText = submitBtn.textContent;
-      submitBtn.textContent = 'Sendingâ€¦';
+      submitBtn.textContent = 'Sending…';
       submitBtn.disabled = true;
 
       try {
@@ -348,7 +348,7 @@
         });
       } catch (err) {
         console.error('[Brickstone] Enquiry submission error:', err);
-        // Fall through â€” show success anyway so UX isn't broken
+        // Fall through — show success anyway so UX isn't broken
       } finally {
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
@@ -448,33 +448,29 @@
         const res = await fetch(`${API_BASE}/properties`);
         const data = await res.json();
         
-        const apiProperties = data.success ? data.data.map(p => {
-          const cleanSpecs = (p.specs || []).filter(s => !s.startsWith('__CAT:') && !s.startsWith('__SUB:'));
-          return {
-            id: p.id,
-            type: 'property',
-            title: p.title,
-            subtitle: `${p.location} â€¢ ${p.price}`,
-            status: p.badge || p.status,
-            image: p.image,
-            url: getPropertyUrl(p.id),
-            searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${cleanSpecs.join(' ')}`.toLowerCase()
-          };
-        }) : [];
+        const apiProperties = data.success ? data.data.map(p => ({
+          id: p.id,
+          type: 'property',
+          title: p.title,
+          subtitle: `${p.location} • ${p.price}`,
+          status: p.badge || p.status,
+          image: p.image,
+          url: getPropertyUrl(p.id),
+          searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${p.specs ? p.specs.join(' ') : ''}`.toLowerCase()
+        })) : [];
         
         // Also map hardcoded fallback if API fails or returns few
         const localProperties = Object.keys(propertiesData).map(k => {
           const p = propertiesData[k];
-          const cleanSpecs = (p.specs || []).filter(s => !s.startsWith('__CAT:') && !s.startsWith('__SUB:'));
           return {
             id: k,
             type: 'property',
             title: p.title,
-            subtitle: `${p.location} â€¢ ${p.price}`,
+            subtitle: `${p.location} • ${p.price}`,
             status: p.badge,
             image: p.image,
             url: getPropertyUrl(k),
-            searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${cleanSpecs.join(' ')}`.toLowerCase(),
+            searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${p.specs.join(' ')}`.toLowerCase(),
             isLocal: true
           };
         });
@@ -494,7 +490,7 @@
         searchableData = [...staticData, ...Object.keys(propertiesData).map(k => {
           const p = propertiesData[k];
           return {
-            id: k, type: 'property', title: p.title, subtitle: `${p.location} â€¢ ${p.price}`, status: p.badge, image: p.image, url: getPropertyUrl(k), searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${p.specs.join(' ')}`.toLowerCase(), isLocal: true
+            id: k, type: 'property', title: p.title, subtitle: `${p.location} • ${p.price}`, status: p.badge, image: p.image, url: getPropertyUrl(k), searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${p.specs.join(' ')}`.toLowerCase(), isLocal: true
           };
         })];
         isDataLoaded = true;
@@ -777,248 +773,4 @@
   }
   loadPublicAbout();
 
-
-  /* ---------- Testimonials Section ---------- */
-  const SEED_TESTIMONIALS = [
-    {
-      id: "bt-1",
-      name: "Vikramaditya Singhania",
-      role: "DLF Magnolias, Gurugram",
-      serviceType: "Buying",
-      rating: 5,
-      quote: "Brickstone secured an off-market penthouse for our family within three weeks. Complete discretion, swift closing, and peerless market insight.",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-      isActive: true
-    },
-    {
-      id: "bt-2",
-      name: "Dr. Ananya Sengupta",
-      role: "Jor Bagh, New Delhi",
-      serviceType: "Selling",
-      rating: 5,
-      quote: "Their white-glove advisory navigated title due diligence and high-net-worth negotiations seamlessly. The benchmark for luxury estate consultancy.",
-      image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      isActive: true
-    },
-    {
-      id: "bt-3",
-      name: "Rohan & Meera Khurana",
-      role: "Lutyens' Bungalow Zone",
-      serviceType: "Buying",
-      rating: 5,
-      quote: "Acquiring a heritage property in Central Delhi felt impossible until Brickstone stepped in. Truly refined client hospitality from start to finish.",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-      isActive: true
-    },
-    {
-      id: "bt-4",
-      name: "Kavita Ramachandran",
-      role: "Aerocity Commercial Suite",
-      serviceType: "Renting",
-      rating: 5,
-      quote: "From initial lease terms to key handover, their attention to architectural detail and contract safety was remarkable.",
-      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
-      isActive: true
-    },
-    {
-      id: "bt-5",
-      name: "Sameer Vohra",
-      role: "Civil Lines, New Delhi",
-      serviceType: "Advisory",
-      rating: 5,
-      quote: "Exceptional insight on prime asset acquisition. They provided clear comparative analyses that saved us months of speculative viewings.",
-      image: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80",
-      isActive: true
-    }
-  ];
-
-  function loadTestimonials() {
-    let stored = localStorage.getItem('brickstone_testimonials');
-    if (!stored) {
-      localStorage.setItem('brickstone_testimonials', JSON.stringify(SEED_TESTIMONIALS));
-      stored = JSON.stringify(SEED_TESTIMONIALS);
-    }
-    const allTests = JSON.parse(stored);
-    const activeTests = allTests.filter(t => t.isActive);
-
-    const ticker = document.getElementById('testimonial-ticker');
-    if (!ticker) return;
-
-    if (activeTests.length === 0) {
-      document.getElementById('testimonials').style.display = 'none';
-      return;
-    } else {
-      document.getElementById('testimonials').style.display = '';
-    }
-
-    let cardsHtml = '';
-    const renderCard = (t) => `
-      <div class="spotlight-card">
-        <div class="sc-content">
-          <div class="sc-stars">${'â˜…'.repeat(t.rating)}${'â˜†'.repeat(5 - t.rating)}</div>
-          <div class="sc-quote">"${t.quote}"</div>
-          <div class="sc-author-area">
-            ${t.image ? `<img src="${t.image}" alt="${t.name}" class="sc-author-img">` : ''}
-            <div class="sc-author-info">
-              <h4>${t.name}</h4>
-              <p>${t.role}</p>
-              <span class="sc-badge">${t.serviceType}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    
-    let groupHtml = '';
-    activeTests.forEach(t => groupHtml += renderCard(t));
-    ticker.innerHTML = `<div class="ticker-group">${groupHtml}</div><div class="ticker-group" aria-hidden="true">${groupHtml}</div>`;
-
-
-    // TiltedCard & Spotlight effect
-    document.querySelectorAll('.spotlight-card').forEach(card => {
-      // Smooth reset transition state
-      card.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-      
-      card.addEventListener('mousemove', e => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        // Spotlight calculation
-        card.style.setProperty('--mouse-x', `${x}px`);
-        card.style.setProperty('--mouse-y', `${y}px`);
-
-        // TiltedCard 3D calculation
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        // Dampen rotation amplitude
-        const rotateX = ((y - centerY) / centerY) * -12;
-        const rotateY = ((x - centerX) / centerX) * 12;
-
-        // Temporarily disable transition during mousemove for instant tracking
-        card.style.transition = 'none';
-        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
-      });
-      
-      card.addEventListener('mouseleave', () => {
-        // Re-enable smooth transition for reset
-        card.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-        card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
-        card.style.setProperty('--mouse-x', `0px`);
-        card.style.setProperty('--mouse-y', `0px`);
-      });
-    });
-  }
-
-  // Reload when localstorage changes (for admin preview)
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'brickstone_testimonials') {
-      loadTestimonials();
-    }
-  });
-
-  loadTestimonials();
-
-  // Drag to scroll
-  const tickerWrap = document.querySelector('.ticker-wrapper');
-  if (tickerWrap) {
-    let isDown = false;
-    let startX;
-    let scrollLeft;
-    tickerWrap.addEventListener('mousedown', (e) => {
-      isDown = true;
-      startX = e.pageX - tickerWrap.offsetLeft;
-      scrollLeft = tickerWrap.scrollLeft;
-    });
-    tickerWrap.addEventListener('mouseleave', () => { isDown = false; });
-    tickerWrap.addEventListener('mouseup', () => { isDown = false; });
-    tickerWrap.addEventListener('mousemove', (e) => {
-      if (!isDown) return;
-      e.preventDefault();
-      const x = e.pageX - tickerWrap.offsetLeft;
-      const walk = (x - startX) * 2;
-      tickerWrap.scrollLeft = scrollLeft - walk;
-    });
-  }
 });
-
-// ==========================================
-// SEAMLESS SCROLL COLOR FLOW
-// ==========================================
-document.addEventListener('DOMContentLoaded', () => {
-    const sections = [
-        { id: 'home', color: '#F4EEE5' },
-        { id: 'properties', color: '#F4EEE5' },
-        { id: 'about', color: '#E8DED0' },
-        { id: 'contact', color: '#F4EEE5' },
-        { id: 'testimonials', color: '#F7F4EE' } // footer
-    ];
-
-    const elements = [];
-    sections.forEach(s => {
-        const el = s.id === 'footer' ? document.querySelector('footer') : document.getElementById(s.id);
-        if (el) elements.push({ el, color: s.color });
-    });
-
-    function hexToRgb(hex) {
-        let r = parseInt(hex.slice(1, 3), 16),
-            g = parseInt(hex.slice(3, 5), 16),
-            b = parseInt(hex.slice(5, 7), 16);
-        return [r, g, b];
-    }
-
-    function interpolateColor(c1, c2, factor) {
-        const rgb1 = hexToRgb(c1);
-        const rgb2 = hexToRgb(c2);
-        const r = Math.round(rgb1[0] + factor * (rgb2[0] - rgb1[0]));
-        const g = Math.round(rgb1[1] + factor * (rgb2[1] - rgb1[1]));
-        const b = Math.round(rgb1[2] + factor * (rgb2[2] - rgb1[2]));
-        return `rgb(${r}, ${g}, ${b})`;
-    }
-
-    let ticking = false;
-
-    function updateColor() {
-        const scrollCenter = window.scrollY + (window.innerHeight / 2);
-        let targetColor = elements[0].color;
-
-        for (let i = 0; i < elements.length; i++) {
-            const current = elements[i];
-            const next = elements[i + 1];
-
-            const rect = current.el.getBoundingClientRect();
-            const topAbs = rect.top + window.scrollY;
-            const bottomAbs = rect.bottom + window.scrollY;
-
-            if (scrollCenter >= topAbs && scrollCenter <= bottomAbs) {
-                targetColor = current.color;
-                
-                if (next) {
-                    const blendStart = bottomAbs - (window.innerHeight * 0.3);
-                    if (scrollCenter > blendStart) {
-                        let factor = (scrollCenter - blendStart) / (window.innerHeight * 0.3);
-                        factor = Math.max(0, Math.min(1, factor));
-                        targetColor = interpolateColor(current.color, next.color, factor);
-                    }
-                }
-                break;
-            } else if (next && scrollCenter > bottomAbs && scrollCenter < next.el.getBoundingClientRect().top + window.scrollY) {
-                targetColor = interpolateColor(current.color, next.color, 0.5);
-                break;
-            }
-        }
-        
-        document.body.style.setProperty('--scroll-bg', targetColor);
-        ticking = false;
-    }
-
-    window.addEventListener('scroll', () => {
-        if (!ticking) {
-            window.requestAnimationFrame(updateColor);
-            ticking = true;
-        }
-    });
-    updateColor();
-});
-

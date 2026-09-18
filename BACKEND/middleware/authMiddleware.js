@@ -7,10 +7,8 @@ exports.verifyToken = (req, res, next) => {
     const tokenPart = token.split(' ')[1]; // Format: "Bearer <token>"
     
     jwt.verify(tokenPart || token, process.env.JWT_SECRET || 'supersecret123', (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ success: false, message: 'Invalid token' });
-        }
-        req.user = decoded.user || decoded;
+        if (err) return res.status(401).json({ success: false, message: 'Unauthorized' });
+        req.user = decoded;
         next();
     });
 };
