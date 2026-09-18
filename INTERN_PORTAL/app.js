@@ -1,6 +1,6 @@
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
     ? 'http://localhost:5000/api/intern' 
-    : 'https://brick-stone-real-estate-backend.onrender.com/api/intern';
+    : 'https://brickstone-real-estate.onrender.com/api/intern';
 
 let token = localStorage.getItem('intern_token');
 
