@@ -269,42 +269,205 @@
     <!-- Contact Section -->
     
     <!-- Testimonials Section -->
-    <section class="section testimonials-section" id="testimonials" style="background-color: var(--bg-secondary); padding: 5rem 0;">
-        <div class="container">
-            <div class="section-header text-center reveal">
-                <span class="section-subtitle">Client Stories</span>
-                <h2 class="section-title">What Our Clients Say</h2>
+    <section class="section testimonials-section" id="testimonials" style="background-color: var(--bg-secondary, #fdfbf7); padding: 6rem 0; overflow:hidden;">
+        <style>
+        .t-marquee-wrapper {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            margin-top: 4rem;
+            padding: 1rem 0;
+        }
+        .t-marquee {
+            display: flex;
+            gap: 2rem;
+            width: max-content;
+            animation: scrollMarquee 35s linear infinite;
+        }
+        .t-marquee:hover {
+            animation-play-state: paused;
+        }
+        @keyframes scrollMarquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(-50% - 1rem)); }
+        }
+        
+        .t-card {
+            background-color: #3b2f29;
+            color: #f1f5f9;
+            width: 400px;
+            border-radius: 8px;
+            padding: 3rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .t-stars {
+            color: #d4af37;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+        }
+        .t-quote {
+            font-family: var(--font-serif, "Playfair Display", serif);
+            font-size: 1.15rem;
+            line-height: 1.8;
+            margin-bottom: 3rem;
+            flex-grow: 1;
+            font-style: italic;
+            color: #e2e8f0;
+        }
+        .t-author {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+        .t-avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(212, 175, 55, 0.3);
+        }
+        .t-info h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 0.3rem 0;
+            color: #f8fafc;
+            font-family: var(--font-body);
+        }
+        .t-info p {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin: 0 0 0.6rem 0;
+        }
+        .t-badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 100px;
+            color: #eab308;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        </style>
+        
+        <div class="container" style="max-width: 100%;">
+            <div class="section-header text-center reveal" style="margin-bottom:0;">
+                <h2 class="section-title" style="font-size:3rem; margin-bottom:1.5rem; font-weight:400;">Stories of Trust, Keys of Distinction</h2>
+                <p style="color:var(--text-secondary); max-width:650px; margin:0 auto; line-height:1.6; font-size:1.1rem;">Discover how discerning patrons navigated off-market acquisitions and prime sales with our private advisory.</p>
             </div>
-            
-            <div class="testimonials-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem;">
-                <div class="testimonial-card reveal" style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-                    <div style="color: var(--clr-gold); margin-bottom: 1rem;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M14 11h-3.2c.4-2.4 1.8-4.3 4.2-5.7L14 4c-3.5 1.5-5.6 4.6-6 8.5V19h6v-8zm-8 0H2.8c.4-2.4 1.8-4.3 4.2-5.7L6 4c-3.5 1.5-5.6 4.6-6 8.5V19h6v-8z"/></svg>
-                    </div>
-                    <p style="color: var(--text-secondary); font-size: 1.1rem; line-height: 1.6; margin-bottom: 1.5rem; font-style: italic;">"Brickstone made our property search in Goa completely seamless. The level of professionalism and attention to detail was outstanding."</p>
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div style="width: 48px; height: 48px; border-radius: 50%; background: #e2e8f0; overflow: hidden;">
-                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop" style="width: 100%; height: 100%; object-fit: cover;">
-                        </div>
-                        <div>
-                            <h4 style="font-weight: 600; font-family: var(--font-serif); color: var(--text-primary);">Sarah Jenkins</h4>
-                            <p style="font-size: 0.85rem; color: var(--text-secondary);">Villa Owner, Goa</p>
+        </div>
+        
+        <div class="t-marquee-wrapper reveal">
+            <div class="t-marquee">
+                <!-- Set 1 -->
+                <div class="t-card">
+                    <div class="t-stars">?????</div>
+                    <div class="t-quote">"Brickstone secured an off-market penthouse for our family within three weeks. Complete discretion, swift closing, and peerless market insight."</div>
+                    <div class="t-author">
+                        <img class="t-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop">
+                        <div class="t-info">
+                            <h4>Vikramaditya Singhania</h4>
+                            <p>DLF Magnolias, Gurugram</p>
+                            <span class="t-badge">BUYING</span>
                         </div>
                     </div>
                 </div>
                 
-                <div class="testimonial-card reveal" style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); transition-delay: 0.1s;">
-                    <div style="color: var(--clr-gold); margin-bottom: 1rem;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M14 11h-3.2c.4-2.4 1.8-4.3 4.2-5.7L14 4c-3.5 1.5-5.6 4.6-6 8.5V19h6v-8zm-8 0H2.8c.4-2.4 1.8-4.3 4.2-5.7L6 4c-3.5 1.5-5.6 4.6-6 8.5V19h6v-8z"/></svg>
-                    </div>
-                    <p style="color: var(--text-secondary); font-size: 1.1rem; line-height: 1.6; margin-bottom: 1.5rem; font-style: italic;">"Exceptional service! They understood exactly what we were looking for in a commercial space and delivered beyond expectations."</p>
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div style="width: 48px; height: 48px; border-radius: 50%; background: #e2e8f0; overflow: hidden;">
-                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" style="width: 100%; height: 100%; object-fit: cover;">
+                <div class="t-card">
+                    <div class="t-stars">?????</div>
+                    <div class="t-quote">"Their white-glove advisory navigated title due diligence and high-net-worth negotiations seamlessly. The benchmark for luxury estate consultancy."</div>
+                    <div class="t-author">
+                        <img class="t-avatar" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop">
+                        <div class="t-info">
+                            <h4>Dr. Ananya Sengupta</h4>
+                            <p>Jor Bagh, New Delhi</p>
+                            <span class="t-badge">SELLING</span>
                         </div>
-                        <div>
-                            <h4 style="font-weight: 600; font-family: var(--font-serif); color: var(--text-primary);">Michael Chen</h4>
-                            <p style="font-size: 0.85rem; color: var(--text-secondary);">Corporate Client</p>
+                    </div>
+                </div>
+                
+                <div class="t-card">
+                    <div class="t-stars">?????</div>
+                    <div class="t-quote">"Acquiring a heritage property in Central Delhi felt impossible until Brickstone stepped in. Truly refined client hospitality from start to finish."</div>
+                    <div class="t-author">
+                        <img class="t-avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop">
+                        <div class="t-info">
+                            <h4>Rohan & Meera Khurana</h4>
+                            <p>Lutyens' Bungalow Zone</p>
+                            <span class="t-badge">BUYING</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="t-card">
+                    <div class="t-stars">?????</div>
+                    <div class="t-quote">"From initial lease terms to key handover, their attention to architectural detail and contract safety was remarkable."</div>
+                    <div class="t-author">
+                        <img class="t-avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop">
+                        <div class="t-info">
+                            <h4>Kavita Ramachandran</h4>
+                            <p>Aerocity Commercial Suite</p>
+                            <span class="t-badge">RENTING</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Set 2 (Duplicate for infinite scroll) -->
+                <div class="t-card">
+                    <div class="t-stars">?????</div>
+                    <div class="t-quote">"Brickstone secured an off-market penthouse for our family within three weeks. Complete discretion, swift closing, and peerless market insight."</div>
+                    <div class="t-author">
+                        <img class="t-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop">
+                        <div class="t-info">
+                            <h4>Vikramaditya Singhania</h4>
+                            <p>DLF Magnolias, Gurugram</p>
+                            <span class="t-badge">BUYING</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="t-card">
+                    <div class="t-stars">?????</div>
+                    <div class="t-quote">"Their white-glove advisory navigated title due diligence and high-net-worth negotiations seamlessly. The benchmark for luxury estate consultancy."</div>
+                    <div class="t-author">
+                        <img class="t-avatar" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop">
+                        <div class="t-info">
+                            <h4>Dr. Ananya Sengupta</h4>
+                            <p>Jor Bagh, New Delhi</p>
+                            <span class="t-badge">SELLING</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="t-card">
+                    <div class="t-stars">?????</div>
+                    <div class="t-quote">"Acquiring a heritage property in Central Delhi felt impossible until Brickstone stepped in. Truly refined client hospitality from start to finish."</div>
+                    <div class="t-author">
+                        <img class="t-avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop">
+                        <div class="t-info">
+                            <h4>Rohan & Meera Khurana</h4>
+                            <p>Lutyens' Bungalow Zone</p>
+                            <span class="t-badge">BUYING</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="t-card">
+                    <div class="t-stars">?????</div>
+                    <div class="t-quote">"From initial lease terms to key handover, their attention to architectural detail and contract safety was remarkable."</div>
+                    <div class="t-author">
+                        <img class="t-avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop">
+                        <div class="t-info">
+                            <h4>Kavita Ramachandran</h4>
+                            <p>Aerocity Commercial Suite</p>
+                            <span class="t-badge">RENTING</span>
                         </div>
                     </div>
                 </div>
