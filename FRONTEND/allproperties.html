@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Properties | BRICKSTONE</title>
     <meta name="description"
-        content="Browse all available properties listed by Brickstone â€” curated homes, apartments, villas, and rentals across India.">
+        content="Browse all available properties listed by Brickstone — curated homes, apartments, villas, and rentals across India.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -14,7 +14,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="style.css?v=2">
     <style>
-        /* â”€â”€â”€ Page Hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Page Hero ─────────────────────────────────── */
         .page-hero {
             background: linear-gradient(135deg, var(--clr-espresso) 0%, var(--clr-mocha) 100%);
             color: var(--clr-cream-light);
@@ -36,7 +36,7 @@
             margin: 0 auto;
         }
 
-        /* â”€â”€â”€ Loading spinner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Loading spinner ─────────────────────────── */
         .state-box {
             text-align: center;
             padding: 5rem 1rem;
@@ -82,7 +82,7 @@
             margin-top: 1.5rem;
         }
 
-        /* â”€â”€â”€ Section meta (count) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Section meta (count) ───────────────────── */
         .section-meta {
             display: flex;
             align-items: center;
@@ -99,7 +99,7 @@
             letter-spacing: .5px;
         }
 
-        /* â”€â”€â”€ Verified badge overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Verified badge overlay ─────────────────── */
         .verified-tag {
             position: absolute;
             top: 10px;
@@ -115,7 +115,7 @@
             z-index: 2;
         }
 
-        /* â”€â”€â”€ Filter Pills â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ─── Filter Pills ───────────────────────────── */
         .browse-header-custom {
             margin-bottom: 2.5rem;
         }
@@ -234,7 +234,7 @@
                 <li><a href="index.html#about">About Us</a></li>
                 <li><a href="index.html#contact">Contact</a></li>
             </ul>
-            <button class="mobile-menu-btn">â˜°</button>
+            <button class="mobile-menu-btn">☰</button>
         </div>
     </nav>
 
@@ -259,7 +259,7 @@
                     </div>
                     <div class="search-results-footer">
                         <span class="keyboard-hints">
-                            <span class="hint-key">â†‘</span> <span class="hint-key">â†“</span> Navigate &nbsp;&nbsp; <span class="hint-key">â†µ</span> Open &nbsp;&nbsp; <span class="hint-key">Esc</span> Close
+                            <span class="hint-key">↑</span> <span class="hint-key">↓</span> Navigate &nbsp;&nbsp; <span class="hint-key">↵</span> Open &nbsp;&nbsp; <span class="hint-key">Esc</span> Close
                         </span>
                     </div>
                 </div>
@@ -267,19 +267,19 @@
         </div>
     </header>
 
-    <!-- All Properties Section â€” dynamically loaded from /api/properties -->
+    <!-- All Properties Section — dynamically loaded from /api/properties -->
     <section class="section-padding" id="all-properties">
         <div class="container">
 
             <!-- Loading -->
             <div class="state-box" id="state-loading">
                 <div class="loading-spinner"></div>
-                <p>Loading propertiesâ€¦</p>
+                <p>Loading properties…</p>
             </div>
 
             <!-- Error -->
             <div class="state-box" id="state-error" style="display:none;">
-                <div class="state-icon">âš ï¸</div>
+                <div class="state-icon">⚠️</div>
                 <h3>Couldn't Load Properties</h3>
                 <p>We had trouble reaching the server. Make sure the backend is running on port 5000 and try again.</p>
                 <button class="btn-primary" id="retry-btn">Try Again</button>
@@ -287,20 +287,20 @@
 
             <!-- Empty -->
             <div class="state-box" id="state-empty" style="display:none;">
-                <div class="state-icon">ðŸ¢</div>
+                <div class="state-icon">🏢</div>
                 <h3>No Properties Yet</h3>
                 <p>No listings have been added through the Admin Panel yet. Check back soon.</p>
             </div>
 
             <!-- Not Found -->
             <div class="state-box" id="state-not-found" style="display:none;">
-                <div class="state-icon">ðŸ”</div>
+                <div class="state-icon">🔍</div>
                 <h3>Property Not Found</h3>
                 <p>The requested property could not be found.</p>
                 <a href="allproperties.html" class="btn-primary" style="margin-top: 1rem; display: inline-block;">Back to Properties</a>
             </div>
 
-            <!-- Properties Grid â€” populated by JS -->
+            <!-- Properties Grid — populated by JS -->
             <div id="properties-wrapper" style="display:none;">
                 <div class="browse-header-custom">
                     <span class="browse-subtitle">BROWSE</span>
@@ -318,7 +318,7 @@
                 <div class="properties-grid" id="properties-grid"></div>
                 <!-- Coming Soon State -->
                 <div class="state-box" id="state-coming-soon" style="display:none; margin-top: 2rem;">
-                    <div class="state-icon" style="opacity: 0.8;">âœ¨</div>
+                    <div class="state-icon" style="opacity: 0.8;">✨</div>
                     <h3>Coming Soon</h3>
                     <p>We are currently curating an exclusive collection of properties for this category. Stay tuned!</p>
                 </div>
@@ -367,7 +367,7 @@
                             <input type="email" id="enquire-email" placeholder="jane@example.com" required>
                         </div>
                         <div class="modal-form-actions">
-                            <button type="button" class="btn-secondary" id="back-to-details">â† Back to details</button>
+                            <button type="button" class="btn-secondary" id="back-to-details">← Back to details</button>
                             <button type="submit" class="btn-primary">Submit</button>
                         </div>
                     </form>
@@ -407,13 +407,13 @@
             <div class="footer-col contact-col">
                 <h4 class="footer-heading">CONTACT</h4>
                 <ul class="footer-contact-list">
-                    <li><span class="contact-icon">ðŸ“ž</span> +917428311662</li>
-                    <li><span class="contact-icon">âœ‰ï¸</span> brickstonerealestate01@gmail.com</li>
+                    <li><span class="contact-icon">📞</span> +917428311662</li>
+                    <li><span class="contact-icon">✉️</span> brickstonerealestate01@gmail.com</li>
                 </ul>
             </div>
         </div>
         <div class="container">
-            <p class="copyright">Â© 2026 Brickstone. All rights reserved.</p>
+            <p class="copyright">© 2026 Brickstone. All rights reserved.</p>
         </div>
     </footer>
 
@@ -425,7 +425,7 @@
         (function () {
             'use strict';
 
-            /* â”€â”€ Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── Config ─────────────────────────────────────── */
             const API_URL = window.ENV.API_URL + '/properties';
             const ENQUIRY_URL = window.ENV.API_URL + '/enquiries';
 
@@ -475,23 +475,7 @@
                 if (!category) return list;
                 const lowerCat = category.toLowerCase();
                 return list.filter(prop => {
-                    let c = '';
-                    let sc = '';
-                    if (prop.specs && Array.isArray(prop.specs)) {
-                        prop.specs.forEach(s => {
-                            if (s.startsWith('__CAT:')) c = s.replace('__CAT:', '').toLowerCase();
-                            if (s.startsWith('__SUB:')) sc = s.replace('__SUB:', '').toLowerCase().replace(/\s+/g, '');
-                        });
-                    }
-
-                    const qCat = lowerCat.replace(/\s+/g, '');
-                    if (c === qCat || sc === qCat) return true;
-                    if (prop.category && prop.category.toLowerCase().replace(/\s+/g, '') === qCat) return true;
-                    if (prop.subcategory && prop.subcategory.toLowerCase().replace(/\s+/g, '') === qCat) return true;
-
-                    // Exclude the hidden __CAT and __SUB tags from the generic search string
-                    const cleanSpecs = (prop.specs || []).filter(s => !s.startsWith('__CAT:') && !s.startsWith('__SUB:'));
-                    const searchableText = (prop.title + ' ' + (prop.description || '') + ' ' + cleanSpecs.join(' ')).toLowerCase();
+                    const searchableText = (prop.title + ' ' + (prop.description || '') + ' ' + (prop.specs || []).join(' ')).toLowerCase();
 
                     if (lowerCat === 'flat') return searchableText.includes('flat') || searchableText.includes('apartment') || searchableText.includes('bhk') || searchableText.includes('villa');
                     if (lowerCat === 'pg') return searchableText.includes('pg') || searchableText.includes('paying guest');
@@ -506,11 +490,11 @@
                 });
             }
 
-            /* â”€â”€ State storage for modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── State storage for modal ─────────────────────── */
             // Keyed by property DB id
             const propertyStore = {};
 
-            /* â”€â”€ DOM refs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── DOM refs ─────────────────────────────────────── */
             const stateLoading = document.getElementById('state-loading');
             const stateError = document.getElementById('state-error');
             const stateEmpty = document.getElementById('state-empty');
@@ -528,7 +512,7 @@
             const enquiryForm = document.getElementById('enquiry-form');
             const enquiryOk = document.getElementById('enquiry-success');
 
-            /* â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── Helpers ──────────────────────────────────────── */
 
             /** Show exactly one state panel */
             function showState(which) {
@@ -541,7 +525,7 @@
             /**
              * Derive a human-readable badge label.
              * The admin stores badge="For Sale" when status="Available".
-             * For older/seeded rows badge may be null â€” derive from status.
+             * For older/seeded rows badge may be null — derive from status.
              */
             function getBadge(prop) {
                 if (prop.badge && prop.badge.trim()) return prop.badge.trim();
@@ -559,18 +543,18 @@
                 if (!rawPrice) return 'Price on request';
                 const num = parseFloat(rawPrice);
                 if (isNaN(num)) return rawPrice; // already formatted
-                if (num >= 10000000) return 'â‚¹' + (num / 10000000).toFixed(2) + ' Cr';
-                if (num >= 100000) return 'â‚¹' + (num / 100000).toFixed(0) + ' L';
-                if (num >= 1000) return 'â‚¹' + num.toLocaleString('en-IN');
+                if (num >= 10000000) return '₹' + (num / 10000000).toFixed(2) + ' Cr';
+                if (num >= 100000) return '₹' + (num / 100000).toFixed(0) + ' L';
+                if (num >= 1000) return '₹' + num.toLocaleString('en-IN');
                 // Small numbers are likely monthly rents
-                return 'â‚¹' + num.toLocaleString('en-IN') + '/mo';
+                return '₹' + num.toLocaleString('en-IN') + '/mo';
             }
 
             /**
              * Resolve image src.
-             * - null / undefined  â†’ fallback image
-             * - absolute URL       â†’ use as-is
-             * - relative path      â†’ use as-is (relative to FRONTEND folder)
+             * - null / undefined  → fallback image
+             * - absolute URL       → use as-is
+             * - relative path      → use as-is (relative to FRONTEND folder)
              */
             function getImage(prop) {
                 const img = prop.image;
@@ -587,11 +571,11 @@
             /** Build specs array from DB specs + fallback derivation */
             function getSpecs(prop) {
                 // specs is already parsed to an array by the backend
-                const dbSpecs = Array.isArray(prop.specs) ? prop.specs.filter(s => s && s.trim() && !s.startsWith('__CAT:') && !s.startsWith('__SUB:')) : [];
+                const dbSpecs = Array.isArray(prop.specs) ? prop.specs.filter(s => s && s.trim()) : [];
                 return dbSpecs;
             }
 
-            /* â”€â”€ Card builder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── Card builder ─────────────────────────────────── */
             function formatSpecWithIcon(specText) {
                 const textLower = specText.toLowerCase();
                 let iconSvg = '';
@@ -637,7 +621,7 @@
                 article.innerHTML = `
                 <div class="card-img-wrapper" style="position:relative;">
                     <span class="badge">${badge}</span>
-                    ${isVerified ? '<span class="verified-tag">âœ“ Verified</span>' : ''}
+                    ${isVerified ? '<span class="verified-tag">✓ Verified</span>' : ''}
                     <img src="${imageSrc}"
                          alt="${title}"
                          loading="lazy"
@@ -667,7 +651,7 @@
                 return article;
             }
 
-            /* â”€â”€ Scroll-reveal for new cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── Scroll-reveal for new cards ─────────────────── */
             function observeCards() {
                 const io = new IntersectionObserver((entries) => {
                     entries.forEach(e => {
@@ -681,7 +665,7 @@
                 grid.querySelectorAll('.property-card').forEach(c => io.observe(c));
             }
 
-            /* â”€â”€ Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── Modal ────────────────────────────────────────── */
             // Track which property is currently open (for enquiry submission)
             let activePropertyId = null;
 
@@ -738,7 +722,7 @@
                 panelDetails.style.display = 'block';
             });
 
-            /* â”€â”€ Enquiry form submission â†’ /api/enquiries â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── Enquiry form submission → /api/enquiries ─────── */
             enquiryForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const phone = document.getElementById('enquire-phone').value;
@@ -757,14 +741,14 @@
                         })
                     });
                 } catch (_) {
-                    // Network error â€” still show success to user
+                    // Network error — still show success to user
                 }
 
                 enquiryForm.style.display = 'none';
                 enquiryOk.style.display = 'block';
             });
 
-            /* â”€â”€ Fetch & render properties â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── Fetch & render properties ─────────────────────── */
             let allLoadedProperties = [];
 
             function renderFilteredProperties(filterType) {
@@ -822,7 +806,7 @@
                 Object.keys(propertyStore).forEach(k => delete propertyStore[k]);
 
                 try {
-                    const res = await fetch(API_URL + '?t=' + Date.now());
+                    const res = await fetch(API_URL);
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
                     const json = await res.json();
