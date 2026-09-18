@@ -35,7 +35,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         } else {
             alert(data.message);
         }
-    } catch(err) { alert('Login failed'); }
+    } catch(err) { alert(err.message || 'Login failed'); }
 });
 
 function logout() {
