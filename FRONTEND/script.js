@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+﻿document.addEventListener('DOMContentLoaded', () => {
 
   const API_BASE = window.ENV.API_URL;
 
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ---------- Contact form → POST /api/contact ---------- */
+  /* ---------- Contact form â†’ POST /api/contact ---------- */
   const contactForm = document.querySelector('.contact-form');
   const formSuccess = document.querySelector('#form-success');
 
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const submitBtn = contactForm.querySelector('button[type="submit"]');
       const originalText = submitBtn.textContent;
-      submitBtn.textContent = 'Sending…';
+      submitBtn.textContent = 'Sendingâ€¦';
       submitBtn.disabled = true;
 
       try {
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ---------- Property Modal (Featured Properties — hardcoded) ---------- */
+  /* ---------- Property Modal (Featured Properties â€” hardcoded) ---------- */
   const propertiesData = {
     "hillside-villa": {
       badge: "For Sale",
@@ -200,13 +200,13 @@ document.addEventListener('DOMContentLoaded', () => {
       price: "$980K",
       location: "Jaipur, Rajasthan",
       specs: ["4 Beds", "3 Baths", "2,600 sqft"],
-      description: "A restored heritage townhouse blending traditional Rajasthani architecture with modern interiors — carved balconies, courtyard light wells, and a fully updated kitchen and bathrooms."
+      description: "A restored heritage townhouse blending traditional Rajasthani architecture with modern interiors â€” carved balconies, courtyard light wells, and a fully updated kitchen and bathrooms."
     },
     "skyline-penthouse-mumbai": {
       badge: "For Sale",
       image: "images/business.jpg",
       title: "Skyline Penthouse",
-      price: "₹3.5 Cr",
+      price: "â‚¹3.5 Cr",
       location: "Bandra West, Mumbai",
       specs: ["4 Beds", "3 Baths", "2,800 sq.ft"],
       description: "A refined penthouse in the heart of Bandra West, with floor-to-ceiling glass, panoramic city and sea-facing views, and a private terrace built for entertaining."
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
       badge: "For Rent",
       image: "images/villa.jpg",
       title: "Heritage Row Villa",
-      price: "₹85,000/mo",
+      price: "â‚¹85,000/mo",
       location: "Koregaon Park, Pune",
       specs: ["5 Beds", "4 Baths", "4,200 sqft"],
       description: "A spacious heritage-style villa in one of Pune's most sought-after neighbourhoods, featuring a private pool, landscaped garden, and generous entertaining spaces indoors and out."
@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
       badge: "For Lease",
       image: "images/business.jpg",
       title: "Metro Business Hub",
-      price: "₹1.2 Cr",
+      price: "â‚¹1.2 Cr",
       location: "BKC, Mumbai",
       specs: ["2 Baths", "3,500 sq.ft"],
       description: "A premium commercial space in Mumbai's BKC business district, with a striking glass facade, column-free floor plates, and flexible layout options for corporate offices."
@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
     panelDetails.style.display = 'block';
   });
 
-  /* ---------- Featured Properties Enquiry form → POST /api/enquiries ---------- */
+  /* ---------- Featured Properties Enquiry form â†’ POST /api/enquiries ---------- */
   if (enquiryForm) {
     enquiryForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -332,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const submitBtn = enquiryForm.querySelector('button[type="submit"]');
       const originalText = submitBtn.textContent;
-      submitBtn.textContent = 'Sending…';
+      submitBtn.textContent = 'Sendingâ€¦';
       submitBtn.disabled = true;
 
       try {
@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       } catch (err) {
         console.error('[Brickstone] Enquiry submission error:', err);
-        // Fall through — show success anyway so UX isn't broken
+        // Fall through â€” show success anyway so UX isn't broken
       } finally {
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
@@ -454,7 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id: p.id,
             type: 'property',
             title: p.title,
-            subtitle: `${p.location} • ${p.price}`,
+            subtitle: `${p.location} â€¢ ${p.price}`,
             status: p.badge || p.status,
             image: p.image,
             url: getPropertyUrl(p.id),
@@ -470,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id: k,
             type: 'property',
             title: p.title,
-            subtitle: `${p.location} • ${p.price}`,
+            subtitle: `${p.location} â€¢ ${p.price}`,
             status: p.badge,
             image: p.image,
             url: getPropertyUrl(k),
@@ -494,7 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
         searchableData = [...staticData, ...Object.keys(propertiesData).map(k => {
           const p = propertiesData[k];
           return {
-            id: k, type: 'property', title: p.title, subtitle: `${p.location} • ${p.price}`, status: p.badge, image: p.image, url: getPropertyUrl(k), searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${p.specs.join(' ')}`.toLowerCase(), isLocal: true
+            id: k, type: 'property', title: p.title, subtitle: `${p.location} â€¢ ${p.price}`, status: p.badge, image: p.image, url: getPropertyUrl(k), searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${p.specs.join(' ')}`.toLowerCase(), isLocal: true
           };
         })];
         isDataLoaded = true;
@@ -855,7 +855,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderCard = (t) => `
       <div class="spotlight-card">
         <div class="sc-content">
-          <div class="sc-stars">${'★'.repeat(t.rating)}${'☆'.repeat(5 - t.rating)}</div>
+          <div class="sc-stars">${'â˜…'.repeat(t.rating)}${'â˜†'.repeat(5 - t.rating)}</div>
           <div class="sc-quote">"${t.quote}"</div>
           <div class="sc-author-area">
             ${t.image ? `<img src="${t.image}" alt="${t.name}" class="sc-author-img">` : ''}
@@ -1021,3 +1021,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     updateColor();
 });
+

@@ -1,0 +1,174 @@
+    <!-- Create Intern Modal -->
+    <div id="intern-modal" class="modal-overlay">
+        <div class="modal-box premium-modal" style="max-width: 750px;">
+            <div class="modal-header">
+                <div style="display:flex; flex-direction:column;">
+                    <h3 id="intern-modal-title" style="margin-bottom:4px;">Onboard Listing Intern</h3>
+                    <span style="font-size:13px; color:var(--text-light);">Create credentials and assign inventory territory/listing targets.</span>
+                </div>
+                <button class="modal-close" onclick="closeInternModal()"><i data-feather="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="intern-form">
+                    
+                    <h5 style="text-transform:uppercase; font-size:11px; letter-spacing:1px; color:var(--text-light); margin-bottom:12px; margin-top:5px;">1. Basic Identity & Contact</h5>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Full Name *</label>
+                            <div style="position:relative;">
+                                <i data-feather="user" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; color:var(--text-light);"></i>
+                                <input type="text" id="intern-name" class="premium-input" style="padding-left:36px;" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Email Address</label>
+                            <div style="position:relative;">
+                                <i data-feather="mail" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; color:var(--text-light);"></i>
+                                <input type="email" id="intern-email" class="premium-input" style="padding-left:36px;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Phone / WhatsApp Number</label>
+                            <div style="position:relative;">
+                                <i data-feather="phone" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; color:var(--text-light);"></i>
+                                <input type="text" id="intern-phone" class="premium-input" style="padding-left:36px;">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Assigned Territory / City *</label>
+                            <div style="position:relative;">
+                                <i data-feather="map-pin" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; color:var(--text-light);"></i>
+                                <input type="text" id="intern-territory" class="premium-input" style="padding-left:36px;" placeholder="e.g. North Zone, Downtown" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 style="text-transform:uppercase; font-size:11px; letter-spacing:1px; color:var(--text-light); margin-top:24px; margin-bottom:12px;">2. Listing Role & Targets</h5>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Role Tier</label>
+                            <div style="position:relative;">
+                                <i data-feather="briefcase" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; color:var(--text-light);"></i>
+                                <select id="intern-role" class="premium-select" style="padding-left:36px;">
+                                    <option value="Field Listing Intern">Field Listing Intern</option>
+                                    <option value="Data Verification Intern">Data Verification Intern</option>
+                                    <option value="Catalog Specialist">Catalog Specialist</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Monthly Listing Target</label>
+                            <div style="position:relative;">
+                                <i data-feather="target" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; color:var(--text-light);"></i>
+                                <input type="number" id="intern-target" class="premium-input" style="padding-left:36px;" placeholder="50" min="1" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Assigned Team Lead / Admin</label>
+                            <div style="position:relative;">
+                                <i data-feather="users" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; color:var(--text-light);"></i>
+                                <select id="intern-team-lead" class="premium-select" style="padding-left:36px;">
+                                    <option value="Admin">System Administrator</option>
+                                    <option value="Senior Editor">Senior Editor</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 style="text-transform:uppercase; font-size:11px; letter-spacing:1px; color:var(--text-light); margin-top:24px; margin-bottom:12px;">3. Access & Authentication</h5>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Intern ID *</label>
+                            <div style="position:relative;">
+                                <i data-feather="hash" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; color:var(--text-light);"></i>
+                                <input type="text" id="intern-id" class="premium-input" style="padding-left:36px; background:#f8fafc;" readonly required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label style="display:flex; justify-content:space-between; align-items:center;">
+                                Temporary Password *
+                                <button type="button" onclick="generateInternCredentials()" style="background:none; border:none; color:var(--primary-color); font-size:12px; font-weight:600; cursor:pointer;">Auto-Generate</button>
+                            </label>
+                            <div style="position:relative;">
+                                <i data-feather="key" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; color:var(--text-light);"></i>
+                                <input type="text" id="intern-password" class="premium-input" style="padding-left:36px;" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group" style="margin-top:10px;">
+                        <label>Listing Permissions</label>
+                        <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:8px;">
+                            <label style="display:flex; align-items:center; gap:6px; font-size:14px; cursor:pointer;"><input type="checkbox" name="intern-perm" value="submit_new" checked> Can submit new listings</label>
+                            <label style="display:flex; align-items:center; gap:6px; font-size:14px; cursor:pointer;"><input type="checkbox" name="intern-perm" value="edit_existing"> Can edit existing listings</label>
+                            <label style="display:flex; align-items:center; gap:6px; font-size:14px; cursor:pointer;"><input type="checkbox" name="intern-perm" value="upload_media" checked> Can upload media</label>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions" style="margin-top:30px; border-top:1px solid var(--border-color); padding-top:20px; display:flex; justify-content:flex-end; gap:12px;">
+                        <button type="button" class="btn-ghost" onclick="closeInternModal()">Cancel</button>
+                        <button type="submit" class="btn-primary" style="background:#0F172A;">Create Listing Intern & Generate Link</button>
+                    </div>
+                </form>
+
+                <div id="intern-success-card" style="display:none; margin-top:20px; padding:20px; background:#f0fdf4; border-radius:8px; border:1px solid #bbf7d0;">
+                    <h4 style="color:#166534; display:flex; align-items:center; gap:8px;"><i data-feather="check-circle"></i> Intern Successfully Onboarded</h4>
+                    <p style="margin-top:10px; font-size:14px; color:#15803d;">Share these credentials for their listing operations portal:</p>
+                    <div style="margin-top:15px; font-size:14px; background:#fff; padding:15px; border-radius:6px; border:1px solid #dcfce7;">
+                        <strong>Portal Link:</strong> <a href="http://localhost:8000/LISTING_INTERN/index.html" target="_blank" style="color:var(--primary-color);">http://localhost:8000/LISTING_INTERN/index.html</a><br><br>
+                        <strong>Intern ID:</strong> <span id="success-intern-id" style="font-family:monospace; font-size:15px; background:#f1f5f9; padding:2px 6px; border-radius:4px;"></span><br><br>
+                        <strong>Password:</strong> <span id="success-intern-password" style="font-family:monospace; font-size:15px; background:#f1f5f9; padding:2px 6px; border-radius:4px;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="change-password-modal" class="modal-overlay">
+        <div class="modal-box premium-modal" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3>Reset Intern Password</h3>
+                <button class="modal-close" onclick="closeChangePasswordModal()"><i data-feather="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="change-password-form">
+                    <input type="hidden" id="reset-intern-id">
+                    <p style="font-size:14px; color:var(--text-light); margin-bottom:15px;">Enter a new secure password for this listing intern.</p>
+                    <div class="input-group">
+                        <label style="display:flex; justify-content:space-between; align-items:center;">
+                            New Password
+                            <button type="button" onclick="document.getElementById('new-intern-password').value = Math.random().toString(36).slice(-8)" style="background:none; border:none; color:var(--primary-color); font-size:12px; font-weight:600; cursor:pointer;">Auto-Generate</button>
+                        </label>
+                        <div style="position:relative;">
+                            <i data-feather="key" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; color:var(--text-light);"></i>
+                            <input type="text" id="new-intern-password" class="premium-input" style="padding-left:36px;" required>
+                        </div>
+                    </div>
+                    <div class="modal-actions" style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+                        <button type="button" class="btn-ghost" onclick="closeChangePasswordModal()">Cancel</button>
+                        <button type="submit" class="btn-primary">Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-intern-modal" class="modal-overlay">
+        <div class="modal-box premium-modal" style="max-width: 450px;">
+            <div class="modal-header" style="border-bottom:none;">
+                <h3 style="color:#ef4444; display:flex; align-items:center; gap:10px;"><i data-feather="alert-triangle"></i> Delete Listing Intern</h3>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:15px; margin-bottom:25px;">Removing <strong id="delete-intern-name"></strong> will immediately revoke their access to upload or manage inventory listings. This action cannot be undone.</p>
+                <div class="modal-actions" style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn-ghost" onclick="closeDeleteInternModal()">Cancel</button>
+                    <button type="button" class="btn-primary" style="background:#ef4444;" id="confirm-delete-btn">Confirm Deletion</button>
+                </div>
+            </div>
+        </div>
+    </div>

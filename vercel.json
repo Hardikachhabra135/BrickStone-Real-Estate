@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/LISTING_INTERN/(.*)",
+      "destination": "/LISTING_INTERN/$1"
+    },
+    {
       "source": "/(.*)",
       "has": [
         {
