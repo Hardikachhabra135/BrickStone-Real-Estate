@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/LISTING_INTERN/(.*)",
-      "destination": "/LISTING_INTERN/$1"
-    },
-    {
       "source": "/(.*)",
       "has": [
         {
@@ -13,6 +9,16 @@
         }
       ],
       "destination": "/ADMIN_PANEL/$1"
+    },
+    {
+      "source": "/LISTING_INTERN/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": ".*frontend.*"
+        }
+      ],
+      "destination": "/LISTING_INTERN/$1"
     },
     {
       "source": "/(.*)",
