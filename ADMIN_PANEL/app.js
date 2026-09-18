@@ -1,4 +1,4 @@
-﻿const API_BASE = window.ENV.API_URL;
+const API_BASE = window.ENV.API_URL;
 let authToken = localStorage.getItem('brickstone_admin_token') || null;
 let currentUser = JSON.parse(localStorage.getItem('brickstone_admin_user')) || null;
 let currentRange = '30days';
@@ -59,6 +59,8 @@ function loadAllData() {
     loadContacts();
     loadAboutSection();
     loadAdminTestimonials();
+    loadInterns();
+    loadInternListings();
 }
 
 // Navigation
@@ -640,7 +642,7 @@ function updateAboutPreview() {
     
     let src = document.getElementById('about-image-input').value || '';
     if (src.startsWith('images/')) {
-        src = `/${src}`;
+        src = 'https://brick-stone-frontend.vercel.app/' + src;
     }
     document.getElementById('about-preview-image').src = src;
 }
@@ -778,6 +780,10 @@ function loadAdminTestimonials() {
   if (!tbody) return;
 
   tbody.innerHTML = '';
+  if (tests.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem; color:var(--text-muted);">No testimonials found. Click "Add Testimonial" to create one.</td></tr>';
+      return;
+  }
   tests.forEach(t => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -1492,3 +1498,9 @@ window.executeApproveAndPublish = async function(e) {
     btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Publish to Main Site';
 };
 
+window.restoreDefaultTestimonials = function() {
+    if(!confirm('Are you sure you want to restore the default testimonials? This will overwrite your current testimonials.')) return;
+    localStorage.setItem('brickstone_testimonials', JSON.stringify(SEED_TESTIMONIALS));
+    loadAdminTestimonials();
+    window.dispatchEvent(new Event('storage'));
+};

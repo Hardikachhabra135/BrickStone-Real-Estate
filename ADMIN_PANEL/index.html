@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -513,7 +513,10 @@
                         <h2>Client Testimonials</h2>
                         <p>Manage the spotlight reviews displayed on the main landing page.</p>
                     </div>
-                    <button class="btn-primary" id="add-testimonial-btn" onclick="openTestimonialModal()"><i data-feather="plus"></i> Add Testimonial</button>
+                    <div style="display:flex; gap:12px;">
+                        <button class="btn-ghost" onclick="restoreDefaultTestimonials()" style="border:1px solid var(--border-color);"><i data-feather="refresh-ccw"></i> Restore Defaults</button>
+                        <button class="btn-primary" id="add-testimonial-btn" onclick="openTestimonialModal()"><i data-feather="plus"></i> Add Testimonial</button>
+                    </div>
                 </div>
 
                 <div class="card stat-card" style="margin-bottom: 2rem;">
@@ -525,7 +528,7 @@
                 </div>
 
                 <div class="table-container card">
-                    <table class="data-table">
+                    <table class="premium-table full-width">
                         <thead>
                             <tr>
                                 <th>Client</th>
