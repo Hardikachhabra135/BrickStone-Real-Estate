@@ -1,15 +1,17 @@
 const mysql = require('mysql2/promise');
 const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const pool = require('./config/db');
 
 async function run() {
-    const sql = fs.readFileSync('migration_interns.sql', 'utf16le'); // Read as utf16le just in case, or we try utf8 if it fails
+    const migrationPath = path.join(__dirname, 'migration_interns.sql');
+    const sql = fs.readFileSync(migrationPath, 'utf16le'); // Read as utf16le just in case, or we try utf8 if it fails
     // Wait, let's just use utf8 first, if it has null bytes it might be UTF-16
-    let sqlUtf8 = fs.readFileSync('migration_interns.sql', 'utf8');
+    let sqlUtf8 = fs.readFileSync(migrationPath, 'utf8');
     if (sqlUtf8.includes('\0')) {
-        sqlUtf8 = fs.readFileSync('migration_interns.sql', 'utf16le');
+        sqlUtf8 = fs.readFileSync(migrationPath, 'utf16le');
     }
     
     try {

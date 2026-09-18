@@ -35,6 +35,30 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', internAdminRoutes);
 app.use('/api/intern', internPortalRoutes);
 
+app.get('/api/admin/force-migration', async (req, res) => {
+    try {
+        const pool = require('./config/db');
+        const fs = require('fs');
+        const path = require('path');
+        const migrationPath = path.join(__dirname, 'migration_interns.sql');
+        let sqlUtf8 = fs.readFileSync(migrationPath, 'utf8');
+        if (sqlUtf8.includes('\0')) sqlUtf8 = fs.readFileSync(migrationPath, 'utf16le');
+        const statements = sqlUtf8.split(';').filter(s => s.trim().length > 0);
+        let log = [];
+        for (const stmt of statements) {
+            try {
+                await pool.query(stmt);
+                log.push("Success: " + stmt.substring(0, 50));
+            } catch (e) {
+                log.push("Error: " + e.message);
+            }
+        }
+        res.json({ success: true, log });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 // The Admin Panel is now independently deployed on Vercel
 // app.use('/admin', express.static(path.join(__dirname, '../ADMIN_PANEL')));
 
