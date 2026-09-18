@@ -52,15 +52,15 @@ function showAppView() {
 }
 
 function loadAllData() {
-    loadDashboardStats();
-    loadCharts();
-    loadProperties();
-    loadEnquiries();
-    loadContacts();
-    loadAboutSection();
-    loadAdminTestimonials();
-    loadInterns();
-    loadInternListings();
+    try { loadDashboardStats(); } catch(e) { console.error('Error loading dashboard stats:', e); }
+    try { loadCharts(); } catch(e) { console.error('Error loading charts:', e); }
+    try { loadProperties(); } catch(e) { console.error('Error loading properties:', e); }
+    try { loadEnquiries(); } catch(e) { console.error('Error loading enquiries:', e); }
+    try { loadContacts(); } catch(e) { console.error('Error loading contacts:', e); }
+    try { loadAboutSection(); } catch(e) { console.error('Error loading about section:', e); }
+    try { loadAdminTestimonials(); } catch(e) { console.error('Error loading testimonials:', e); }
+    try { loadInterns(); } catch(e) { console.error('Error loading interns:', e); }
+    try { loadInternListings(); } catch(e) { console.error('Error loading intern listings:', e); }
 }
 
 // Navigation
@@ -753,7 +753,13 @@ function getTestimonials() {
     localStorage.setItem('brickstone_testimonials', JSON.stringify(SEED_TESTIMONIALS));
     return SEED_TESTIMONIALS;
   }
-  return JSON.parse(data);
+  try {
+    return JSON.parse(data);
+  } catch(e) {
+    console.error('Invalid testimonials JSON in localStorage, resetting...', e);
+    localStorage.setItem('brickstone_testimonials', JSON.stringify(SEED_TESTIMONIALS));
+    return SEED_TESTIMONIALS;
+  }
 }
 
 function saveTestimonials(data) {
