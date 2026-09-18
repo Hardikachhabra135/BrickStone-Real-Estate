@@ -742,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ---------- Load About Section ----------
   async function loadPublicAbout() {
     try {
-      const res = await fetch(`http://localhost:5000/api/site/about`);
+      const res = await fetch(`${API_BASE}/site/about`);
       const json = await res.json();
       if (json.success && json.data) {
         const d = json.data;

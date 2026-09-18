@@ -24,7 +24,17 @@ exports.createProperty = async (req, res) => {
 // Retrieve all properties
 exports.getAllProperties = async (req, res) => {
     try {
-        const [rows] = await pool.query("SELECT * FROM Properties WHERE approval_status = 'Approved' OR approval_status IS NULL ORDER BY created_at DESC");
+        let rows;
+        try {
+            [rows] = await pool.query("SELECT * FROM Properties WHERE approval_status = 'Approved' OR approval_status IS NULL ORDER BY created_at DESC");
+        } catch (dbError) {
+            if (dbError.code === 'ER_BAD_FIELD_ERROR' || String(dbError).includes('Unknown column')) {
+                // Fallback for older database schema
+                [rows] = await pool.query("SELECT * FROM Properties ORDER BY created_at DESC");
+            } else {
+                throw dbError;
+            }
+        }
         
         // Parse JSON specs back to arrays for the response
         const properties = rows.map(row => ({
@@ -43,7 +53,17 @@ exports.getAllProperties = async (req, res) => {
 exports.getPropertyById = async (req, res) => {
     try {
         const { id } = req.params;
-        const [rows] = await pool.query("SELECT * FROM Properties WHERE id = ? AND (approval_status = 'Approved' OR approval_status IS NULL)", [id]);
+        let rows;
+        try {
+            [rows] = await pool.query("SELECT * FROM Properties WHERE id = ? AND (approval_status = 'Approved' OR approval_status IS NULL)", [id]);
+        } catch (dbError) {
+            if (dbError.code === 'ER_BAD_FIELD_ERROR' || String(dbError).includes('Unknown column')) {
+                // Fallback for older database schema
+                [rows] = await pool.query("SELECT * FROM Properties WHERE id = ?", [id]);
+            } else {
+                throw dbError;
+            }
+        }
 
         if (rows.length === 0) {
             return res.status(404).json({ success: false, message: 'Property not found' });
