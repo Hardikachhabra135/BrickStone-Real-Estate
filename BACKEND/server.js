@@ -21,6 +21,8 @@ const contactRoutes = require('./routes/contactRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const siteRoutes = require('./routes/siteRoutes');
 const authRoutes = require('./routes/auth');
+const internAdminRoutes = require('./routes/internAdminRoutes');
+const internPortalRoutes = require('./routes/internPortalRoutes');
 
 // Mount Routes
 app.use('/api/admin', adminRoutes);
@@ -30,6 +32,8 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/site', siteRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', internAdminRoutes);
+app.use('/api/intern', internPortalRoutes);
 
 // The Admin Panel is now independently deployed on Vercel
 // app.use('/admin', express.static(path.join(__dirname, '../ADMIN_PANEL')));

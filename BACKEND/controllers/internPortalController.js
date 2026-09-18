@@ -1,0 +1,141 @@
+const pool = require('../config/db');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+exports.login = async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const [interns] = await pool.query('SELECT * FROM Interns WHERE intern_id = ? OR email = ?', [username, username]);
+        
+        if (interns.length === 0) {
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        const intern = interns[0];
+        if (intern.status !== 'Active') {
+            return res.status(403).json({ success: false, message: 'Account is deactivated. Contact admin.' });
+        }
+
+        const match = await bcrypt.compare(password, intern.password_hash);
+        if (!match) {
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        const token = jwt.sign(
+            { id: intern.id, intern_id: intern.intern_id, email: intern.email, role: 'intern' },
+            process.env.JWT_SECRET || 'brickstone_secret_key',
+            { expiresIn: '24h' }
+        );
+
+        res.json({ success: true, token, intern: { id: intern.id, name: intern.name, intern_id: intern.intern_id, territory: intern.territory } });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Login failed' });
+    }
+};
+
+exports.getMe = async (req, res) => {
+    try {
+        const [interns] = await pool.query('SELECT id, name, intern_id, email, phone, territory, monthly_target, status FROM Interns WHERE id = ?', [req.intern.id]);
+        if (!interns.length) return res.status(404).json({ success: false, message: 'Intern not found' });
+        
+        const [stats] = await pool.query(`
+            SELECT 
+                COUNT(*) as total_properties,
+                SUM(CASE WHEN approval_status = 'Under Review' THEN 1 ELSE 0 END) as pending_properties,
+                SUM(CASE WHEN approval_status = 'Approved' THEN 1 ELSE 0 END) as approved_properties,
+                SUM(CASE WHEN approval_status = 'Changes Requested' THEN 1 ELSE 0 END) as changes_requested,
+                SUM(CASE WHEN approval_status = 'Rejected' THEN 1 ELSE 0 END) as rejected_properties
+            FROM Properties WHERE intern_id = ?`, [req.intern.id]);
+
+        res.json({ success: true, intern: interns[0], stats: stats[0] });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to fetch details' });
+    }
+};
+
+exports.getProperties = async (req, res) => {
+    try {
+        const [properties] = await pool.query('SELECT * FROM Properties WHERE intern_id = ? ORDER BY created_at DESC', [req.intern.id]);
+        res.json({ success: true, properties });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to fetch properties' });
+    }
+};
+
+exports.getPropertyById = async (req, res) => {
+    try {
+        const [properties] = await pool.query('SELECT * FROM Properties WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
+        if (!properties.length) return res.status(404).json({ success: false, message: 'Property not found' });
+        
+        // Fetch notes if any
+        const [notes] = await pool.query('SELECT * FROM PropertyReviewNotes WHERE property_id = ? ORDER BY created_at DESC', [req.params.id]);
+        
+        res.json({ success: true, property: properties[0], notes });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to fetch property' });
+    }
+};
+
+exports.createProperty = async (req, res) => {
+    try {
+        const { title, description, price, location, badge, image, specs } = req.body;
+        const [result] = await pool.query(
+            'INSERT INTO Properties (title, description, price, location, badge, image, specs, intern_id, approval_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "Draft")',
+            [title, description, price, location, badge, image, JSON.stringify(specs || {}), req.intern.id]
+        );
+        res.status(201).json({ success: true, message: 'Property created as Draft', property_id: result.insertId });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to create property' });
+    }
+};
+
+exports.updateProperty = async (req, res) => {
+    try {
+        const { title, description, price, location, badge, image, specs } = req.body;
+        // Verify ownership and status
+        const [props] = await pool.query('SELECT approval_status FROM Properties WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
+        if (!props.length) return res.status(404).json({ success: false, message: 'Property not found' });
+        
+        if (['Under Review', 'Approved'].includes(props[0].approval_status)) {
+            return res.status(403).json({ success: false, message: 'Cannot edit property in this status' });
+        }
+
+        await pool.query(
+            'UPDATE Properties SET title=?, description=?, price=?, location=?, badge=?, image=?, specs=? WHERE id=? AND intern_id=?',
+            [title, description, price, location, badge, image, JSON.stringify(specs || {}), req.params.id, req.intern.id]
+        );
+        res.json({ success: true, message: 'Property updated' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to update property' });
+    }
+};
+
+exports.submitProperty = async (req, res) => {
+    try {
+        const [props] = await pool.query('SELECT approval_status FROM Properties WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
+        if (!props.length) return res.status(404).json({ success: false, message: 'Property not found' });
+        
+        await pool.query('UPDATE Properties SET approval_status = "Under Review" WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
+        res.json({ success: true, message: 'Property submitted for review' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to submit property' });
+    }
+};
+
+exports.resubmitProperty = async (req, res) => {
+    try {
+        const [props] = await pool.query('SELECT approval_status FROM Properties WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
+        if (!props.length) return res.status(404).json({ success: false, message: 'Property not found' });
+        
+        if (props[0].approval_status !== 'Changes Requested') {
+            return res.status(400).json({ success: false, message: 'Property is not in Changes Requested status' });
+        }
+
+        await pool.query('UPDATE Properties SET approval_status = "Under Review" WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
+        res.json({ success: true, message: 'Property resubmitted for review' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to resubmit property' });
+    }
+};

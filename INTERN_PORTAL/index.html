@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brickstone Intern Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body>
+
+<!-- LOGIN VIEW -->
+<div id="login-view" class="view active">
+    <div class="login-container">
+        <h2>Intern Login</h2>
+        <p>Welcome back to Brickstone.</p>
+        <form id="login-form">
+            <div class="form-group">
+                <label>Intern ID or Email</label>
+                <input type="text" id="login-username" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="login-password" required>
+            </div>
+            <button type="submit" class="btn-primary">Sign In</button>
+        </form>
+    </div>
+</div>
+
+<!-- DASHBOARD VIEW -->
+<div id="dashboard-view" class="view">
+    <nav class="navbar">
+        <div class="logo">Brickstone Interns</div>
+        <div class="nav-right">
+            <span id="intern-name-display">Welcome</span>
+            <button onclick="logout()" class="btn-ghost">Logout</button>
+        </div>
+    </nav>
+    <div class="dashboard-content">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Submitted</h3>
+                <p id="stat-total">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Pending</h3>
+                <p id="stat-pending">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Approved</h3>
+                <p id="stat-approved">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Changes Requested</h3>
+                <p id="stat-changes">0</p>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2>My Properties</h2>
+            <button onclick="openPropertyModal()" class="btn-primary"><i data-feather="plus"></i> Add Property</button>
+        </div>
+        
+        <table class="properties-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Location</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="properties-tbody">
+                <!-- Properties injected here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- PROPERTY MODAL -->
+<div id="property-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h2 id="modal-title">Add Property</h2>
+        <button class="close-btn" onclick="closePropertyModal()"><i data-feather="x"></i></button>
+        <form id="property-form">
+            <input type="hidden" id="prop-id">
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="prop-title" required>
+                </div>
+                <div class="form-group">
+                    <label>Price</label>
+                    <input type="text" id="prop-price" required>
+                </div>
+                <div class="form-group">
+                    <label>Location / Address</label>
+                    <input type="text" id="prop-location" required>
+                </div>
+                <div class="form-group">
+                    <label>Listing Type (Badge)</label>
+                    <select id="prop-badge">
+                        <option value="For Sale">For Sale</option>
+                        <option value="For Rent">For Rent</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="prop-description" rows="4"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Image URL</label>
+                <input type="text" id="prop-image" placeholder="https://...">
+            </div>
+            
+            <h3>Specifications</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Bedrooms</label>
+                    <input type="text" id="spec-beds">
+                </div>
+                <div class="form-group">
+                    <label>Bathrooms</label>
+                    <input type="text" id="spec-baths">
+                </div>
+                <div class="form-group">
+                    <label>Area (Sq Ft)</label>
+                    <input type="text" id="spec-area">
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn-ghost" onclick="closePropertyModal()">Cancel</button>
+                <button type="submit" class="btn-primary" id="save-prop-btn">Save Draft</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="app.js"></script>
+<script>feather.replace();</script>
+</body>
+</html>
