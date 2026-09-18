@@ -461,9 +461,20 @@
                         <h2>Lead Pipeline</h2>
                         <p>Track incoming property enquiries and contact forms.</p>
                     </div>
-                    <div class="premium-tabs">
+                    <div class="premium-tabs" style="display:flex; align-items:center;">
                         <button class="tab-btn active" data-tab="enquiries-tab">Property Enquiries</button>
                         <button class="tab-btn" data-tab="contacts-tab">General Contact Forms</button>
+                        
+                        <div style="position:relative; margin-left:12px;" class="dropdown-container">
+                            <button class="btn-primary" style="background:#d97706; border-color:#d97706; border-radius:6px; padding:8px 16px; font-size:13px; font-weight:500; display:flex; align-items:center; gap:6px; box-shadow:0 2px 4px rgba(217, 119, 6, 0.2);" onclick="document.getElementById('export-menu').style.display = document.getElementById('export-menu').style.display === 'none' ? 'block' : 'none'">
+                                Export <i data-feather="chevron-down" style="width:14px; height:14px;"></i>
+                            </button>
+                            <div id="export-menu" style="display:none; position:absolute; top:calc(100% + 8px); right:0; background:white; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); z-index:100; min-width:140px; overflow:hidden;">
+                                <a href="#" style="display:block; padding:10px 16px; color:#475569; text-decoration:none; font-size:13px; border-bottom:1px solid #f1f5f9; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">Excel (.xlsx)</a>
+                                <a href="#" style="display:block; padding:10px 16px; color:#475569; text-decoration:none; font-size:13px; border-bottom:1px solid #f1f5f9; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">Word (.docx)</a>
+                                <a href="#" style="display:block; padding:10px 16px; color:#475569; text-decoration:none; font-size:13px; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">PDF (.pdf)</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
