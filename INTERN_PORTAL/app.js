@@ -80,7 +80,8 @@ async function loadProperties() {
                 actions = `<button onclick="editProperty(${p.id})" class="btn-ghost">Edit</button> 
                            <button onclick="submitProperty(${p.id})" class="btn-primary">Submit for Review</button>`;
             } else if (p.approval_status === 'Changes Requested') {
-                actions = `<button onclick="editProperty(${p.id})" class="btn-ghost" style="color:var(--primary);">Fix & Resubmit</button>`;
+                actions = `<button onclick="editProperty(${p.id})" class="btn-ghost" style="color:var(--primary);">Edit</button>
+                           <button onclick="resubmitProperty(${p.id})" class="btn-primary">Resubmit</button>`;
             } else {
                 actions = `<button onclick="viewProperty(${p.id})" class="btn-ghost">View</button>`;
             }
@@ -177,6 +178,15 @@ async function submitProperty(id) {
         loadProperties();
         initApp(); // reload stats
     } catch(e) { alert('Failed to submit'); }
+}
+
+async function resubmitProperty(id) {
+    if(!confirm('Are you sure you want to resubmit this for review?')) return;
+    try {
+        await fetchApi(`/properties/${id}/resubmit`, { method: 'POST' });
+        loadProperties();
+        initApp();
+    } catch(e) { alert('Failed to resubmit'); }
 }
 
 if(token) initApp();

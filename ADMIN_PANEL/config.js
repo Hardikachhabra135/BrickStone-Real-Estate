@@ -1,4 +1,5 @@
 window.ENV = {
-  // Point to live API to load real dashboard/property details
-  API_URL: 'https://brickstone-real-estate.onrender.com/api'
+  API_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'http://localhost:5000/api' 
+    : 'https://brick-stone-real-estate-backend.onrender.com/api'
 };
