@@ -83,6 +83,26 @@ app.use((req, res, next) => {
 
 // Start Server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', async () => {
     console.log(`Server is running on port ${PORT}`);
+    
+    // DB Connection Diagnostic
+    try {
+        const pool = require('./config/db');
+        const connection = await pool.getConnection();
+        console.log('--- DATABASE DIAGNOSTIC ---');
+        console.log('Status: Connected successfully');
+        console.log(`Host: ${process.env.DB_HOST ? process.env.DB_HOST.substring(0, 5) + '...' : 'localhost'}`);
+        console.log(`Database: ${process.env.DB_NAME || 'real_estate_db'}`);
+        console.log(`Port: ${process.env.DB_PORT || 3306}`);
+        console.log(`SSL Enabled: ${process.env.DB_SSL === 'true'}`);
+        console.log('---------------------------');
+        connection.release();
+    } catch (err) {
+        console.error('--- DATABASE DIAGNOSTIC FAILED ---');
+        console.error('Failed to connect to the database on startup.');
+        console.error(`Error Code: ${err.code}`);
+        console.error(`Error Message: ${err.message}`);
+        console.error('----------------------------------');
+    }
 });

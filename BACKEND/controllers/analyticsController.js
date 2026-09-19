@@ -54,8 +54,8 @@ exports.getOverview = async (req, res) => {
 
         const [props] = await pool.query(`SELECT COUNT(*) as count FROM Properties`);
         const [verifiedProps] = await pool.query(`SELECT COUNT(*) as count FROM Properties WHERE is_verified = 1`);
-        const [enquiries] = await pool.query(`SELECT COUNT(*) as count FROM Enquiries WHERE created_at >= ${dateCondition.replace('timestamp', 'created_at')}`);
-        const [contacts] = await pool.query(`SELECT COUNT(*) as count FROM ContactForms WHERE created_at >= ${dateCondition.replace('timestamp', 'created_at')}`);
+        const [enquiries] = await pool.query(`SELECT COUNT(*) as count FROM PropertyEnquiries WHERE ${dateCondition.replace('timestamp', 'created_at')}`);
+        const [contacts] = await pool.query(`SELECT COUNT(*) as count FROM ContactSubmissions WHERE ${dateCondition.replace('timestamp', 'created_at')}`);
 
         res.status(200).json({
             success: true,

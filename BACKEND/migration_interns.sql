@@ -14,10 +14,9 @@ CREATE TABLE IF NOT EXISTS Interns (
 
 -- Note: In TiDB/MySQL, altering ENUM values requires some care, but adding new columns is fine.
 -- Using 'Approved' as default so existing public properties are not hidden.
-ALTER TABLE Properties 
-    ADD COLUMN intern_id INT NULL,
-    ADD COLUMN approval_status ENUM('Draft', 'Submitted', 'Under Review', 'Approved', 'Changes Requested', 'Rejected') DEFAULT 'Approved',
-    ADD CONSTRAINT fk_intern FOREIGN KEY (intern_id) REFERENCES Interns(id) ON DELETE SET NULL;
+ALTER TABLE Properties ADD COLUMN intern_id INT NULL;
+ALTER TABLE Properties ADD COLUMN approval_status ENUM('Draft', 'Submitted', 'Under Review', 'Approved', 'Changes Requested', 'Rejected') DEFAULT 'Approved';
+ALTER TABLE Properties ADD CONSTRAINT fk_intern FOREIGN KEY (intern_id) REFERENCES Interns(id) ON DELETE SET NULL;
 
 CREATE TABLE IF NOT EXISTS PropertyReviewNotes (
     id INT AUTO_INCREMENT PRIMARY KEY,

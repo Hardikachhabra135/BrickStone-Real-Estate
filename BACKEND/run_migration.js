@@ -16,21 +16,38 @@ async function run() {
     
     try {
         const statements = sqlUtf8.split(';').filter(s => s.trim().length > 0);
+        
+        // Also load add_analytics.sql
+        const analyticsPath = path.join(__dirname, 'add_analytics.sql');
+        if (fs.existsSync(analyticsPath)) {
+            const analyticsSql = fs.readFileSync(analyticsPath, 'utf8');
+            statements.push(...analyticsSql.split(';').filter(s => s.trim().length > 0));
+        }
+
+        let successCount = 0;
         for (const stmt of statements) {
             try {
                 await pool.query(stmt);
+                successCount++;
             } catch (e) {
                 // Ignore ER_DUP_FIELDNAME (1060) and ER_TABLE_EXISTS_ERROR (1050)
                 if (e.errno !== 1060 && e.errno !== 1050 && e.code !== 'ER_CANT_DROP_FIELD_OR_KEY') {
-                    console.warn(`Migration warning for statement: ${stmt.substring(0, 50)}...`, e.message);
+                    console.error(`--- MIGRATION ERROR ---`);
+                    console.error(`Statement: ${stmt.substring(0, 100)}...`);
+                    console.error(`Code: ${e.code}, Message: ${e.message}`);
+                    console.error(`-----------------------`);
                 }
             }
         }
-        console.log("Migration executed safely!");
+        console.log(`Migration executed safely! (${successCount}/${statements.length} statements successful)`);
     } catch(e) {
-        console.error("Migration failed:", e);
+        console.error("--- FATAL MIGRATION ERROR ---");
+        console.error(e);
+        console.error("-----------------------------");
     }
-    // No need to close pool if it exits, or we can force exit
+    
+    // We exit with 0 to allow the backend server to start even if migrations partially fail
+    // (e.g. if TiDB rejects a DDL, we still want the API to be up for other routes)
     process.exit(0);
 }
 run();

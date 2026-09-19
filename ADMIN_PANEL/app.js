@@ -125,9 +125,8 @@ async function fetchApi(endpoint, options = {}) {
     const headers = { 'Content-Type': 'application/json' };
     if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
     
-    // Use localhost for the new About Section endpoints because they aren't deployed to Render yet.
     // Use the live API for everything else so real data is displayed.
-    const base = endpoint.startsWith('/site/about') ? 'http://localhost:5000/api' : API_BASE;
+    const base = API_BASE;
     
     const url = new URL(`${base}${endpoint}`);
     // add range to analytics endpoints
@@ -614,7 +613,7 @@ function updateAboutPreview() {
     
     let src = document.getElementById('about-image-input').value || '';
     if (src.startsWith('images/')) {
-        src = `http://localhost:8000/${src}`;
+        src = `/${src}`;
     }
     document.getElementById('about-preview-image').src = src;
 }
