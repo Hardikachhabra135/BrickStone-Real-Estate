@@ -47,7 +47,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     const password = document.getElementById('login-pass').value;
     
     try {
-        const res = await fetchApi('/interns/login', {
+        const res = await fetchApi('/intern/login', {
             method: 'POST',
             body: JSON.stringify({ intern_id: id, password })
         });
@@ -103,7 +103,7 @@ function setupNavigation() {
 // Dashboard & Listings
 async function loadDashboard() {
     try {
-        const res = await fetchApi('/intern-listings');
+        const res = await fetchApi('/intern/properties');
         const json = await res.json();
         if(json.success) {
             myListings = json.data;
@@ -504,7 +504,7 @@ window.saveListing = async function(status) {
     }
 
     try {
-        const res = await fetchApi('/intern-listings', {
+        const res = await fetchApi('/intern/properties', {
             method: 'POST',
             body: JSON.stringify(payload)
         });

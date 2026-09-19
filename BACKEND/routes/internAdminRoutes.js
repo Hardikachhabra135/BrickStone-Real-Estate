@@ -20,5 +20,6 @@ router.get('/intern-properties', internAdminController.getInternPropertiesToRevi
 router.post('/intern-properties/:id/publish', internAdminController.publishProperty);
 router.post('/intern-properties/:id/request-changes', internAdminController.requestChanges);
 router.post('/intern-properties/:id/reject', internAdminController.rejectProperty);
+router.patch('/intern-properties/:id/review', internAdminController.reviewProperty);
 
 module.exports = router;

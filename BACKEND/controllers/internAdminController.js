@@ -29,9 +29,9 @@ exports.getInterns = async (req, res) => {
              (SELECT COUNT(*) FROM Properties WHERE intern_id = i.id) as total_properties,
              (SELECT COUNT(*) FROM Properties WHERE intern_id = i.id AND approval_status = 'Approved') as approved_properties,
              (SELECT COUNT(*) FROM Properties WHERE intern_id = i.id AND approval_status = 'Under Review') as pending_properties
-             FROM Interns i ORDER BY i.created_at DESC`
+            FROM Interns i ORDER BY i.created_at DESC`
         );
-        res.json({ success: true, interns });
+        res.json({ success: true, data: interns });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Failed to fetch interns' });
@@ -87,7 +87,7 @@ exports.resetInternPassword = async (req, res) => {
 exports.getInternProperties = async (req, res) => {
     try {
         const [properties] = await pool.query('SELECT * FROM Properties WHERE intern_id = ? ORDER BY created_at DESC', [req.params.id]);
-        res.json({ success: true, properties });
+        res.json({ success: true, data: properties });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to fetch properties' });
     }
@@ -105,7 +105,7 @@ exports.getInternPropertiesToReview = async (req, res) => {
              WHERE p.approval_status != 'Draft'
              ORDER BY p.updated_at DESC`
         );
-        res.json({ success: true, properties });
+        res.json({ success: true, data: properties });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to fetch properties for review' });
     }
@@ -170,5 +170,44 @@ exports.rejectProperty = async (req, res) => {
         }
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to reject property' });
+    }
+};
+
+exports.reviewProperty = async (req, res) => {
+    try {
+        const { status, admin_feedback, publishToMain, category, subcategory } = req.body;
+        
+        if (status === 'APPROVED') {
+            // Update category and subcategory if provided (save into specs)
+            if (category || subcategory) {
+                const [prop] = await pool.query('SELECT specs FROM Properties WHERE id = ?', [req.params.id]);
+                if (prop.length) {
+                    let specs = {};
+                    try { specs = JSON.parse(prop[0].specs) || {}; } catch(e) {}
+                    if (Array.isArray(specs)) {
+                        // Frontend expects array with __CAT: flat, __SUB: 2bhk
+                        specs = specs.filter(s => !s.startsWith('__CAT:') && !s.startsWith('__SUB:'));
+                        if (category) specs.push('__CAT:' + category);
+                        if (subcategory) specs.push('__SUB:' + subcategory);
+                    } else {
+                        specs.category = category;
+                        specs.subcategory = subcategory;
+                    }
+                    await pool.query('UPDATE Properties SET specs = ? WHERE id = ?', [JSON.stringify(specs), req.params.id]);
+                }
+            }
+            req.body.note = admin_feedback;
+            return exports.publishProperty(req, res);
+        } else if (status === 'CHANGES REQUESTED') {
+            req.body.note = admin_feedback;
+            return exports.requestChanges(req, res);
+        } else if (status === 'REJECTED') {
+            req.body.reason = admin_feedback;
+            return exports.rejectProperty(req, res);
+        }
+        
+        res.status(400).json({ success: false, message: 'Invalid status' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to review property' });
     }
 };

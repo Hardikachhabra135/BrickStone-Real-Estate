@@ -57,7 +57,7 @@ exports.getMe = async (req, res) => {
 exports.getProperties = async (req, res) => {
     try {
         const [properties] = await pool.query('SELECT * FROM Properties WHERE intern_id = ? ORDER BY created_at DESC', [req.intern.id]);
-        res.json({ success: true, properties });
+        res.json({ success: true, data: properties });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to fetch properties' });
     }
