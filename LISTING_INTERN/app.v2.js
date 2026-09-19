@@ -1,6 +1,13 @@
-﻿const API_BASE = window.ENV ? window.ENV.API_URL : 'https://brickstone-real-estate.onrender.com/api';
+const API_BASE = window.ENV ? window.ENV.API_URL : 'https://brickstone-real-estate.onrender.com/api';
 let authToken = localStorage.getItem('internToken');
-let currentUser = JSON.parse(localStorage.getItem('internUser') || 'null');
+let currentUser = null;
+try {
+    const stored = localStorage.getItem('internUser');
+    currentUser = stored && stored !== 'undefined' ? JSON.parse(stored) : null;
+} catch(e) {
+    console.error('Invalid internUser in storage', e);
+    localStorage.removeItem('internUser');
+}
 let myListings = [];
 let currentStep = 1;
 let uploadedMedia = { photos: [], video: null };
@@ -9,10 +16,78 @@ let editingListingId = null;
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
     if (authToken && currentUser) {
+        const lv = document.getElementById('login-view');
+        if (lv) lv.remove();
         showApp();
     } else {
-        document.getElementById('login-view').style.display = 'flex';
+        const lv = document.getElementById('login-view');
+        if (lv) { lv.style.display = 'flex'; }
     }
+    
+    // Auth Listener
+    const loginBtn = document.getElementById('login-btn');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            console.log("Login process started");
+            let btn = null;
+            let origText = "Sign In";
+            try {
+                const idEl = document.getElementById('login-id');
+                const passEl = document.getElementById('login-pass');
+                
+                if (!idEl || !passEl) {
+                    console.error("Missing input elements!");
+                    return;
+                }
+                
+                const id = idEl.value.trim();
+                const password = passEl.value;
+                
+                if (!id || !password) {
+                    alert('Please enter both Intern ID and Password');
+                    return;
+                }
+                
+                btn = e.target;
+                origText = btn.textContent;
+                btn.textContent = 'Signing in...';
+                btn.disabled = true;
+                
+                console.log(`Sending API request to ${API_BASE}/intern/login`);
+                const res = await fetch(`${API_BASE}/intern/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: id, password })
+                });
+                
+                console.log("API response status:", res.status);
+                const data = await res.json();
+                console.log("API response data:", data);
+                
+                if (data.success) {
+                    authToken = data.token;
+                    currentUser = data.intern;
+                    localStorage.setItem('internToken', authToken);
+                    localStorage.setItem('internUser', JSON.stringify(currentUser));
+                    const loginView = document.getElementById('login-view');
+                    if (loginView) loginView.remove();
+                    showApp();
+                } else {
+                    alert(data.message || 'Invalid credentials');
+                }
+            } catch(err) {
+                console.error('Fatal Login Error:', err);
+                alert('Connection error or internal script error. Check console.');
+            } finally {
+                if (btn) {
+                    btn.textContent = origText;
+                    btn.disabled = false;
+                }
+            }
+        });
+    }
+
     setupNavigation();
     setupFeatureChips();
     setupMediaUploaders();
@@ -41,40 +116,13 @@ async function fetchApi(endpoint, options = {}) {
     return response;
 }
 
-document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const id = document.getElementById('login-id').value;
-    const password = document.getElementById('login-pass').value;
-    
-    try {
-        const res = await fetchApi('/intern/login', {
-            method: 'POST',
-            body: JSON.stringify({ intern_id: id, password })
-        });
-        const data = await res.json();
-        
-        if (data.success) {
-            authToken = data.token;
-            currentUser = data.user;
-            localStorage.setItem('internToken', authToken);
-            localStorage.setItem('internUser', JSON.stringify(currentUser));
-            document.getElementById('login-view').style.display = 'none';
-            showApp();
-        } else {
-            showToast(data.message, 'alert-circle');
-        }
-    } catch(err) {
-        console.error(err);
-        showToast('Login failed', 'alert-circle');
-    }
-});
-
 function logout() {
     authToken = null;
     currentUser = null;
     localStorage.removeItem('internToken');
     localStorage.removeItem('internUser');
-    document.getElementById('login-view').style.display = 'flex';
+    // Reload page to restore login overlay cleanly
+    window.location.reload();
 }
 
 function showApp() {
@@ -100,6 +148,31 @@ function setupNavigation() {
     });
 }
 
+async function loadNotifications() {
+    try {
+        const res = await fetchApi('/intern/notifications');
+        const data = await res.json();
+        const container = document.getElementById('notifications-container');
+        
+        if (data.success && data.data && data.data.length > 0) {
+            container.innerHTML = data.data.map(n => `
+                <div class="activity-item" style="opacity: ${n.is_read ? '0.6' : '1'}">
+                    <div class="activity-icon"><i data-feather="bell" style="color:var(--accent-color)"></i></div>
+                    <div class="activity-details">
+                        <div class="activity-text"><strong>${n.title}</strong>: ${n.message}</div>
+                        <div class="activity-time">${new Date(n.created_at).toLocaleString()}</div>
+                    </div>
+                </div>
+            `).join('');
+            feather.replace();
+        } else {
+            container.innerHTML = '<div class="empty-state" style="padding:2rem;">No notifications</div>';
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 // Dashboard & Listings
 async function loadDashboard() {
     try {
@@ -109,6 +182,7 @@ async function loadDashboard() {
             myListings = json.data;
             updateDashboardKPIs();
             renderRecentListings();
+            loadNotifications();
         }
     } catch(err) {
         console.error(err);
@@ -125,10 +199,10 @@ document.getElementById('listing-filter').addEventListener('change', (e) => {
 });
 
 function updateDashboardKPIs() {
-    const drafts = myListings.filter(l => l.status === 'DRAFT').length;
-    const pending = myListings.filter(l => l.status === 'SUBMITTED').length;
-    const changes = myListings.filter(l => l.status === 'CHANGES REQUESTED').length;
-    const approved = myListings.filter(l => l.status === 'APPROVED').length;
+    const drafts = myListings.filter(l => l.approval_status === 'Draft').length;
+    const pending = myListings.filter(l => l.approval_status === 'Under Review').length;
+    const changes = myListings.filter(l => l.approval_status === 'Changes Requested').length;
+    const approved = myListings.filter(l => l.approval_status === 'Approved').length;
     
     document.getElementById('kpi-drafts').textContent = drafts;
     document.getElementById('kpi-pending').textContent = pending;
@@ -151,7 +225,7 @@ function renderRecentListings() {
             <div>
                 <div style="font-weight:500; font-size:14px; color:var(--text-primary);">${l.title || 'Untitled'}</div>
                 <div style="font-size:12px; color:var(--text-secondary);">${l.location || 'No location'} â€¢ ${l.price || '--'}</div>
-                <span style="font-size:10px; margin-top:4px; display:inline-block; color:var(--status-${l.status.toLowerCase().replace(' requested','s')})">${l.status}</span>
+                <span style="font-size:10px; margin-top:4px; display:inline-block; color:var(--status-${l.approval_status.toLowerCase().split(' ')[0]})">${l.approval_status}</span>
             </div>
         </div>
     `).join('');
@@ -159,7 +233,7 @@ function renderRecentListings() {
 
 function renderListingsGrid(filter) {
     const grid = document.getElementById('listings-grid');
-    const filtered = filter === 'ALL' ? myListings : myListings.filter(l => l.status === filter);
+    const filtered = filter === 'ALL' ? myListings : myListings.filter(l => l.approval_status === filter);
     
     if (filtered.length === 0) {
         grid.innerHTML = `
@@ -174,12 +248,12 @@ function renderListingsGrid(filter) {
     }
     
     grid.innerHTML = filtered.map(l => {
-        const statusClass = 'status-' + l.status.toLowerCase().split(' ')[0];
+        const statusClass = 'status-' + l.approval_status.toLowerCase().split(' ')[0];
         return `
         <div class="listing-card" onclick="editListing('${l.id}')">
             <div class="card-image-wrap">
-                <img src="${l.primary_photo || 'https://via.placeholder.com/400x200/111111/52525b'}" class="card-image">
-                <div class="card-status ${statusClass}">${l.status}</div>
+                <img src="${l.image || 'https://via.placeholder.com/400x200/111111/52525b'}" class="card-image">
+                <div class="card-status ${statusClass}">${l.approval_status}</div>
             </div>
             <div class="card-content">
                 <div class="card-title">${l.title || 'Untitled Listing'}</div>
@@ -268,17 +342,17 @@ window.editListing = function(id) {
     if (!l) return;
     
     resetEditor();
-          editingListingId = l.id;
+    editingListingId = l.id;
       
-      const feedbackBanner = document.getElementById('admin-feedback-banner');
-      if (l.admin_feedback && l.admin_feedback.trim() !== '') {
-          document.getElementById('admin-feedback-text').textContent = l.admin_feedback;
-          feedbackBanner.style.display = 'block';
-      } else {
-          feedbackBanner.style.display = 'none';
-      }
+    const feedbackBanner = document.getElementById('admin-feedback-banner');
+    if (l.admin_feedback && l.admin_feedback.trim() !== '') {
+        document.getElementById('admin-feedback-text').textContent = l.admin_feedback;
+        feedbackBanner.style.display = 'block';
+    } else {
+        feedbackBanner.style.display = 'none';
+    }
       
-      document.getElementById('f-title').value = l.title || '';
+    document.getElementById('f-title').value = l.title || '';
     document.getElementById('f-type').value = l.property_type || 'Residential';
     document.getElementById('f-purpose').value = l.purpose || 'Sale';
     document.getElementById('f-price').value = l.price || '';
@@ -480,54 +554,81 @@ window.saveListing = async function(status) {
     document.querySelectorAll('.feature-chip.selected').forEach(c => features.push(c.textContent));
     const photos = uploadedMedia.photos.filter(x => x);
 
+    // Map to backend expected structure
     const payload = {
         title: document.getElementById('f-title').value,
-        property_type: document.getElementById('f-type').value,
-        purpose: document.getElementById('f-purpose').value,
+        description: document.getElementById('f-desc').value,
         price: document.getElementById('f-price').value,
         location: document.getElementById('f-locality').value,
-        specifications: [
-            document.getElementById('f-area').value + ' ' + document.getElementById('f-unit').value,
-            document.getElementById('f-facing').value,
-            document.getElementById('f-ownership').value
-        ].filter(x => x.trim().length > 1),
-        description: document.getElementById('f-desc').value,
-        features: features,
-        photos: photos,
-        primary_photo: photos.length > 0 ? photos[0] : '',
-        video: uploadedMedia.video || '',
-        status: status
+        badge: 'New',
+        image: photos.length > 0 ? photos[0] : '',
+        specs: {
+            property_type: document.getElementById('f-type').value,
+            purpose: document.getElementById('f-purpose').value,
+            specifications: [
+                document.getElementById('f-area').value + ' ' + document.getElementById('f-unit').value,
+                document.getElementById('f-facing').value,
+                document.getElementById('f-ownership').value
+            ].filter(x => x.trim().length > 1),
+            features: features
+        },
+        media: {
+            photos: photos,
+            video: uploadedMedia.video || ''
+        }
     };
 
-    if (editingListingId) {
-        payload.id = editingListingId;
-    }
-
     try {
-        const res = await fetchApi('/intern/properties', {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
-        const data = await res.json();
+        let res, data;
         
-        if(data.success) {
-            document.getElementById('save-status').textContent = 'Saved just now';
-            showToast(status === 'SUBMITTED' ? 'Listing Submitted!' : 'Draft Saved', 'check');
-            
-            if (status === 'SUBMITTED') {
-                setTimeout(() => {
-                    document.querySelector('[data-target="my-listings-view"]').click();
-                }, 1500);
-            } else {
-                if (!editingListingId && data.data && data.data.id) {
-                    editingListingId = data.data.id;
-                }
-            }
-            loadDashboard();
+        // Save Draft or Update
+        if (editingListingId) {
+            res = await fetchApi('/intern/properties/' + editingListingId, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            });
         } else {
+            res = await fetchApi('/intern/properties', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+        }
+        data = await res.json();
+        
+        if (!data.success) {
             showToast(data.message, 'x');
             document.getElementById('save-status').textContent = 'Save failed';
+            return;
         }
+
+        if (!editingListingId && data.property_id) {
+            editingListingId = data.property_id;
+        }
+
+        // If user wants to submit for review, do it now
+        if (status === 'SUBMITTED' || status === 'RESUBMITTED') {
+            const endpoint = status === 'RESUBMITTED' ? '/resubmit' : '/submit';
+            const submitRes = await fetchApi('/intern/properties/' + editingListingId + endpoint, {
+                method: 'POST'
+            });
+            const submitData = await submitRes.json();
+            if (!submitData.success) {
+                showToast(submitData.message, 'x');
+                document.getElementById('save-status').textContent = 'Submit failed';
+                return;
+            }
+        }
+        
+        document.getElementById('save-status').textContent = 'Saved just now';
+        showToast(status === 'DRAFT' ? 'Draft Saved' : 'Listing Submitted!', 'check');
+        
+        if (status !== 'DRAFT') {
+            setTimeout(() => {
+                document.querySelector('[data-target="my-listings-view"]').click();
+            }, 1500);
+        }
+        
+        loadDashboard();
     } catch(err) {
         console.error(err);
         showToast('Network error', 'alert-triangle');

@@ -77,9 +77,15 @@ exports.resetInternPassword = async (req, res) => {
         const { new_password } = req.body;
         if (!new_password) return res.status(400).json({ success: false, message: 'New password required' });
         const hash = await bcrypt.hash(new_password, 10);
-        await pool.query('UPDATE Interns SET password_hash = ? WHERE id = ?', [hash, req.params.id]);
+        // req.params.id can be either the numeric id or the intern_id string (INT12345)
+        const [result] = await pool.query(
+            'UPDATE Interns SET password_hash = ? WHERE intern_id = ? OR id = ?',
+            [hash, req.params.id, req.params.id]
+        );
+        if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Intern not found' });
         res.json({ success: true, message: 'Password reset successful' });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ success: false, message: 'Failed to reset password' });
     }
 };
@@ -113,7 +119,19 @@ exports.getInternPropertiesToReview = async (req, res) => {
 
 exports.publishProperty = async (req, res) => {
     try {
+        const [prop] = await pool.query('SELECT intern_id, title FROM Properties WHERE id = ?', [req.params.id]);
+        if (!prop.length) return res.status(404).json({ success: false, message: 'Property not found' });
+        
         await pool.query('UPDATE Properties SET approval_status = "Approved" WHERE id = ?', [req.params.id]);
+        
+        // Notify Intern
+        if (prop[0].intern_id) {
+            await pool.query(
+                'INSERT INTO Notifications (user_type, user_id, title, message, link) VALUES ("intern", ?, "Listing Approved", ?, ?)',
+                [prop[0].intern_id, `Your listing "${prop[0].title}" has been approved and published!`, '#']
+            );
+        }
+        
         res.json({ success: true, message: 'Property published successfully' });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to publish property' });
@@ -134,6 +152,13 @@ exports.requestChanges = async (req, res) => {
             await connection.beginTransaction();
             await connection.query('UPDATE Properties SET approval_status = "Changes Requested" WHERE id = ?', [req.params.id]);
             await connection.query('INSERT INTO PropertyReviewNotes (property_id, intern_id, note) VALUES (?, ?, ?)', [req.params.id, prop[0].intern_id, note]);
+            
+            // Notify Intern
+            await connection.query(
+                'INSERT INTO Notifications (user_type, user_id, title, message, link) VALUES ("intern", ?, "Changes Requested", ?, ?)',
+                [prop[0].intern_id, `Admin requested changes for listing #${req.params.id}.`, '#']
+            );
+            
             await connection.commit();
             res.json({ success: true, message: 'Changes requested successfully' });
         } catch (e) {
@@ -159,7 +184,14 @@ exports.rejectProperty = async (req, res) => {
         try {
             await connection.beginTransaction();
             await connection.query('UPDATE Properties SET approval_status = "Rejected" WHERE id = ?', [req.params.id]);
-            await connection.query('INSERT INTO PropertyReviewNotes (property_id, intern_id, note) VALUES (?, ?, ?)', [req.params.id, prop[0].intern_id, 'REJECTED: ' + reason]);
+            await connection.query('INSERT INTO PropertyReviewNotes (property_id, intern_id, note) VALUES (?, ?, ?)', [req.params.id, prop[0].intern_id, `Rejected: ${reason}`]);
+            
+            // Notify Intern
+            await connection.query(
+                'INSERT INTO Notifications (user_type, user_id, title, message, link) VALUES ("intern", ?, "Listing Rejected", ?, ?)',
+                [prop[0].intern_id, `Your listing #${req.params.id} has been rejected.`, '#']
+            );
+            
             await connection.commit();
             res.json({ success: true, message: 'Property rejected successfully' });
         } catch (e) {

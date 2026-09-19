@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,6 +6,7 @@
     <title>Listing Operations | Brickstone</title>
     <script src="https://unpkg.com/feather-icons"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="config.js"></script>
     <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
@@ -23,6 +24,7 @@
             <div class="nav-section">
                 <div class="nav-label">Overview</div>
                 <a class="nav-item active" data-target="dashboard-view"><i data-feather="grid"></i> Dashboard</a>
+                <a class="nav-item" data-target="notifications-view"><i data-feather="bell"></i> Notifications</a>
             </div>
             
             <div class="nav-section">
@@ -30,9 +32,18 @@
                 <a class="nav-item" data-target="my-listings-view"><i data-feather="layers"></i> My Listings</a>
                 <a class="nav-item" data-target="new-listing-view"><i data-feather="plus-square"></i> New Listing</a>
             </div>
+
+            <div class="nav-section">
+                <div class="nav-label">Status</div>
+                <a class="nav-item" data-target="my-listings-view" onclick="document.getElementById('listing-filter').value='Draft'; filterListings();"><i data-feather="edit-2"></i> Drafts</a>
+                <a class="nav-item" data-target="my-listings-view" onclick="document.getElementById('listing-filter').value='Under Review'; filterListings();"><i data-feather="clock"></i> Pending Review</a>
+                <a class="nav-item" data-target="my-listings-view" onclick="document.getElementById('listing-filter').value='Changes Requested'; filterListings();"><i data-feather="alert-circle"></i> Changes Req</a>
+                <a class="nav-item" data-target="my-listings-view" onclick="document.getElementById('listing-filter').value='Approved'; filterListings();"><i data-feather="check-circle"></i> Approved</a>
+            </div>
             
             <div class="nav-section" style="margin-top:auto;">
                 <div class="nav-label">Account</div>
+                <a class="nav-item" data-target="profile-view"><i data-feather="user"></i> Profile/Account</a>
                 <a class="nav-item" onclick="logout()"><i data-feather="log-out"></i> Logout</a>
             </div>
         </nav>
@@ -117,12 +128,12 @@
                     <p class="page-subtitle">Manage your inventory and track submission status.</p>
                 </div>
                 <div style="display:flex; gap:12px; align-items:center;">
-                    <select class="form-control" style="width:150px; padding:8px 12px;" id="listing-filter">
+                    <select class="form-control" style="width:150px; padding:8px 12px;" id="listing-filter" onchange="filterListings()">
                         <option value="ALL">All Status</option>
-                        <option value="DRAFT">Drafts</option>
-                        <option value="SUBMITTED">Pending</option>
-                        <option value="APPROVED">Approved</option>
-                        <option value="CHANGES REQUESTED">Changes Req</option>
+                        <option value="Draft">Drafts</option>
+                        <option value="Under Review">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Changes Requested">Changes Req</option>
                     </select>
                 </div>
             </div>
@@ -134,6 +145,43 @@
                     <h3>No listings yet</h3>
                     <p>Your property workspace is ready.</p>
                     <button class="btn btn-primary" onclick="document.querySelector('[data-target=\'new-listing-view\']').click()">Create New Listing</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOTIFICATIONS VIEW -->
+        <div id="notifications-view" class="workspace-view">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Notifications</h1>
+                    <p class="page-subtitle">Recent activity and admin feedback on your listings.</p>
+                </div>
+            </div>
+            <div id="notifications-container" class="recent-activity">
+                <div class="empty-state" style="padding:2rem;">No notifications</div>
+            </div>
+        </div>
+
+        <!-- PROFILE VIEW -->
+        <div id="profile-view" class="workspace-view">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Account Profile</h1>
+                    <p class="page-subtitle">Your intern account details.</p>
+                </div>
+            </div>
+            <div style="background:var(--bg-surface-elevated); padding:2rem; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                <div class="form-group">
+                    <label class="form-label">INTERN NAME</label>
+                    <input type="text" class="form-control" id="profile-name" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">INTERN ID</label>
+                    <input type="text" class="form-control" id="profile-id" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">USERNAME</label>
+                    <input type="text" class="form-control" id="profile-username" disabled>
                 </div>
             </div>
         </div>
@@ -455,7 +503,7 @@
                 <label class="form-label">PASSWORD</label>
                 <input type="password" class="form-control" id="login-pass" required>
             </div>
-            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Sign In</button>
+            <button type="button" id="login-btn" class="btn btn-primary" style="width:100%; justify-content:center;">Sign In</button>
         </form>
     </div>
 </div>
@@ -465,7 +513,7 @@
     <span id="toast-msg">Notification</span>
 </div>
 
-<script src="app.js?v=5"></script>
+<script src="app.v2.js?v=2"></script>
 <script>
     feather.replace();
 </script>

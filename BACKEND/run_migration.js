@@ -24,6 +24,12 @@ async function run() {
             statements.push(...analyticsSql.split(';').filter(s => s.trim().length > 0));
         }
 
+        const v2Path = path.join(__dirname, 'migration_v2.sql');
+        if (fs.existsSync(v2Path)) {
+            const v2Sql = fs.readFileSync(v2Path, 'utf8');
+            statements.push(...v2Sql.split(';').filter(s => s.trim().length > 0));
+        }
+
         let successCount = 0;
         for (const stmt of statements) {
             try {

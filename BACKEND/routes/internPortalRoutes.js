@@ -10,6 +10,7 @@ router.post('/login', internPortalController.login);
 router.use(internAuth.verifyInternToken);
 
 router.get('/me', internPortalController.getMe);
+router.get('/notifications', internPortalController.getNotifications);
 router.get('/properties', internPortalController.getProperties);
 router.post('/properties', internPortalController.createProperty);
 router.get('/properties/:id', internPortalController.getPropertyById);

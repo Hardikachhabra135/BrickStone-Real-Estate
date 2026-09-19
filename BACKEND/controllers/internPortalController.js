@@ -54,6 +54,19 @@ exports.getMe = async (req, res) => {
     }
 };
 
+exports.getNotifications = async (req, res) => {
+    try {
+        const [notifications] = await pool.query(
+            'SELECT * FROM Notifications WHERE user_type = "intern" AND user_id = ? ORDER BY created_at DESC LIMIT 50', 
+            [req.intern.id]
+        );
+        res.json({ success: true, data: notifications });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to fetch notifications' });
+    }
+};
+
 exports.getProperties = async (req, res) => {
     try {
         const [properties] = await pool.query('SELECT * FROM Properties WHERE intern_id = ? ORDER BY created_at DESC', [req.intern.id]);
@@ -79,10 +92,10 @@ exports.getPropertyById = async (req, res) => {
 
 exports.createProperty = async (req, res) => {
     try {
-        const { title, description, price, location, badge, image, specs } = req.body;
+        const { title, description, price, location, badge, image, specs, media } = req.body;
         const [result] = await pool.query(
-            'INSERT INTO Properties (title, description, price, location, badge, image, specs, intern_id, approval_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "Draft")',
-            [title, description, price, location, badge, image, JSON.stringify(specs || {}), req.intern.id]
+            'INSERT INTO Properties (title, description, price, location, badge, image, specs, media, intern_id, approval_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, "Draft")',
+            [title, description, price, location, badge, image, JSON.stringify(specs || {}), JSON.stringify(media || { photos: [], video: '' }), req.intern.id]
         );
         res.status(201).json({ success: true, message: 'Property created as Draft', property_id: result.insertId });
     } catch (err) {
@@ -93,7 +106,7 @@ exports.createProperty = async (req, res) => {
 
 exports.updateProperty = async (req, res) => {
     try {
-        const { title, description, price, location, badge, image, specs } = req.body;
+        const { title, description, price, location, badge, image, specs, media } = req.body;
         // Verify ownership and status
         const [props] = await pool.query('SELECT approval_status FROM Properties WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
         if (!props.length) return res.status(404).json({ success: false, message: 'Property not found' });
@@ -103,8 +116,8 @@ exports.updateProperty = async (req, res) => {
         }
 
         await pool.query(
-            'UPDATE Properties SET title=?, description=?, price=?, location=?, badge=?, image=?, specs=? WHERE id=? AND intern_id=?',
-            [title, description, price, location, badge, image, JSON.stringify(specs || {}), req.params.id, req.intern.id]
+            'UPDATE Properties SET title=?, description=?, price=?, location=?, badge=?, image=?, specs=?, media=? WHERE id=? AND intern_id=?',
+            [title, description, price, location, badge, image, JSON.stringify(specs || {}), JSON.stringify(media || { photos: [], video: '' }), req.params.id, req.intern.id]
         );
         res.json({ success: true, message: 'Property updated' });
     } catch (err) {
@@ -118,6 +131,13 @@ exports.submitProperty = async (req, res) => {
         if (!props.length) return res.status(404).json({ success: false, message: 'Property not found' });
         
         await pool.query('UPDATE Properties SET approval_status = "Under Review" WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
+        
+        // Notify Admins
+        await pool.query(
+            'INSERT INTO Notifications (user_type, title, message, link) VALUES ("admin", "New Listing Submitted", ?, ?)',
+            [`Intern ID ${req.intern.id} submitted property #${req.params.id} for review`, '/admin-panel/listing-interns.html']
+        );
+        
         res.json({ success: true, message: 'Property submitted for review' });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to submit property' });
@@ -134,6 +154,13 @@ exports.resubmitProperty = async (req, res) => {
         }
 
         await pool.query('UPDATE Properties SET approval_status = "Under Review" WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
+        
+        // Notify Admins
+        await pool.query(
+            'INSERT INTO Notifications (user_type, title, message, link) VALUES ("admin", "Listing Resubmitted", ?, ?)',
+            [`Intern ID ${req.intern.id} resubmitted property #${req.params.id} after changes`, '/admin-panel/listing-interns.html']
+        );
+        
         res.json({ success: true, message: 'Property resubmitted for review' });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to resubmit property' });

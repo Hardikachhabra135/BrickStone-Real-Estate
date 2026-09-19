@@ -23,6 +23,8 @@ const siteRoutes = require('./routes/siteRoutes');
 const authRoutes = require('./routes/auth');
 const internAdminRoutes = require('./routes/internAdminRoutes');
 const internPortalRoutes = require('./routes/internPortalRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 // Mount Routes
 app.use('/api/admin', adminRoutes);
@@ -34,6 +36,10 @@ app.use('/api/site', siteRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', internAdminRoutes);
 app.use('/api/intern', internPortalRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/notifications', notificationRoutes);
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/api/admin/force-migration', async (req, res) => {
     try {
