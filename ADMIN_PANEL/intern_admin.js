@@ -6,7 +6,7 @@
  */
 
 // ===== CONFIGURATION =====
-window._IAD_PORTAL_URL = 'https://brick-stone-frontend.vercel.app/LISTING_INTERN/index.html';
+window._IAD_PORTAL_URL = 'https://brickstone-intern-portal.vercel.app/index.html';
 // Keep a local alias for convenience
 var PORTAL_LOCAL_URL = window._IAD_PORTAL_URL;
 
