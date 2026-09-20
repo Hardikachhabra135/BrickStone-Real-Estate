@@ -3,15 +3,20 @@ const pool = require('../config/db');
 // Create a new property
 exports.createProperty = async (req, res) => {
     try {
-        const { title, description, price, location, badge, image, specs, is_verified, status } = req.body;
+        const { title, description, price, location, badge, image, specs, is_verified, status, category, subcategory, media } = req.body;
         
-        const specsJson = specs ? JSON.stringify(specs) : null;
+        let processedSpecs = Array.isArray(specs) ? specs : [];
+        if (category) processedSpecs.push('__CAT:' + category);
+        if (subcategory) processedSpecs.push('__SUB:' + subcategory);
+        
+        const specsJson = processedSpecs.length > 0 ? JSON.stringify(processedSpecs) : null;
         const verified = is_verified ? true : false;
         const propStatus = status || 'Available';
+        const mediaJson = media ? JSON.stringify(media) : JSON.stringify({ photos: [], video: '' });
 
         const [result] = await pool.query(
-            'INSERT INTO Properties (title, description, price, location, badge, image, specs, is_verified, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [title, description, price, location, badge, image, specsJson, verified, propStatus]
+            'INSERT INTO Properties (title, description, price, location, badge, image, specs, is_verified, status, media) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [title, description, price, location, badge, image, specsJson, verified, propStatus, mediaJson]
         );
 
         res.status(201).json({ success: true, message: 'Property created', data: { id: result.insertId } });
@@ -83,9 +88,19 @@ exports.getPropertyById = async (req, res) => {
 exports.updateProperty = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, price, location, badge, image, specs, is_verified, status } = req.body;
+        const { title, description, price, location, badge, image, specs, is_verified, status, category, subcategory, media } = req.body;
 
-        const specsJson = specs ? JSON.stringify(specs) : null;
+        let processedSpecs = Array.isArray(specs) ? specs : (specs || []);
+        if (category || subcategory) {
+            // Remove old tags
+            processedSpecs = processedSpecs.filter(s => !s.startsWith('__CAT:') && !s.startsWith('__SUB:'));
+            if (category) processedSpecs.push('__CAT:' + category);
+            if (subcategory) processedSpecs.push('__SUB:' + subcategory);
+        }
+
+        const specsJson = processedSpecs.length > 0 ? JSON.stringify(processedSpecs) : null;
+        const mediaJson = media ? JSON.stringify(media) : null;
+
         // Allows partial updates for verified boolean if provided, otherwise keep existing logic
         let query = 'UPDATE Properties SET ';
         const queryParams = [];
@@ -96,7 +111,8 @@ exports.updateProperty = async (req, res) => {
         if (location !== undefined) { query += 'location = ?, '; queryParams.push(location); }
         if (badge !== undefined) { query += 'badge = ?, '; queryParams.push(badge); }
         if (image !== undefined) { query += 'image = ?, '; queryParams.push(image); }
-        if (specs !== undefined) { query += 'specs = ?, '; queryParams.push(specsJson); }
+        if (specs !== undefined || category || subcategory) { query += 'specs = ?, '; queryParams.push(specsJson); }
+        if (media !== undefined) { query += 'media = ?, '; queryParams.push(mediaJson); }
         if (is_verified !== undefined) { query += 'is_verified = ?, '; queryParams.push(is_verified ? true : false); }
         if (status !== undefined) { query += 'status = ?, '; queryParams.push(status); }
 

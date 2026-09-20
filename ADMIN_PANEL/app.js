@@ -424,8 +424,31 @@ async function editProperty(id) {
             document.getElementById('prop-status').value = p.status;
             document.getElementById('prop-verified').checked = !!p.is_verified;
             document.getElementById('prop-image').value = p.image || '';
-            document.getElementById('prop-specs').value = p.specs ? p.specs.join(', ') : '';
+            document.getElementById('prop-specs').value = p.specs ? p.specs.filter(s => !s.startsWith('__CAT:') && !s.startsWith('__SUB:')).join(', ') : '';
             document.getElementById('prop-description').value = p.description || '';
+            
+            // Extract category and subcategory from specs
+            const catSpec = p.specs ? p.specs.find(s => s.startsWith('__CAT:')) : null;
+            const subSpec = p.specs ? p.specs.find(s => s.startsWith('__SUB:')) : null;
+            document.getElementById('prop-category').value = catSpec ? catSpec.split(':')[1] : '';
+            // Update subcategory options
+            if(window.updateSubcategories) window.updateSubcategories();
+            document.getElementById('prop-subcategory').value = subSpec ? subSpec.split(':')[1] : '';
+            
+            // Extract media
+            let media = { photos: [], video: '' };
+            try {
+                if (p.media) {
+                    media = typeof p.media === 'string' ? JSON.parse(p.media) : p.media;
+                }
+            } catch(e) {}
+            
+            document.getElementById('prop-photo-1').value = media.photos && media.photos[0] ? media.photos[0] : '';
+            document.getElementById('prop-photo-2').value = media.photos && media.photos[1] ? media.photos[1] : '';
+            document.getElementById('prop-photo-3').value = media.photos && media.photos[2] ? media.photos[2] : '';
+            document.getElementById('prop-photo-4').value = media.photos && media.photos[3] ? media.photos[3] : '';
+            document.getElementById('prop-video').value = media.video || '';
+
             document.getElementById('prop-modal-title').textContent = 'Edit Property';
             
             document.getElementById('property-modal').classList.add('active');
@@ -444,13 +467,28 @@ document.getElementById('property-form').addEventListener('submit', async (e) =>
     e.preventDefault();
     const id = document.getElementById('prop-id').value;
     
+    const photos = [
+        document.getElementById('prop-photo-1').value.trim(),
+        document.getElementById('prop-photo-2').value.trim(),
+        document.getElementById('prop-photo-3').value.trim(),
+        document.getElementById('prop-photo-4').value.trim()
+    ].filter(url => url);
+
+    const media = {
+        photos: photos,
+        video: document.getElementById('prop-video').value.trim()
+    };
+
     const data = {
         title: document.getElementById('prop-title').value,
         price: document.getElementById('prop-price').value,
         location: document.getElementById('prop-location').value,
         status: document.getElementById('prop-status').value,
         is_verified: document.getElementById('prop-verified').checked,
+        category: document.getElementById('prop-category').value,
+        subcategory: document.getElementById('prop-subcategory').value,
         image: document.getElementById('prop-image').value || 'images/default.jpg',
+        media: media,
         specs: document.getElementById('prop-specs').value.split(',').map(s => s.trim()).filter(s => s),
         description: document.getElementById('prop-description').value || 'Updated via Admin',
         badge: document.getElementById('prop-status').value === 'Available' ? 'For Sale' : document.getElementById('prop-status').value
