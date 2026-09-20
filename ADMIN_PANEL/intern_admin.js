@@ -6,7 +6,7 @@
  */
 
 // ===== CONFIGURATION =====
-window._IAD_PORTAL_URL = 'http://localhost:8081/index.html';
+window._IAD_PORTAL_URL = 'https://brick-stone-frontend.vercel.app/LISTING_INTERN/index.html';
 // Keep a local alias for convenience
 var PORTAL_LOCAL_URL = window._IAD_PORTAL_URL;
 
@@ -111,7 +111,7 @@ window.loadInterns = async function() {
                 ? `<span style="display:inline-flex; align-items:center; background:#dcfce7; color:#15803d; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600;"><span style="width:6px;height:6px;background:#16a34a;border-radius:50%;margin-right:6px;"></span>Active</span>`
                 : `<span style="display:inline-flex; align-items:center; background:#f1f5f9; color:#64748b; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600;"><span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;margin-right:6px;"></span>Inactive</span>`;
 
-            const portalUrl = PORTAL_LOCAL_URL;
+            const portalUrl = PORTAL_LOCAL_URL + '?id=' + encodeURIComponent(i.intern_id);
             const initials = (i.name || '--').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 
             const tr = document.createElement('tr');
@@ -177,7 +177,7 @@ window.loadInterns = async function() {
 
 // ===== COPY PORTAL LINK (OVERRIDE) =====
 window.copyPortalLink = function(internId, btnElement) {
-    const link = PORTAL_LOCAL_URL;
+    const link = PORTAL_LOCAL_URL + '?id=' + encodeURIComponent(internId);
     navigator.clipboard.writeText(link).then(() => {
         const orig = btnElement.innerHTML;
         btnElement.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
