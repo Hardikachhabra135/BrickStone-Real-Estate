@@ -423,7 +423,6 @@ async function editProperty(id) {
             document.getElementById('prop-location').value = p.location;
             document.getElementById('prop-status').value = p.status;
             document.getElementById('prop-verified').checked = !!p.is_verified;
-            document.getElementById('prop-image').value = p.image || '';
             document.getElementById('prop-specs').value = p.specs ? p.specs.filter(s => !s.startsWith('__CAT:') && !s.startsWith('__SUB:')).join(', ') : '';
             document.getElementById('prop-description').value = p.description || '';
             
