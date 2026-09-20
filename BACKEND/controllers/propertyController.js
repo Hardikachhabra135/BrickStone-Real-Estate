@@ -15,8 +15,8 @@ exports.createProperty = async (req, res) => {
         const mediaJson = media ? JSON.stringify(media) : JSON.stringify({ photos: [], video: '' });
 
         const [result] = await pool.query(
-            'INSERT INTO Properties (title, description, price, location, badge, image, specs, is_verified, status, media) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [title, description, price, location, badge, image, specsJson, verified, propStatus, mediaJson]
+            'INSERT INTO Properties (title, description, price, location, badge, image, specs, is_verified, status, media, approval_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [title, description, price, location, badge, image, specsJson, verified, propStatus, mediaJson, 'Approved']
         );
 
         res.status(201).json({ success: true, message: 'Property created', data: { id: result.insertId } });
