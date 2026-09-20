@@ -300,6 +300,15 @@ function renderListingsGrid(filter) {
                 </button>
             </div>`;
             
+        let feedbackHtml = '';
+        if (l.approval_status === 'Changes Requested' && l.latest_note) {
+            feedbackHtml = `
+            <div style="background-color:rgba(239, 68, 68, 0.1); color:#ef4444; padding:8px 12px; font-size:12px; border-radius:4px; margin-top:12px; border:1px solid rgba(239, 68, 68, 0.2);">
+                <strong style="display:block; margin-bottom:4px;">Admin Feedback:</strong>
+                ${l.latest_note}
+            </div>`;
+        }
+            
         return `
         <div class="listing-card" onclick="editListing('${l.id}')">
             <div class="card-image-wrap">
@@ -313,6 +322,7 @@ function renderListingsGrid(filter) {
                     <div class="card-id">${l.id}</div>
                     <div class="card-price">${l.price || '--'}</div>
                 </div>
+                ${feedbackHtml}
                 ${deleteHtml}
             </div>
         </div>
