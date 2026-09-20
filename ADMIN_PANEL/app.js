@@ -443,11 +443,14 @@ async function editProperty(id) {
                 }
             } catch(e) {}
             
-            document.getElementById('prop-photo-1').value = media.photos && media.photos[0] ? media.photos[0] : '';
-            document.getElementById('prop-photo-2').value = media.photos && media.photos[1] ? media.photos[1] : '';
-            document.getElementById('prop-photo-3').value = media.photos && media.photos[2] ? media.photos[2] : '';
-            document.getElementById('prop-photo-4').value = media.photos && media.photos[3] ? media.photos[3] : '';
-            document.getElementById('prop-video').value = media.video || '';
+            document.getElementById('prop-image-existing').value = p.image || '';
+            document.getElementById('prop-image-file').value = '';
+            
+            document.getElementById('prop-photos-existing').value = (media.photos && media.photos.length > 0) ? JSON.stringify(media.photos) : '';
+            document.getElementById('prop-photos-file').value = '';
+            
+            document.getElementById('prop-video-existing').value = media.video || '';
+            document.getElementById('prop-video-file').value = '';
 
             document.getElementById('prop-modal-title').textContent = 'Edit Property';
             
@@ -467,34 +470,66 @@ document.getElementById('property-form').addEventListener('submit', async (e) =>
     e.preventDefault();
     const id = document.getElementById('prop-id').value;
     
-    const photos = [
-        document.getElementById('prop-photo-1').value.trim(),
-        document.getElementById('prop-photo-2').value.trim(),
-        document.getElementById('prop-photo-3').value.trim(),
-        document.getElementById('prop-photo-4').value.trim()
-    ].filter(url => url);
-
-    const media = {
-        photos: photos,
-        video: document.getElementById('prop-video').value.trim()
-    };
-
-    const data = {
-        title: document.getElementById('prop-title').value,
-        price: document.getElementById('prop-price').value,
-        location: document.getElementById('prop-location').value,
-        status: document.getElementById('prop-status').value,
-        is_verified: document.getElementById('prop-verified').checked,
-        category: document.getElementById('prop-category').value,
-        subcategory: document.getElementById('prop-subcategory').value,
-        image: document.getElementById('prop-image').value || 'images/default.jpg',
-        media: media,
-        specs: document.getElementById('prop-specs').value.split(',').map(s => s.trim()).filter(s => s),
-        description: document.getElementById('prop-description').value || 'Updated via Admin',
-        badge: document.getElementById('prop-status').value === 'Available' ? 'For Sale' : document.getElementById('prop-status').value
-    };
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalBtnText = btn.textContent;
+    btn.textContent = 'Uploading...';
+    btn.disabled = true;
 
     try {
+        // Upload Featured Image
+        let imageUrl = document.getElementById('prop-image-existing').value || 'images/default.jpg';
+        const imageFile = document.getElementById('prop-image-file').files[0];
+        if (imageFile) {
+            const formData = new FormData();
+            formData.append('files', imageFile);
+            const res = await fetch(`${API_BASE}/upload`, { method: 'POST', headers: { 'Authorization': `Bearer ${authToken}` }, body: formData });
+            const data = await res.json();
+            if (data.success && data.urls.length > 0) imageUrl = data.urls[0];
+        }
+
+        // Upload Additional Photos
+        let photosUrls = [];
+        try { photosUrls = JSON.parse(document.getElementById('prop-photos-existing').value || '[]'); } catch(e) {}
+        const photoFiles = document.getElementById('prop-photos-file').files;
+        if (photoFiles.length > 0) {
+            const formData = new FormData();
+            for (let i = 0; i < photoFiles.length; i++) formData.append('files', photoFiles[i]);
+            const res = await fetch(`${API_BASE}/upload`, { method: 'POST', headers: { 'Authorization': `Bearer ${authToken}` }, body: formData });
+            const data = await res.json();
+            if (data.success) photosUrls = data.urls;
+        }
+
+        // Upload Video
+        let videoUrl = document.getElementById('prop-video-existing').value || '';
+        const videoFile = document.getElementById('prop-video-file').files[0];
+        if (videoFile) {
+            const formData = new FormData();
+            formData.append('files', videoFile);
+            const res = await fetch(`${API_BASE}/upload`, { method: 'POST', headers: { 'Authorization': `Bearer ${authToken}` }, body: formData });
+            const data = await res.json();
+            if (data.success && data.urls.length > 0) videoUrl = data.urls[0];
+        }
+
+        const media = {
+            photos: photosUrls,
+            video: videoUrl
+        };
+
+        const data = {
+            title: document.getElementById('prop-title').value,
+            price: document.getElementById('prop-price').value,
+            location: document.getElementById('prop-location').value,
+            status: document.getElementById('prop-status').value,
+            is_verified: document.getElementById('prop-verified').checked,
+            category: document.getElementById('prop-category').value,
+            subcategory: document.getElementById('prop-subcategory').value,
+            image: imageUrl,
+            media: media,
+            specs: document.getElementById('prop-specs').value.split(',').map(s => s.trim()).filter(s => s),
+            description: document.getElementById('prop-description').value || 'Updated via Admin',
+            badge: document.getElementById('prop-status').value === 'Available' ? 'For Sale' : document.getElementById('prop-status').value
+        };
+
         let res;
         if (id) {
             res = await fetchApi(`/properties/${id}`, { method: 'PUT', body: JSON.stringify(data) });
@@ -509,7 +544,13 @@ document.getElementById('property-form').addEventListener('submit', async (e) =>
         } else {
             alert(res.message);
         }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+        console.error(e);
+        alert('Failed to save property. See console for details.');
+    } finally {
+        btn.textContent = originalBtnText;
+        btn.disabled = false;
+    }
 });
 
 async function deleteProperty(id) {

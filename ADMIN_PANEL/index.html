@@ -875,22 +875,23 @@
                         </div>
                     </div>
                     <div class="input-group">
-                        <label>Featured Image URL</label>
-                        <input type="text" id="prop-image" placeholder="images/default.jpg" class="premium-input">
+                        <label>Featured Image</label>
+                        <input type="file" id="prop-image-file" class="premium-input" accept="image/*">
+                        <!-- We keep a hidden input to store the current URL when editing an existing property -->
+                        <input type="hidden" id="prop-image-existing">
                     </div>
                       <div class="input-group">
-                          <label>ADDITIONAL PROPERTY PHOTOS (Up to 4 image URLs)</label>
+                          <label>ADDITIONAL PROPERTY PHOTOS (Up to 4 images)</label>
                           <div style="display:flex; flex-direction:column; gap:8px; margin-top:5px;">
-                              <input type="text" id="prop-photo-1" placeholder="Image URL 1" class="premium-input">
-                              <input type="text" id="prop-photo-2" placeholder="Image URL 2" class="premium-input">
-                              <input type="text" id="prop-photo-3" placeholder="Image URL 3" class="premium-input">
-                              <input type="text" id="prop-photo-4" placeholder="Image URL 4" class="premium-input">
+                              <input type="file" id="prop-photos-file" class="premium-input" accept="image/*" multiple>
+                              <input type="hidden" id="prop-photos-existing">
                           </div>
                       </div>
                       
                       <div class="input-group">
-                          <label>PROPERTY VIDEO (URL)</label>
-                          <input type="text" id="prop-video" placeholder="Video URL (e.g., https://.../video.mp4)" class="premium-input">
+                          <label>PROPERTY VIDEO</label>
+                          <input type="file" id="prop-video-file" class="premium-input" accept="video/*">
+                          <input type="hidden" id="prop-video-existing">
                       </div>
 <div class="input-group">
                         <label>Specifications (comma separated)</label>
