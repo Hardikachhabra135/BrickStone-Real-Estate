@@ -34,13 +34,6 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/site', siteRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/admin', internAdminRoutes);
-app.use('/api/intern', internPortalRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/notifications', notificationRoutes);
-
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 app.get('/api/admin/force-migration', async (req, res) => {
     try {
         const pool = require('./config/db');
@@ -64,6 +57,13 @@ app.get('/api/admin/force-migration', async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+
+app.use('/api/admin', internAdminRoutes);
+app.use('/api/intern', internPortalRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/notifications', notificationRoutes);
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // The Admin Panel is now independently deployed on Vercel
 // app.use('/admin', express.static(path.join(__dirname, '../ADMIN_PANEL')));

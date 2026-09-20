@@ -142,8 +142,13 @@ function setupNavigation() {
             document.getElementById(item.getAttribute('data-target')).classList.add('active');
             
             if(item.getAttribute('data-target') === 'dashboard-view') loadDashboard();
-            if(item.getAttribute('data-target') === 'my-listings-view') loadListings();
+            if(item.getAttribute('data-target') === 'my-listings-view') {
+                const filter = item.getAttribute('data-filter') || 'ALL_SUBMITTED';
+                document.getElementById('listing-filter').value = filter === 'Draft' ? 'ALL_SUBMITTED' : filter;
+                loadListings(filter);
+            }
             if(item.getAttribute('data-target') === 'new-listing-view') resetEditor();
+            if(item.getAttribute('data-target') === 'chat-view') loadChat();
         });
     });
 }
@@ -189,9 +194,24 @@ async function loadDashboard() {
     }
 }
 
-async function loadListings() {
+async function loadListings(filter = 'ALL_SUBMITTED') {
     await loadDashboard(); // refresh data
-    renderListingsGrid('ALL');
+    
+    const viewHeader = document.querySelector('#my-listings-view .page-title');
+    const viewSubtitle = document.querySelector('#my-listings-view .page-subtitle');
+    const filterSelect = document.getElementById('listing-filter');
+    
+    if (filter === 'Draft') {
+        viewHeader.textContent = 'Drafts';
+        viewSubtitle.textContent = 'Manage your saved property drafts.';
+        filterSelect.style.display = 'none';
+    } else {
+        viewHeader.textContent = 'My Listings';
+        viewSubtitle.textContent = 'Manage your inventory and track submission status.';
+        filterSelect.style.display = 'block';
+    }
+
+    renderListingsGrid(filter);
 }
 
 document.getElementById('listing-filter').addEventListener('change', (e) => {
@@ -210,6 +230,17 @@ function updateDashboardKPIs() {
     document.getElementById('kpi-approved').textContent = approved;
 }
 
+function getPrimaryImage(l) {
+    if (l.image) return l.image;
+    if (l.media) {
+        try {
+            const mediaObj = typeof l.media === 'string' ? JSON.parse(l.media) : l.media;
+            if (mediaObj && mediaObj.photos && mediaObj.photos.length > 0) return mediaObj.photos[0];
+        } catch(e) {}
+    }
+    return 'https://via.placeholder.com/400x200/111111/52525b';
+}
+
 function renderRecentListings() {
     const container = document.getElementById('recent-listings-container');
     const recent = myListings.slice(0, 3);
@@ -219,21 +250,31 @@ function renderRecentListings() {
         return;
     }
     
-    container.innerHTML = recent.map(l => `
+    container.innerHTML = recent.map(l => {
+        const imgUrl = getPrimaryImage(l);
+        return `
         <div class="activity-item" style="cursor:pointer;" onclick="editListing('${l.id}')">
-            <img src="${l.primary_photo || 'https://via.placeholder.com/60x60/111111/52525b'}" style="width:60px; height:60px; object-fit:cover; border-radius:8px;">
+            <img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/60x60/111111/52525b'" style="width:60px; height:60px; object-fit:cover; border-radius:8px;">
             <div>
                 <div style="font-weight:500; font-size:14px; color:var(--text-primary);">${l.title || 'Untitled'}</div>
                 <div style="font-size:12px; color:var(--text-secondary);">${l.location || 'No location'} â€¢ ${l.price || '--'}</div>
-                <span style="font-size:10px; margin-top:4px; display:inline-block; color:var(--status-${l.approval_status.toLowerCase().split(' ')[0]})">${l.approval_status}</span>
+                <span style="font-size:10px; margin-top:4px; display:inline-block; color:var(--status-${l.approval_status.toLowerCase().split(' ')[0]})">${l.approval_status === 'Under Review' ? 'Pending Review' : l.approval_status}</span>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 function renderListingsGrid(filter) {
     const grid = document.getElementById('listings-grid');
-    const filtered = filter === 'ALL' ? myListings : myListings.filter(l => l.approval_status === filter);
+    
+    let filtered = myListings;
+    if (filter === 'ALL_SUBMITTED') {
+        filtered = myListings.filter(l => l.approval_status !== 'Draft');
+    } else if (filter === 'Approved') {
+        filtered = myListings.filter(l => l.approval_status === 'Approved' || l.approval_status === 'Published');
+    } else if (filter !== 'ALL') {
+        filtered = myListings.filter(l => l.approval_status === filter);
+    }
     
     if (filtered.length === 0) {
         grid.innerHTML = `
@@ -249,19 +290,30 @@ function renderListingsGrid(filter) {
     
     grid.innerHTML = filtered.map(l => {
         const statusClass = 'status-' + l.approval_status.toLowerCase().split(' ')[0];
+        const statusText = l.approval_status === 'Under Review' ? 'Pending Review' : l.approval_status;
+        const imgUrl = getPrimaryImage(l);
+        
+        const deleteHtml = `
+            <div style="display:flex; justify-content:flex-end; padding-top:8px; border-top:1px solid var(--border-color); margin-top:12px;">
+                <button class="icon-btn" style="font-size:12px; color:var(--status-rejected); background:transparent; border:none; cursor:pointer;" onclick="event.stopPropagation(); deleteListing('${l.id}', '${l.approval_status}')">
+                    <i data-feather="trash-2" style="width:14px; margin-right:4px;"></i> Delete
+                </button>
+            </div>`;
+            
         return `
         <div class="listing-card" onclick="editListing('${l.id}')">
             <div class="card-image-wrap">
-                <img src="${l.image || 'https://via.placeholder.com/400x200/111111/52525b'}" class="card-image">
-                <div class="card-status ${statusClass}">${l.approval_status}</div>
+                <img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/400x200/111111/52525b'" class="card-image">
+                <div class="card-status ${statusClass}">${statusText}</div>
             </div>
-            <div class="card-content">
+            <div class="card-content" style="position:relative;">
                 <div class="card-title">${l.title || 'Untitled Listing'}</div>
                 <div class="card-location"><i data-feather="map-pin" style="width:12px;"></i> ${l.location || 'Unknown Location'}</div>
                 <div class="card-meta">
                     <div class="card-id">${l.id}</div>
                     <div class="card-price">${l.price || '--'}</div>
                 </div>
+                ${deleteHtml}
             </div>
         </div>
     `}).join('');
@@ -485,7 +537,7 @@ async function handleFileUpload(file, inputElement) {
     progress.style.width = '30%';
     
     try {
-        const res = await fetchApi('/upload', {
+        const res = await fetchApi('/intern/upload', {
             method: 'POST',
             body: formData
         });
@@ -649,3 +701,95 @@ function showToast(msg, icon) {
     }, 3000);
 }
 
+// Chat Functions
+async function loadChat() {
+    try {
+        const res = await fetchApi('/intern/chat');
+        const data = await res.json();
+        if (data.success) {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = '';
+            
+            if (!data.messages || data.messages.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:var(--text-secondary); margin-top:2rem;">Start a conversation with Admin</div>';
+                return;
+            }
+            
+            data.messages.forEach(msg => {
+                const align = msg.sender_type === 'intern' ? 'flex-end' : 'flex-start';
+                const bg = msg.sender_type === 'intern' ? 'var(--accent-color)' : 'var(--bg-main)';
+                const color = msg.sender_type === 'intern' ? '#fff' : 'var(--text-primary)';
+                
+                const div = document.createElement('div');
+                div.style.cssText = `align-self: ${align}; background: ${bg}; color: ${color}; padding: 10px 14px; border-radius: 8px; max-width: 70%; margin-bottom: 8px;`;
+                div.innerHTML = `
+                    <div style="font-size: 14px;">${msg.message}</div>
+                    <div style="font-size: 10px; text-align: right; margin-top: 4px; opacity: 0.8;">${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                `;
+                container.appendChild(div);
+            });
+            
+            container.scrollTop = container.scrollHeight;
+        }
+    } catch(err) {
+        console.error('Failed to load chat:', err);
+    }
+}
+
+window.sendChatMessage = async function() {
+    const input = document.getElementById('chat-input-field');
+    const msg = input.value.trim();
+    if (!msg) return;
+    
+    input.value = '';
+    
+    // Optimistic UI
+    const container = document.getElementById('chat-messages');
+    if (container.innerHTML.includes('Start a conversation')) {
+        container.innerHTML = '';
+    }
+    const div = document.createElement('div');
+    div.style.cssText = `align-self: flex-end; background: var(--accent-color); color: #fff; padding: 10px 14px; border-radius: 8px; max-width: 70%; margin-bottom: 8px;`;
+    div.innerHTML = `
+        <div style="font-size: 14px;">${msg}</div>
+        <div style="font-size: 10px; text-align: right; margin-top: 4px; opacity: 0.8;">Just now</div>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+
+    try {
+        await fetchApi('/intern/chat', {
+            method: 'POST',
+            body: JSON.stringify({ message: msg })
+        });
+        // We could reload but optimistic is fine
+    } catch (err) {
+        showToast('Failed to send message', 'x');
+    }
+}
+
+window.deleteListing = async function(id, status) {
+    console.log("deleteListing clicked! ID:", id, "Status:", status);
+    const isDraft = status === 'Draft';
+    const confirmMsg = isDraft 
+        ? 'Are you sure you want to delete this draft?' 
+        : 'Are you sure you want to delete this listing?';
+        
+    if (!confirm(confirmMsg)) return;
+    
+    try {
+        const res = await fetchApi('/intern/properties/' + id, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+            showToast('Listing deleted successfully', 'trash-2');
+            const currentFilter = document.getElementById('listing-filter').value || 'ALL_SUBMITTED';
+            const activeTab = document.querySelector('.nav-item[data-target="my-listings-view"].active');
+            const filterToReload = activeTab ? (activeTab.getAttribute('data-filter') || 'ALL_SUBMITTED') : 'ALL_SUBMITTED';
+            loadListings(filterToReload); // reload listings view with correct filter
+        } else {
+            showToast(data.message, 'x');
+        }
+    } catch(err) {
+        showToast('Failed to delete', 'x');
+    }
+}

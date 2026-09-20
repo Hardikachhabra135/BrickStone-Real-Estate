@@ -30,6 +30,12 @@ async function run() {
             statements.push(...v2Sql.split(';').filter(s => s.trim().length > 0));
         }
 
+        const v3Path = path.join(__dirname, 'migration_v3.sql');
+        if (fs.existsSync(v3Path)) {
+            const v3Sql = fs.readFileSync(v3Path, 'utf8');
+            statements.push(...v3Sql.split(';').filter(s => s.trim().length > 0));
+        }
+
         let successCount = 0;
         for (const stmt of statements) {
             try {

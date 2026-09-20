@@ -166,3 +166,68 @@ exports.resubmitProperty = async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to resubmit property' });
     }
 };
+
+exports.deleteListing = async (req, res) => {
+    try {
+        const [props] = await pool.query('SELECT approval_status FROM Properties WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
+        if (!props.length) return res.status(404).json({ success: false, message: 'Property not found or access denied.' });
+        
+        const status = props[0].approval_status;
+        if (status === 'Approved' || status === 'Published') {
+            return res.status(403).json({ success: false, message: 'Cannot delete a published or approved listing. Please contact admin.' });
+        }
+
+        await pool.query('DELETE FROM Properties WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
+        res.json({ success: true, message: 'Listing deleted successfully.' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to delete listing.' });
+    }
+};
+
+exports.getChat = async (req, res) => {
+    try {
+        const [conversations] = await pool.query('SELECT * FROM Conversations WHERE intern_id = ?', [req.intern.id]);
+        if (!conversations.length) {
+            return res.json({ success: true, messages: [] });
+        }
+        
+        const conversationId = conversations[0].id;
+        
+        // Mark as read
+        await pool.query('UPDATE Messages SET is_read = TRUE WHERE conversation_id = ? AND sender_type = "admin"', [conversationId]);
+        
+        const [messages] = await pool.query('SELECT * FROM Messages WHERE conversation_id = ? ORDER BY created_at ASC', [conversationId]);
+        res.json({ success: true, messages });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to load chat' });
+    }
+};
+
+exports.sendMessage = async (req, res) => {
+    try {
+        const { message } = req.body;
+        if (!message) return res.status(400).json({ success: false, message: 'Message is required' });
+
+        let [conversations] = await pool.query('SELECT * FROM Conversations WHERE intern_id = ?', [req.intern.id]);
+        let conversationId;
+        
+        if (!conversations.length) {
+            const [result] = await pool.query('INSERT INTO Conversations (intern_id) VALUES (?)', [req.intern.id]);
+            conversationId = result.insertId;
+        } else {
+            conversationId = conversations[0].id;
+            await pool.query('UPDATE Conversations SET last_message_at = CURRENT_TIMESTAMP WHERE id = ?', [conversationId]);
+        }
+        
+        await pool.query(
+            'INSERT INTO Messages (conversation_id, sender_type, sender_id, message) VALUES (?, "intern", ?, ?)',
+            [conversationId, req.intern.id, message]
+        );
+        
+        res.json({ success: true, message: 'Message sent' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to send message' });
+    }
+};
