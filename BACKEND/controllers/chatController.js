@@ -23,7 +23,7 @@ exports.getMessages = async (req, res) => {
         // For simplicity, just mark all read.
         await pool.query('UPDATE Messages SET is_read = TRUE WHERE conversation_id = ?', [conversationId]);
 
-        res.json({ success: true, data: messages });
+        res.json({ success: true, data: messages, messages: messages });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Failed to fetch messages' });
