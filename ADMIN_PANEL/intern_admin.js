@@ -782,4 +782,156 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.feather) feather.replace();
 });
 
+// ===== ADMIN CHAT IMPLEMENTATION =====
+
+let adminChatSocket = null;
+let currentChatInternId = null;
+
+function setupAdminChatSocket() {
+    if (!adminToken) return;
+    const baseUrl = API_BASE.replace('/api', '');
+    if (!adminChatSocket) {
+        adminChatSocket = io(baseUrl);
+        adminChatSocket.on('connect', () => {
+            console.log('Admin connected to chat server');
+        });
+
+        adminChatSocket.on('receive_message', (msg) => {
+            if (currentChatInternId == msg.conversation_id || currentChatInternId == msg.sender_id) { 
+                // Note: internId doesn't exactly equal sender_id if it's admin, but sender_id is intern if intern sent it
+                if (msg.sender_type === 'intern' && currentChatInternId == msg.sender_id) {
+                    appendAdminChatMessageUI(msg);
+                } else if (msg.sender_type === 'admin') {
+                    // we already appended optimistically, but maybe we shouldn't?
+                    // Actually, if we're connected to room, we might receive our own message.
+                }
+            } else {
+                showAdminToast('New message from an intern', 'message-circle');
+                loadChatInternsList(); // refresh the list to show unread or latest timestamp
+            }
+        });
+    }
+}
+
+window.loadChatInternsList = async function() {
+    try {
+        const json = await fetchApi('/admin/interns');
+        if (!json.success) throw new Error(json.message);
+        
+        const listDiv = document.getElementById('chat-intern-list');
+        if (!listDiv) return;
+        
+        if (json.data.length === 0) {
+            listDiv.innerHTML = '<div class="empty-state">No interns found.</div>';
+            return;
+        }
+
+        listDiv.innerHTML = json.data.map(intern => `
+            <div class="intern-chat-item" onclick="openInternChat(${intern.id}, '${intern.name}')" 
+                style="padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s;">
+                <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--primary-color);">
+                    ${intern.name.substring(0, 2).toUpperCase()}
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 500; font-size: 14px;">${intern.name}</div>
+                    <div style="font-size: 12px; color: var(--text-light);">${intern.intern_id}</div>
+                </div>
+            </div>
+        `).join('');
+    } catch(err) {
+        console.error(err);
+    }
+};
+
+window.openInternChat = async function(internId, internName) {
+    currentChatInternId = internId;
+    document.getElementById('chat-header').textContent = `Chat with ${internName}`;
+    
+    // Join the intern's room to receive their real-time messages
+    if (adminChatSocket) {
+        adminChatSocket.emit('join_intern_room', internId);
+    }
+
+    // Highlight selected item
+    document.querySelectorAll('.intern-chat-item').forEach(el => el.style.background = 'transparent');
+    event.currentTarget.style.background = 'var(--bg-main)';
+
+    const container = document.getElementById('admin-chat-messages');
+    container.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-light);">Loading...</div>';
+
+    try {
+        const json = await fetchApi(`/admin/interns/${internId}/chat`);
+        if (!json.success) throw new Error(json.message);
+        
+        container.innerHTML = '';
+        if (json.data.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-light);">No messages yet.</div>';
+            return;
+        }
+
+        json.data.forEach(msg => appendAdminChatMessageUI(msg));
+    } catch(err) {
+        console.error(err);
+        container.innerHTML = '<div style="text-align:center; padding: 2rem; color: #dc2626;">Failed to load messages.</div>';
+    }
+};
+
+function appendAdminChatMessageUI(msg) {
+    const container = document.getElementById('admin-chat-messages');
+    if (container.innerHTML.includes('No messages yet.')) {
+        container.innerHTML = '';
+    }
+
+    const isMe = msg.sender_type === 'admin';
+    const align = isMe ? 'flex-end' : 'flex-start';
+    const bg = isMe ? 'var(--primary-color)' : 'var(--bg-main)';
+    const color = isMe ? '#fff' : 'var(--text-primary)';
+    
+    const div = document.createElement('div');
+    div.style.cssText = `align-self: ${align}; background: ${bg}; color: ${color}; padding: 10px 14px; border-radius: 8px; max-width: 70%; margin-bottom: 8px;`;
+    div.innerHTML = `
+        <div style="font-size: 14px;">${msg.message}</div>
+        <div style="font-size: 10px; text-align: right; margin-top: 4px; opacity: 0.8;">${new Date(msg.created_at || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+window.sendAdminChatMessage = async function() {
+    if (!currentChatInternId) {
+        showAdminToast('Please select an intern first', 'alert-circle');
+        return;
+    }
+    
+    const input = document.getElementById('admin-chat-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+    
+    input.value = '';
+    
+    try {
+        const json = await fetchApi(`/admin/interns/${currentChatInternId}/chat`, {
+            method: 'POST',
+            body: JSON.stringify({ message: msg, senderType: 'admin' })
+        });
+        if (json.success) {
+            appendAdminChatMessageUI(json.data);
+        } else {
+            showAdminToast(json.message, 'x');
+        }
+    } catch (err) {
+        console.error(err);
+        showAdminToast('Failed to send message', 'x');
+    }
+};
+
+// Hook into navigation clicks to load chat intern list when "Talk to Interns" is clicked
+document.addEventListener('click', (e) => {
+    const navItem = e.target.closest('.nav-item');
+    if (navItem && navItem.getAttribute('data-target') === 'interns-chat-content') {
+        setupAdminChatSocket();
+        loadChatInternsList();
+    }
+});
+
 console.log('[intern_admin.js] Listing Interns extension loaded.');

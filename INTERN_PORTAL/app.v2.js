@@ -125,10 +125,38 @@ function logout() {
     window.location.reload();
 }
 
+let socket = null;
+
+function setupSocket() {
+    if (!currentUser || !authToken) return;
+    // Derive base URL from API_BASE
+    const baseUrl = API_BASE.replace('/api', '');
+    socket = io(baseUrl);
+    
+    socket.on('connect', () => {
+        console.log('Connected to chat server');
+        socket.emit('join_intern_room', currentUser.id);
+    });
+
+    socket.on('receive_message', (msg) => {
+        // If chat is open, append message
+        const container = document.getElementById('chat-messages');
+        if (container && document.getElementById('chat-view').classList.contains('active')) {
+            if (container.innerHTML.includes('Start a conversation')) {
+                container.innerHTML = '';
+            }
+            appendMessageToUI(msg, container);
+        } else {
+            showToast('New message from Admin', 'message-circle');
+        }
+    });
+}
+
 function showApp() {
     document.getElementById('display-user-name').textContent = currentUser.name || currentUser.username;
     document.getElementById('greeting-name').textContent = (currentUser.name || currentUser.username).toUpperCase();
     loadDashboard();
+    setupSocket();
 }
 
 // Navigation
@@ -712,34 +740,37 @@ function showToast(msg, icon) {
 }
 
 // Chat Functions
+function appendMessageToUI(msg, container) {
+    const align = msg.sender_type === 'intern' ? 'flex-end' : 'flex-start';
+    const bg = msg.sender_type === 'intern' ? 'var(--accent-color)' : 'var(--bg-main)';
+    const color = msg.sender_type === 'intern' ? '#fff' : 'var(--text-primary)';
+    
+    const div = document.createElement('div');
+    div.style.cssText = `align-self: ${align}; background: ${bg}; color: ${color}; padding: 10px 14px; border-radius: 8px; max-width: 70%; margin-bottom: 8px;`;
+    div.innerHTML = `
+        <div style="font-size: 14px;">${msg.message}</div>
+        <div style="font-size: 10px; text-align: right; margin-top: 4px; opacity: 0.8;">${new Date(msg.created_at || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
 async function loadChat() {
     try {
-        const res = await fetchApi('/intern/chat');
+        const res = await fetchApi('/chat');
         const data = await res.json();
         if (data.success) {
             const container = document.getElementById('chat-messages');
             container.innerHTML = '';
             
-            if (!data.messages || data.messages.length === 0) {
+            if (!data.data || data.data.length === 0) {
                 container.innerHTML = '<div style="text-align:center; color:var(--text-secondary); margin-top:2rem;">Start a conversation with Admin</div>';
                 return;
             }
             
-            data.messages.forEach(msg => {
-                const align = msg.sender_type === 'intern' ? 'flex-end' : 'flex-start';
-                const bg = msg.sender_type === 'intern' ? 'var(--accent-color)' : 'var(--bg-main)';
-                const color = msg.sender_type === 'intern' ? '#fff' : 'var(--text-primary)';
-                
-                const div = document.createElement('div');
-                div.style.cssText = `align-self: ${align}; background: ${bg}; color: ${color}; padding: 10px 14px; border-radius: 8px; max-width: 70%; margin-bottom: 8px;`;
-                div.innerHTML = `
-                    <div style="font-size: 14px;">${msg.message}</div>
-                    <div style="font-size: 10px; text-align: right; margin-top: 4px; opacity: 0.8;">${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-                `;
-                container.appendChild(div);
+            data.data.forEach(msg => {
+                appendMessageToUI(msg, container);
             });
-            
-            container.scrollTop = container.scrollHeight;
         }
     } catch(err) {
         console.error('Failed to load chat:', err);
@@ -753,26 +784,21 @@ window.sendChatMessage = async function() {
     
     input.value = '';
     
-    // Optimistic UI
-    const container = document.getElementById('chat-messages');
-    if (container.innerHTML.includes('Start a conversation')) {
-        container.innerHTML = '';
-    }
-    const div = document.createElement('div');
-    div.style.cssText = `align-self: flex-end; background: var(--accent-color); color: #fff; padding: 10px 14px; border-radius: 8px; max-width: 70%; margin-bottom: 8px;`;
-    div.innerHTML = `
-        <div style="font-size: 14px;">${msg}</div>
-        <div style="font-size: 10px; text-align: right; margin-top: 4px; opacity: 0.8;">Just now</div>
-    `;
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
-
     try {
-        await fetchApi('/intern/chat', {
+        const res = await fetchApi('/chat', {
             method: 'POST',
-            body: JSON.stringify({ message: msg })
+            body: JSON.stringify({ message: msg, senderType: 'intern' })
         });
-        // We could reload but optimistic is fine
+        const data = await res.json();
+        if(data.success) {
+            // optimistic append already handled if we wait for socket? 
+            // Better to append it via the API response to get DB timestamp
+            const container = document.getElementById('chat-messages');
+            if (container.innerHTML.includes('Start a conversation')) {
+                container.innerHTML = '';
+            }
+            appendMessageToUI(data.data, container);
+        }
     } catch (err) {
         showToast('Failed to send message', 'x');
     }

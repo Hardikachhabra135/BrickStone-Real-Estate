@@ -13,6 +13,23 @@ app.use(cors({
 }));
 app.use(express.json()); // To parse JSON bodies
 
+// Socket.IO Setup
+const http = require('http');
+const { Server } = require('socket.io');
+
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: process.env.FRONTEND_URL || '*',
+        methods: ['GET', 'POST']
+    }
+});
+
+// Middleware to expose io to controllers
+app.use((req, res, next) => {
+    req.io = io;
+    next();
+});
 // Import Routes
 const adminRoutes = require('./routes/adminRoutes');
 const propertyRoutes = require('./routes/propertyRoutes');
@@ -89,7 +106,7 @@ app.use((req, res, next) => {
 
 // Start Server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', async () => {
+server.listen(PORT, '0.0.0.0', async () => {
     console.log(`Server is running on port ${PORT}`);
     
     // DB Connection Diagnostic
@@ -111,4 +128,19 @@ app.listen(PORT, '0.0.0.0', async () => {
         console.error(`Error Message: ${err.message}`);
         console.error('----------------------------------');
     }
+});
+
+io.on('connection', (socket) => {
+    console.log('New client connected:', socket.id);
+
+    // Join intern-specific room
+    socket.on('join_intern_room', (internId) => {
+        const roomName = `intern_${internId}`;
+        socket.join(roomName);
+        console.log(`Socket ${socket.id} joined room ${roomName}`);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Client disconnected:', socket.id);
+    });
 });

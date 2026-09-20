@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const internPortalController = require('../controllers/internPortalController');
+const chatController = require('../controllers/chatController');
 const internAuth = require('../middleware/internAuth');
 
 // Public
@@ -52,7 +53,13 @@ router.delete('/properties/:id', internPortalController.deleteListing);
 router.post('/properties/:id/submit', internPortalController.submitProperty);
 router.post('/properties/:id/resubmit', internPortalController.resubmitProperty);
 
-router.get('/chat', internPortalController.getChat);
-router.post('/chat', internPortalController.sendMessage);
+router.get('/chat', (req, res) => {
+    req.params.internId = req.intern.id;
+    return chatController.getMessages(req, res);
+});
+router.post('/chat', (req, res) => {
+    req.params.internId = req.intern.id;
+    return chatController.sendMessage(req, res);
+});
 
 module.exports = router;

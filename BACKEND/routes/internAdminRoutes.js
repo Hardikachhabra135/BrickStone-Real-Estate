@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const internAdminController = require('../controllers/internAdminController');
+const chatController = require('../controllers/chatController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 // All routes here should be protected by Admin Auth
@@ -25,8 +26,8 @@ router.post('/intern-properties/:id/reject', internAdminController.rejectPropert
 router.patch('/intern-properties/:id/review', internAdminController.reviewProperty);
 
 // Chat
-router.get('/interns/:id/chat', internAdminController.getChat);
-router.post('/interns/:id/chat', internAdminController.sendMessage);
+router.get('/interns/:internId/chat', chatController.getMessages);
+router.post('/interns/:internId/chat', chatController.sendMessage);
 router.post('/chat/broadcast', internAdminController.broadcastMessage);
 
 module.exports = router;
