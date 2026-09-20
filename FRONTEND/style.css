@@ -1738,7 +1738,7 @@ footer {
   height: 24px;
 }
 
-#lb-close { top: 1.5rem; right: 1.5rem; }
+#lb-close { position: absolute; top: 1.5rem; right: 1.5rem; }
 #lb-prev { top: 50%; left: 1.5rem; transform: translateY(-50%); }
 #lb-next { top: 50%; right: 1.5rem; transform: translateY(-50%); }
 
