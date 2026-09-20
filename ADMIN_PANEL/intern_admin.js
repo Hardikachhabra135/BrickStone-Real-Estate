@@ -882,16 +882,17 @@ function appendAdminChatMessageUI(msg) {
         container.innerHTML = '';
     }
 
-    const isMe = msg.sender_type === 'admin';
-    const align = isMe ? 'flex-end' : 'flex-start';
-    const bg = isMe ? '#1A1A1A' : 'var(--bg-card)'; // Hardcoded dark obsidian
-    const color = isMe ? '#ffffff' : 'var(--text-primary)';
+    const isAdmin = msg.sender_type === 'admin';
+    const align = isAdmin ? 'flex-end' : 'flex-start';
+    const bg = isAdmin ? '#EAE6DF' : '#FDFDFD'; // var(--nude) vs var(--bg-card)
+    const color = isAdmin ? '#3B2115' : '#1A1A1A'; // Dark brown vs Obsidian
+    const timeColor = isAdmin ? '#6B5B45' : '#8E8B82'; // Warm brown vs Stone
     
     const div = document.createElement('div');
     div.style.cssText = `align-self: ${align}; background-color: ${bg}; color: ${color}; padding: 10px 14px; border-radius: 8px; max-width: 70%; margin-bottom: 8px; border: 1px solid var(--border-color);`;
     div.innerHTML = `
-        <div style="font-size: 14px;">${msg.message}</div>
-        <div style="font-size: 10px; text-align: right; margin-top: 4px; opacity: 0.8;">${new Date(msg.created_at || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+        <div style="font-size: 14px; font-weight: 500;">${msg.message}</div>
+        <div style="font-size: 10px; text-align: right; margin-top: 4px; color: ${timeColor}; opacity: 0.9;">${new Date(msg.created_at || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
     `;
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
