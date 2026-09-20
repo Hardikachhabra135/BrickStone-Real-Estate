@@ -337,7 +337,7 @@
                 <div class="modal-img-wrapper" style="position:relative; display:flex; flex-direction:column; gap:0.5rem; background:transparent;">
                     <span class="badge" id="modal-badge" style="position:absolute; top:1rem; left:1rem; z-index:10;"></span>
                     <div style="position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden;">
-                        <img id="modal-img" src="" alt="" style="width:100%; height:100%; object-fit:cover; display:block; transition:opacity 0.3s;">
+                        <img id="modal-img" src="" alt="" style="width:100%; height:100%; object-fit:cover; display:block; transition:opacity 0.3s; cursor:pointer;" title="Click to enlarge">
                         <video id="modal-video" controls style="width:100%; height:100%; display:none; background:#000; object-fit:cover;"></video>
                         <button id="modal-prev-btn" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; display:none; align-items:center; justify-content:center; z-index:5; font-size:16px;">❮</button>
                         <button id="modal-next-btn" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:white; border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; display:none; align-items:center; justify-content:center; z-index:5; font-size:16px;">❯</button>
@@ -667,8 +667,10 @@
                 </div>
             `;
 
-                // Wire up the View Details button immediately
+                // Wire up the View Details button and image immediately
                 article.querySelector('.view-details-btn')
+                    .addEventListener('click', () => openModal(propId));
+                article.querySelector('.card-img-wrapper')
                     .addEventListener('click', () => openModal(propId));
 
                 return article;
@@ -952,6 +954,202 @@
 
             // Kick off on page load
             loadProperties();
+
+            // ── Lightbox Logic ──
+            const lightboxOverlay = document.createElement('div');
+            lightboxOverlay.id = 'lightbox-overlay';
+            lightboxOverlay.innerHTML = `
+                <div class="lb-controls">
+                    <button id="lb-close" class="lb-btn" title="Close (ESC)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <button id="lb-prev" class="lb-btn lb-controls" style="display:none;" title="Previous">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <button id="lb-next" class="lb-btn lb-controls" style="display:none;" title="Next">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+                
+                <div id="lb-loader">
+                    <div class="lb-spinner"></div>
+                    <span>Loading image...</span>
+                </div>
+
+                <div id="lightbox-container">
+                    <img id="lightbox-img" src="" alt="">
+                </div>
+
+                <div class="lb-controls lb-zoom-controls">
+                    <button id="lb-zoom-out" class="lb-btn" title="Zoom Out (-)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                    <button id="lb-reset" class="lb-btn" title="Reset Zoom">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path><path d="M21 3l-7 7"></path><path d="M3 21l7-7"></path></svg>
+                    </button>
+                    <button id="lb-zoom-in" class="lb-btn" title="Zoom In (+)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(lightboxOverlay);
+
+            const lbImg = document.getElementById('lightbox-img');
+            const lbLoader = document.getElementById('lb-loader');
+            const lbPrev = document.getElementById('lb-prev');
+            const lbNext = document.getElementById('lb-next');
+            
+            let scale = 1, translateX = 0, translateY = 0;
+            let isDragging = false, startX, startY;
+            let initialDistance = null;
+
+            function updateTransform() {
+                lbImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            }
+
+            function openLightbox() {
+                if (currentGalleryItems.length === 0) return;
+                const item = currentGalleryItems[currentGalleryIndex];
+                if (item.type === 'video') return; // Do not open lightbox for video
+
+                lightboxOverlay.classList.add('active');
+                scale = 1; translateX = 0; translateY = 0;
+                updateTransform();
+                
+                lbLoader.classList.add('active');
+                lbImg.style.opacity = '0';
+                
+                // Preload high-res image
+                const highResUrl = item.url;
+                lbImg.src = highResUrl;
+                
+                lbPrev.style.display = currentGalleryItems.length > 1 ? 'flex' : 'none';
+                lbNext.style.display = currentGalleryItems.length > 1 ? 'flex' : 'none';
+            }
+
+            lbImg.onload = () => {
+                lbLoader.classList.remove('active');
+                lbImg.style.opacity = '1';
+            };
+
+            lbImg.onerror = () => {
+                lbLoader.classList.remove('active');
+                lbImg.style.opacity = '1';
+                lbImg.src = 'images/villa.jpg'; // fallback
+            };
+
+            function closeLightbox() {
+                lightboxOverlay.classList.remove('active');
+                setTimeout(() => { lbImg.src = ''; }, 300);
+            }
+
+            // Click on #modal-img to open Lightbox
+            document.getElementById('modal-img').addEventListener('click', openLightbox);
+
+            // Close actions
+            document.getElementById('lb-close').addEventListener('click', closeLightbox);
+            lightboxOverlay.addEventListener('click', (e) => {
+                if (e.target === lightboxOverlay || e.target === document.getElementById('lightbox-container')) closeLightbox();
+            });
+
+            // Zoom functions
+            const setZoom = (newScale) => {
+                scale = Math.min(Math.max(0.5, newScale), 5);
+                if (scale === 1) { translateX = 0; translateY = 0; }
+                updateTransform();
+            };
+
+            document.getElementById('lb-zoom-in').addEventListener('click', () => setZoom(scale + 0.5));
+            document.getElementById('lb-zoom-out').addEventListener('click', () => setZoom(scale - 0.5));
+            document.getElementById('lb-reset').addEventListener('click', () => setZoom(1));
+
+            // Mouse wheel zoom
+            document.getElementById('lightbox-container').addEventListener('wheel', (e) => {
+                e.preventDefault();
+                setZoom(scale + (e.deltaY < 0 ? 0.2 : -0.2));
+            }, { passive: false });
+
+            // Pan / Drag
+            lbImg.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                if (scale <= 1) return;
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+            });
+
+            window.addEventListener('mouseup', () => { isDragging = false; });
+
+            // Touch support
+            document.getElementById('lightbox-container').addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    initialDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                } else if (e.touches.length === 1 && scale > 1) {
+                    isDragging = true;
+                    startX = e.touches[0].clientX - translateX;
+                    startY = e.touches[0].clientY - translateY;
+                }
+            }, { passive: false });
+
+            document.getElementById('lightbox-container').addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2 && initialDistance) {
+                    e.preventDefault();
+                    const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    const delta = dist - initialDistance;
+                    if (Math.abs(delta) > 10) {
+                        setZoom(scale + (delta > 0 ? 0.1 : -0.1));
+                        initialDistance = dist;
+                    }
+                } else if (e.touches.length === 1 && isDragging) {
+                    e.preventDefault();
+                    translateX = e.touches[0].clientX - startX;
+                    translateY = e.touches[0].clientY - startY;
+                    updateTransform();
+                }
+            }, { passive: false });
+
+            document.getElementById('lightbox-container').addEventListener('touchend', () => {
+                isDragging = false;
+                initialDistance = null;
+            });
+
+            // Keyboard support
+            document.addEventListener('keydown', (e) => {
+                if (!lightboxOverlay.classList.contains('active')) return;
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowLeft') document.getElementById('lb-prev').click();
+                if (e.key === 'ArrowRight') document.getElementById('lb-next').click();
+            });
+
+            // Navigation
+            lbPrev.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(currentGalleryItems.length <= 1) return;
+                currentGalleryIndex = (currentGalleryIndex - 1 + currentGalleryItems.length) % currentGalleryItems.length;
+                while(currentGalleryItems[currentGalleryIndex].type === 'video') {
+                    currentGalleryIndex = (currentGalleryIndex - 1 + currentGalleryItems.length) % currentGalleryItems.length;
+                }
+                openLightbox();
+                renderGallery(); // update modal underneath
+            });
+
+            lbNext.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(currentGalleryItems.length <= 1) return;
+                currentGalleryIndex = (currentGalleryIndex + 1) % currentGalleryItems.length;
+                while(currentGalleryItems[currentGalleryIndex].type === 'video') {
+                    currentGalleryIndex = (currentGalleryIndex + 1) % currentGalleryItems.length;
+                }
+                openLightbox();
+                renderGallery(); // update modal underneath
+            });
 
         })();
     </script>
