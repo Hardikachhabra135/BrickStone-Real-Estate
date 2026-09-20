@@ -829,7 +829,7 @@ window.loadChatInternsList = async function() {
         listDiv.innerHTML = json.data.map(intern => `
             <div class="intern-chat-item" onclick="openInternChat(${intern.id}, '${intern.name}')" 
                 style="padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s;">
-                <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--primary-color);">
+                <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--obsidian); border: 1px solid var(--border-color);">
                     ${intern.name.substring(0, 2).toUpperCase()}
                 </div>
                 <div style="flex: 1;">
@@ -884,11 +884,11 @@ function appendAdminChatMessageUI(msg) {
 
     const isMe = msg.sender_type === 'admin';
     const align = isMe ? 'flex-end' : 'flex-start';
-    const bg = isMe ? 'var(--primary-color)' : 'var(--bg-main)';
+    const bg = isMe ? 'var(--obsidian)' : 'var(--bg-card)';
     const color = isMe ? '#fff' : 'var(--text-primary)';
     
     const div = document.createElement('div');
-    div.style.cssText = `align-self: ${align}; background: ${bg}; color: ${color}; padding: 10px 14px; border-radius: 8px; max-width: 70%; margin-bottom: 8px;`;
+    div.style.cssText = `align-self: ${align}; background: ${bg}; color: ${color}; padding: 10px 14px; border-radius: 8px; max-width: 70%; margin-bottom: 8px; border: 1px solid var(--border-color);`;
     div.innerHTML = `
         <div style="font-size: 14px;">${msg.message}</div>
         <div style="font-size: 10px; text-align: right; margin-top: 4px; opacity: 0.8;">${new Date(msg.created_at || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
