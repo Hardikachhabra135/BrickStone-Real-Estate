@@ -2,6 +2,10 @@
   "version": 2,
   "rewrites": [
     {
+      "source": "/LISTING_INTERN/(.*)",
+      "destination": "/LISTING_INTERN/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/ADMIN_PANEL/$1"
     }
