@@ -884,11 +884,11 @@ function appendAdminChatMessageUI(msg) {
 
     const isMe = msg.sender_type === 'admin';
     const align = isMe ? 'flex-end' : 'flex-start';
-    const bg = isMe ? 'var(--obsidian)' : 'var(--bg-card)';
-    const color = isMe ? '#fff' : 'var(--text-primary)';
+    const bg = isMe ? '#1A1A1A' : 'var(--bg-card)'; // Hardcoded dark obsidian
+    const color = isMe ? '#ffffff' : 'var(--text-primary)';
     
     const div = document.createElement('div');
-    div.style.cssText = `align-self: ${align}; background: ${bg}; color: ${color}; padding: 10px 14px; border-radius: 8px; max-width: 70%; margin-bottom: 8px; border: 1px solid var(--border-color);`;
+    div.style.cssText = `align-self: ${align}; background-color: ${bg}; color: ${color}; padding: 10px 14px; border-radius: 8px; max-width: 70%; margin-bottom: 8px; border: 1px solid var(--border-color);`;
     div.innerHTML = `
         <div style="font-size: 14px;">${msg.message}</div>
         <div style="font-size: 10px; text-align: right; margin-top: 4px; opacity: 0.8;">${new Date(msg.created_at || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
