@@ -5,6 +5,7 @@ const cors = require('cors');
 
 const allowedOrigins = [
     'https://brickstone-admin-panel.vercel.app',
+    'https://brickstone-frontend.vercel.app',
     'http://localhost:8002',
     'http://localhost:8003',
     'http://localhost:3000'
