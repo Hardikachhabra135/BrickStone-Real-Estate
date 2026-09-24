@@ -326,6 +326,11 @@ document.addEventListener('DOMContentLoaded', () => {
     enquiryForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      if (!activePropertyKey) {
+          alert('Error: No property selected for enquiry.');
+          return;
+      }
+
       const phone = document.getElementById('enquire-phone').value.trim();
       const email = document.getElementById('enquire-email').value.trim();
       const propData = propertiesData[activePropertyKey] || {};
@@ -336,27 +341,28 @@ document.addEventListener('DOMContentLoaded', () => {
       submitBtn.disabled = true;
 
       try {
-        await fetch(`${API_BASE}/enquiries`, {
+        const res = await fetch(`${API_BASE}/enquiries`, {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            property_id:    activePropertyKey || 'featured',
-            property_title: propData.title || activePropertyKey || 'Featured Property',
+            property_id:    activePropertyKey,
+            property_title: propData.title || activePropertyKey,
             phone,
             email
           })
         });
+        
+        if (!res.ok) throw new Error('API Error');
+
+        enquiryForm.style.display = 'none';
+        enquirySuccess.style.display = 'block';
       } catch (err) {
         console.error('[Brickstone] Enquiry submission error:', err);
-        // Fall through — show success anyway so UX isn't broken
+        alert('Failed to send enquiry. Please try again.');
       } finally {
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
       }
-
-      // Show success screen regardless of network outcome
-      enquiryForm.style.display = 'none';
-      enquirySuccess.style.display = 'block';
     });
   }
 

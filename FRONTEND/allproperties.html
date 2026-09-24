@@ -363,7 +363,7 @@
                     <p class="modal-form-sub">Leave your details and our team will reach out shortly.</p>
                     <div id="enquiry-success" style="display:none;">Thank you! We've received your enquiry and will
                         contact you soon.</div>
-                    <form id="enquiry-form">
+                    <form id="allprops-enquiry-form">
                         <div class="form-group">
                             <label for="enquire-phone">Phone Number</label>
                             <input type="tel" id="enquire-phone" placeholder="+91 7428 311 662" required>
@@ -524,7 +524,7 @@
             const panelForm = document.getElementById('modal-panel-form');
             const enquireBtn = document.getElementById('enquire-btn');
             const backBtn = document.getElementById('back-to-details');
-            const enquiryForm = document.getElementById('enquiry-form');
+            const enquiryForm = document.getElementById('allprops-enquiry-form');
             const enquiryOk = document.getElementById('enquiry-success');
 
             /* ── Helpers ──────────────────────────────────────── */
@@ -837,23 +837,39 @@
                 const email = document.getElementById('enquire-email').value;
                 const prop = propertyStore[activePropertyId] || {};
 
+                if (!activePropertyId) {
+                    alert('Error: No property selected for enquiry.');
+                    return;
+                }
+
+                const submitBtn = enquiryForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Sending...';
+                submitBtn.disabled = true;
+
                 try {
-                    await fetch(ENQUIRY_URL, {
+                    const res = await fetch(ENQUIRY_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             property_id: prop.id || activePropertyId,
-                            property_title: prop.title || '',
+                            property_title: prop.title || 'Unknown Property',
                             phone,
                             email
                         })
                     });
-                } catch (_) {
-                    // Network error — still show success to user
+                    
+                    if (!res.ok) throw new Error('API Error');
+                    
+                    enquiryForm.style.display = 'none';
+                    enquiryOk.style.display = 'block';
+                } catch (err) {
+                    console.error('Enquiry submission error:', err);
+                    alert('Failed to send enquiry. Please try again.');
+                } finally {
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
                 }
-
-                enquiryForm.style.display = 'none';
-                enquiryOk.style.display = 'block';
             });
 
             /* ── Fetch & render properties ─────────────────────── */
