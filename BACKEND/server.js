@@ -3,14 +3,31 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 
+const allowedOrigins = [
+    'https://brickstone-admin-panel.vercel.app',
+    'http://localhost:8002',
+    'http://localhost:8003',
+    'http://localhost:3000'
+];
+
+const corsOptions = {
+    origin: function(origin, callback) {
+        // allow requests with no origin (e.g. server-to-server or curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
 const app = express();
 
 // Middleware
-app.use(cors({
-    origin: process.env.FRONTEND_URL || '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors(corsOptions));
 app.use(express.json()); // To parse JSON bodies
 
 // Socket.IO Setup
@@ -20,8 +37,9 @@ const { Server } = require('socket.io');
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: process.env.FRONTEND_URL || '*',
-        methods: ['GET', 'POST']
+        origin: allowedOrigins,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization']
     }
 });
 
