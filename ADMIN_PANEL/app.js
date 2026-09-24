@@ -429,11 +429,26 @@ async function editProperty(id) {
             // Extract category and subcategory from specs
             const catSpec = p.specs ? p.specs.find(s => s.startsWith('__CAT:')) : null;
             const subSpec = p.specs ? p.specs.find(s => s.startsWith('__SUB:')) : null;
-            document.getElementById('prop-category').value = catSpec ? catSpec.split(':')[1] : '';
-            // Update subcategory options
-            if(window.updateSubcategories) window.updateSubcategories();
-            document.getElementById('prop-subcategory').value = subSpec ? subSpec.split(':')[1] : '';
-            
+            let actualCat = catSpec ? catSpec.split(':')[1] : (p.category || '');
+            let actualSub = subSpec ? subSpec.split(':')[1] : (p.subcategory || '');
+
+            const catSelect = document.getElementById('prop-category');
+            if (['FLAT', 'PG', ''].includes(actualCat)) {
+                catSelect.value = actualCat;
+            } else {
+                catSelect.value = 'OTHER';
+                document.getElementById('prop-category-custom').value = actualCat;
+            }
+            if(window.handlePropCategoryChange) window.handlePropCategoryChange();
+
+            const subSelect = document.getElementById('prop-subcategory');
+            if (['1 BHK', '2 BHK', '3 BHK', '3BHK+', ''].includes(actualSub)) {
+                subSelect.value = actualSub;
+            } else {
+                subSelect.value = 'OTHER';
+                document.getElementById('prop-subcategory-custom').value = actualSub;
+            }
+            if(window.handlePropSubcategoryChange) window.handlePropSubcategoryChange();
             // Extract media
             let media = { photos: [], video: '' };
             try {
@@ -462,6 +477,8 @@ document.getElementById('add-property-btn').addEventListener('click', () => {
     document.getElementById('property-form').reset();
     document.getElementById('prop-id').value = '';
     document.getElementById('prop-modal-title').textContent = 'Add New Property';
+    if(window.handlePropCategoryChange) window.handlePropCategoryChange();
+    if(window.handlePropSubcategoryChange) window.handlePropSubcategoryChange();
     document.getElementById('property-modal').classList.add('active');
 });
 
@@ -514,14 +531,38 @@ document.getElementById('property-form').addEventListener('submit', async (e) =>
             video: videoUrl
         };
 
+        let finalCategory = document.getElementById('prop-category').value;
+        if (finalCategory === 'OTHER') {
+            finalCategory = document.getElementById('prop-category-custom').value.trim();
+        }
+
+        let finalSubcategory = document.getElementById('prop-subcategory').value;
+        if (finalSubcategory === 'OTHER') {
+            finalSubcategory = document.getElementById('prop-subcategory-custom').value.trim();
+        }
+
+        if (!finalCategory) {
+            alert('Please enter a category.');
+            btn.textContent = originalBtnText;
+            btn.disabled = false;
+            return;
+        }
+
+        if (!finalSubcategory) {
+            alert('Please enter a subcategory.');
+            btn.textContent = originalBtnText;
+            btn.disabled = false;
+            return;
+        }
+
         const data = {
             title: document.getElementById('prop-title').value,
             price: document.getElementById('prop-price').value,
             location: document.getElementById('prop-location').value,
             status: document.getElementById('prop-status').value,
             is_verified: document.getElementById('prop-verified').checked,
-            category: document.getElementById('prop-category').value,
-            subcategory: document.getElementById('prop-subcategory').value,
+            category: finalCategory,
+            subcategory: finalSubcategory,
             image: imageUrl,
             media: media,
             specs: document.getElementById('prop-specs').value.split(',').map(s => s.trim()).filter(s => s),
@@ -782,6 +823,36 @@ window.restoreDefaultAboutSection = async function() {
     
     if(typeof updateAboutPreview === 'function') updateAboutPreview();
     
+    isAboutDirty = true;
+    const publishBtn = document.getElementById('publish-about-btn');
+    if (publishBtn) publishBtn.style.display = 'block';
+    
     // Trigger publish immediately
     publishAboutSection();
+};
+
+window.handlePropCategoryChange = function() {
+    const cat = document.getElementById('prop-category').value;
+    const customCat = document.getElementById('prop-category-custom');
+    if (cat === 'OTHER') {
+        customCat.style.display = 'block';
+        customCat.required = true;
+    } else {
+        customCat.style.display = 'none';
+        customCat.required = false;
+        customCat.value = '';
+    }
+};
+
+window.handlePropSubcategoryChange = function() {
+    const sub = document.getElementById('prop-subcategory').value;
+    const customSub = document.getElementById('prop-subcategory-custom');
+    if (sub === 'OTHER') {
+        customSub.style.display = 'block';
+        customSub.required = true;
+    } else {
+        customSub.style.display = 'none';
+        customSub.required = false;
+        customSub.value = '';
+    }
 };

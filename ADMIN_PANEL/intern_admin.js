@@ -6,7 +6,7 @@
  */
 
 // ===== CONFIGURATION =====
-window._IAD_PORTAL_URL = 'https://brickstone-intern-portal.vercel.app/index.html';
+window._IAD_PORTAL_URL = 'http://localhost:8003/index.html';
 // Keep a local alias for convenience
 var PORTAL_LOCAL_URL = window._IAD_PORTAL_URL;
 
@@ -535,6 +535,12 @@ window.openListingDetail = async function(listingId) {
                     <textarea id="ld-feedback" style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; resize:vertical; min-height:90px; background:#f8fafc; font-family:inherit;" placeholder="Enter specific instructions or feedback...">${latestNote}</textarea>
                 </div>
 
+                <!-- Edit Button -->
+                <button onclick="adminEditInternListing(${listingId})" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; background:white; color:var(--text-dark); border:1px solid var(--border-color); box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    Edit Listing
+                </button>
+                
                 <!-- Action Buttons -->
                 ${isPublished ? `
                     <div style="display:flex; flex-direction:column; align-items:center; gap:10px; padding:16px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px;">
@@ -731,6 +737,72 @@ window.loadInternListings = async function() {
     }
 };
 
+// ===== EDIT LISTING LOGIC =====
+window.adminEditInternListing = function(listingId) {
+    if (!currentInternDetailData && !window.currentInternListings) return;
+    
+    let listing = null;
+    if (currentInternDetailData) {
+        listing = currentInternDetailData.find(l => parseInt(l.id) === parseInt(listingId));
+    }
+    if (!listing && window.currentInternListings) {
+        listing = window.currentInternListings.find(l => parseInt(l.id) === parseInt(listingId));
+    }
+    if (!listing) {
+        showAdminToast('Could not load listing data for editing', 'error');
+        return;
+    }
+
+    // Flag to tell the global form submit handler we are doing an intern property
+    window._isEditingInternListing = true;
+
+    // Populate existing `#property-modal`
+    document.getElementById('prop-id').value = listing.id;
+    document.getElementById('prop-title').value = listing.title || '';
+    document.getElementById('prop-price').value = listing.price || '';
+    document.getElementById('prop-location').value = listing.location || '';
+    document.getElementById('prop-status').value = listing.market_status || 'Available';
+    
+    let specs = {};
+    try { specs = typeof listing.specs === 'string' ? JSON.parse(listing.specs) : (listing.specs || {}); } catch(e) {}
+    
+    document.getElementById('prop-type').value = specs.property_type || listing.type || 'Residential';
+    document.getElementById('prop-purpose').value = specs.purpose || 'Sale';
+    document.getElementById('prop-beds').value = specs.bedrooms || '';
+    document.getElementById('prop-baths').value = specs.bathrooms || '';
+    document.getElementById('prop-area').value = specs.area || '';
+    document.getElementById('prop-desc').value = listing.description || '';
+    
+    // Media preview
+    document.getElementById('photo-preview-container').innerHTML = '';
+    
+    // Hijack the form submit exactly once
+    const form = document.getElementById('property-form');
+    const oldOnSubmit = form.onsubmit;
+    
+    // We clone the form to remove app.js event listeners, or just intercept fetchApi?
+    // Easiest is to intercept fetchApi for /admin/properties
+    
+    document.getElementById('property-modal').classList.add('active');
+};
+
+// Intercept fetchApi globally to redirect PUT /admin/properties/:id to /admin/intern-properties/:id
+const origFetchApi = window.fetchApi;
+window.fetchApi = async function(url, options) {
+    if (window._isEditingInternListing && options && options.method === 'PUT' && url.includes('/admin/properties/')) {
+        url = url.replace('/admin/properties/', '/admin/intern-properties/');
+        
+        const res = await origFetchApi(url, options);
+        if (res.success) {
+            window._isEditingInternListing = false;
+            // Refresh details
+            if (currentDetailListingId) openListingDetail(currentDetailListingId);
+        }
+        return res;
+    }
+    return origFetchApi(url, options);
+};
+
 // ===== FIX openReviewModal to use current listing data =====
 const _origOpenReviewModal = window.openReviewModal;
 window.openReviewModal = function(id) {
@@ -785,7 +857,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ===== ADMIN CHAT IMPLEMENTATION =====
 
 let adminChatSocket = null;
-let currentChatInternId = null;
+// let currentChatInternId = null; // already defined in app.min.js
 
 function setupAdminChatSocket() {
     if (!adminToken) return;
@@ -829,7 +901,7 @@ window.loadChatInternsList = async function() {
         listDiv.innerHTML = json.data.map(intern => `
             <div class="intern-chat-item" onclick="openInternChat(${intern.id}, '${intern.name}')" 
                 style="padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s;">
-                <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--obsidian); border: 1px solid var(--border-color);">
+                <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--primary-color);">
                     ${intern.name.substring(0, 2).toUpperCase()}
                 </div>
                 <div style="flex: 1;">
@@ -882,17 +954,16 @@ function appendAdminChatMessageUI(msg) {
         container.innerHTML = '';
     }
 
-    const isAdmin = msg.sender_type === 'admin';
-    const align = isAdmin ? 'flex-end' : 'flex-start';
-    const bg = isAdmin ? '#EAE6DF' : '#FDFDFD'; // var(--nude) vs var(--bg-card)
-    const color = isAdmin ? '#3B2115' : '#1A1A1A'; // Dark brown vs Obsidian
-    const timeColor = isAdmin ? '#6B5B45' : '#8E8B82'; // Warm brown vs Stone
+    const isMe = msg.sender_type === 'admin';
+    const align = isMe ? 'flex-end' : 'flex-start';
+    const bg = isMe ? 'var(--primary-color)' : 'var(--bg-main)';
+    const color = isMe ? '#fff' : 'var(--text-primary)';
     
     const div = document.createElement('div');
-    div.style.cssText = `align-self: ${align}; background-color: ${bg}; color: ${color}; padding: 10px 14px; border-radius: 8px; max-width: 70%; margin-bottom: 8px; border: 1px solid var(--border-color);`;
+    div.style.cssText = `align-self: ${align}; background: ${bg}; color: ${color}; padding: 10px 14px; border-radius: 8px; max-width: 70%; margin-bottom: 8px;`;
     div.innerHTML = `
-        <div style="font-size: 14px; font-weight: 500;">${msg.message}</div>
-        <div style="font-size: 10px; text-align: right; margin-top: 4px; color: ${timeColor}; opacity: 0.9;">${new Date(msg.created_at || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+        <div style="font-size: 14px;">${msg.message}</div>
+        <div style="font-size: 10px; text-align: right; margin-top: 4px; opacity: 0.8;">${new Date(msg.created_at || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
     `;
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;

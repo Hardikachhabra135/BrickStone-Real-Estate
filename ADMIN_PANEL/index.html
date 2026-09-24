@@ -861,17 +861,25 @@
                     <div class="form-row">
                         <div class="input-group">
                             <label>Category</label>
-                            <select id="prop-category" class="premium-select" onchange="updateSubcategories()">
+                            <select id="prop-category" class="premium-select" onchange="handlePropCategoryChange()">
                                 <option value="">Select Category</option>
                                 <option value="FLAT">FLAT</option>
                                 <option value="PG">PG</option>
+                                <option value="OTHER">OTHER</option>
                             </select>
+                            <input type="text" id="prop-category-custom" class="premium-input" placeholder="Enter custom category" style="display: none; margin-top: 8px;">
                         </div>
                         <div class="input-group">
                             <label>Subcategory</label>
-                            <select id="prop-subcategory" class="premium-select">
+                            <select id="prop-subcategory" class="premium-select" onchange="handlePropSubcategoryChange()">
                                 <option value="">Select Subcategory</option>
+                                <option value="1 BHK">1 BHK</option>
+                                <option value="2 BHK">2 BHK</option>
+                                <option value="3 BHK">3 BHK</option>
+                                <option value="3BHK+">3BHK+</option>
+                                <option value="OTHER">OTHER</option>
                             </select>
+                            <input type="text" id="prop-subcategory-custom" class="premium-input" placeholder="Enter custom subcategory" style="display: none; margin-top: 8px;">
                         </div>
                     </div>
                     <div class="input-group">
@@ -973,7 +981,7 @@
         </div>
     </div>
 
-    <script src="app.min.js?v=7"></script>
+    <script src="app.min.js?v=8"></script>
     <script>
       feather.replace();
     </script>
@@ -1155,13 +1163,25 @@
         <span id="admin-toast-msg"></span>
     </div>
 
-    <script src="app.min.js?v=10"></script>
-    <script>
-      feather.replace();
-    </script>
-    
     <!-- Intern Admin Extension Script -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="intern_admin.js?v=10"></script>
+    <script src="intern_admin.js?v=2"></script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

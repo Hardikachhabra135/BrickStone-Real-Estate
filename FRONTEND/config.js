@@ -1,4 +1,5 @@
 window.ENV = {
-  // PRODUCTION: Connect to live backend
-  API_URL: 'https://brickstone-real-estate.onrender.com/api'
+  API_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'http://localhost:5000/api' 
+    : 'https://brickstone-real-estate.onrender.com/api'
 };
