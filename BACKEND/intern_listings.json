@@ -15,13 +15,13 @@
     "description": "",
     "features": [],
     "photos": [
-      "http://localhost:5000/uploads/files-1789698718865-625123654.jpg",
-      "http://localhost:5000/uploads/files-1789698721979-896363108.jpg",
-      "http://localhost:5000/uploads/files-1789698724849-222395479.jpg",
-      "http://localhost:5000/uploads/files-1789698727715-99989982.jpg"
+      "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1789698718865-625123654.jpg",
+      "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1789698721979-896363108.jpg",
+      "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1789698724849-222395479.jpg",
+      "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1789698727715-99989982.jpg"
     ],
-    "primary_photo": "http://localhost:5000/uploads/files-1789698718865-625123654.jpg",
-    "video": "http://localhost:5000/uploads/files-1789698737733-719909859.mp4",
+    "primary_photo": "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1789698718865-625123654.jpg",
+    "video": "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1789698737733-719909859.mp4",
     "status": "APPROVED",
     "admin_feedback": "Please fix photos",
     "created_at": "2026-09-18T02:32:24.105Z",
@@ -62,7 +62,7 @@
     "price": "1.2 CR",
     "location": "NOIDA",
     "badge": "New",
-    "image": "http://localhost:5000/uploads/files-1790405459421-120562419.jpg",
+    "image": "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1790405459421-120562419.jpg",
     "specs": {
       "property_type": "Residential",
       "purpose": "Rent",
@@ -76,10 +76,10 @@
     },
     "media": {
       "photos": [
-        "http://localhost:5000/uploads/files-1790405459421-120562419.jpg",
-        "http://localhost:5000/uploads/files-1790405462360-90456198.jpg"
+        "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1790405459421-120562419.jpg",
+        "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1790405462360-90456198.jpg"
       ],
-      "video": "http://localhost:5000/uploads/files-1790405471196-679343896.mp4"
+      "video": "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1790405471196-679343896.mp4"
     },
     "approval_status": "Published",
     "status": "APPROVED",
@@ -95,7 +95,7 @@
     "price": "1.2 CR",
     "location": "NOIDA",
     "badge": "New",
-    "image": "http://localhost:5000/uploads/files-1790405843394-858729352.jpg",
+    "image": "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1790405843394-858729352.jpg",
     "specs": {
       "property_type": "Residential",
       "purpose": "Sale",
@@ -111,8 +111,8 @@
     },
     "media": {
       "photos": [
-        "http://localhost:5000/uploads/files-1790405843394-858729352.jpg",
-        "http://localhost:5000/uploads/files-1790405848616-40162279.jpg"
+        "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1790405843394-858729352.jpg",
+        "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1790405848616-40162279.jpg"
       ],
       "video": ""
     },
