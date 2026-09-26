@@ -35,7 +35,7 @@ router.use(internAuth.verifyInternToken);
 
 router.post('/upload', upload.array('files', 5), (req, res) => {
     try {
-        const urls = req.files.map(f => 'http://localhost:5000/uploads/' + f.filename);
+        const urls = req.files.map(f => 'https://brickstone-real-estate-m8w1.onrender.com/uploads/' + f.filename);
         res.json({ success: true, urls });
     } catch (err) {
         console.error(err);
