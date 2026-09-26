@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: brickstone-api
+    env: node
+    rootDir: BACKEND
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_PORT
+        value: 4000
+      - key: DB_SSL
+        value: "true"
+      - key: NODE_ENV
+        value: production
+      - key: CA_CERT_PATH
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: "*"
