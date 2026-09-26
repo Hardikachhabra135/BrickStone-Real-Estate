@@ -6,7 +6,7 @@
  */
 
 // ===== CONFIGURATION =====
-window._IAD_PORTAL_URL = 'http://localhost:8003/index.html';
+window._IAD_PORTAL_URL = 'https://brickstone-intern-portal-opal.vercel.app/';
 // Keep a local alias for convenience
 var PORTAL_LOCAL_URL = window._IAD_PORTAL_URL;
 
@@ -132,7 +132,7 @@ window.loadInterns = async function() {
                 <td>${listingPill}</td>
                 <td>
                     <div style="display:flex; align-items:center; gap:6px;">
-                        <input type="text" value="${portalUrl}" readonly style="font-family:monospace; font-size:11px; padding:5px 7px; border:1px solid var(--border-color); border-radius:4px; width:200px; background:var(--surface-light); color:var(--text-muted);">
+                        <input type="text" value="${portalUrl}" readonly style="font-family:monospace; font-size:11px; padding:5px 7px; border:1px solid var(--border-color); border-radius:4px; width:260px; background:var(--surface-light); color:var(--text-muted);">
                         <button title="Copy link" onclick="copyPortalLink('${i.intern_id}', this)" style="width:32px; height:32px; border:1px solid var(--border-color); border-radius:6px; background:white; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                         </button>
@@ -365,7 +365,7 @@ window.renderInternDetailListings = function(filter) {
         return `<tr>
             <td style="font-family:monospace; font-size:12px; color:var(--text-light);">#${p.id}</td>
             <td>
-                <button onclick="openListingDetail(${p.id})" style="background:none; border:none; cursor:pointer; font-weight:500; color:var(--primary-color); font-size:13px; padding:0; text-align:left; text-decoration:underline; text-underline-offset:2px;">${p.title || 'Untitled'}</button>
+                <button onclick="openListingDetail('${p.id}')" style="background:none; border:none; cursor:pointer; font-weight:500; color:var(--primary-color); font-size:13px; padding:0; text-align:left; text-decoration:underline; text-underline-offset:2px;">${p.title || 'Untitled'}</button>
             </td>
             <td style="font-size:13px; color:var(--text-secondary);">${p.location || '--'}</td>
             <td style="font-size:13px; font-weight:500;">${p.price || '--'}</td>
@@ -373,9 +373,9 @@ window.renderInternDetailListings = function(filter) {
             <td>${getStatusBadge(p.approval_status)}</td>
             <td>
                 <div style="display:flex; gap:6px;">
-                    <button onclick="openListingDetail(${p.id})" title="Review" style="padding:5px 10px; border:1px solid var(--border-color); border-radius:6px; background:white; cursor:pointer; font-size:12px; font-weight:500; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">Review</button>
+                    <button onclick="openListingDetail('${p.id}')" title="Review" style="padding:5px 10px; border:1px solid var(--border-color); border-radius:6px; background:white; cursor:pointer; font-size:12px; font-weight:500; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">Review</button>
                     ${p.approval_status !== 'Published' && p.approval_status !== 'Approved'
-                        ? `<button onclick="adminDeleteListing(${p.id})" title="Delete" style="width:30px; height:30px; border:1px solid var(--border-color); border-radius:6px; background:white; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#dc2626; flex-shrink:0; transition:background 0.2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='white'">
+                        ? `<button onclick="adminDeleteListing('${p.id}')" title="Delete" style="width:30px; height:30px; border:1px solid var(--border-color); border-radius:6px; background:white; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#dc2626; flex-shrink:0; transition:background 0.2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='white'">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
                         </button>` : ''}
                 </div>
@@ -536,7 +536,7 @@ window.openListingDetail = async function(listingId) {
                 </div>
 
                 <!-- Edit Button -->
-                <button onclick="adminEditInternListing(${listingId})" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; background:white; color:var(--text-dark); border:1px solid var(--border-color); box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                <button onclick="adminEditInternListing('${listingId}')" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; background:white; color:var(--text-dark); border:1px solid var(--border-color); box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     Edit Listing
                 </button>
@@ -552,15 +552,15 @@ window.openListingDetail = async function(listingId) {
                     </div>
                 ` : `
                     <div style="display:flex; flex-direction:column; gap:10px;">
-                        <button onclick="adminPublishListing(${listingId})" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; background:#16a34a; color:white; border:none; box-shadow:0 4px 12px rgba(22,163,74,0.2); transition:background 0.2s;" onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'">
+                        <button onclick="adminPublishListing('${listingId}')" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; background:#16a34a; color:white; border:none; box-shadow:0 4px 12px rgba(22,163,74,0.2); transition:background 0.2s;" onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                             Approve &amp; Publish
                         </button>
-                        <button onclick="adminRequestChanges(${listingId})" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; background:#fffbeb; color:#d97706; border:1px solid #fcd34d; transition:background 0.2s;" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background='#fffbeb'">
+                        <button onclick="adminRequestChanges('${listingId}')" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; background:#fffbeb; color:#d97706; border:1px solid #fcd34d; transition:background 0.2s;" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background='#fffbeb'">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                             Request Changes
                         </button>
-                        <button onclick="adminRejectListing(${listingId})" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; background:transparent; color:#dc2626; border:1px solid transparent; transition:background 0.2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">
+                        <button onclick="adminRejectListing('${listingId}')" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; background:transparent; color:#dc2626; border:1px solid transparent; transition:background 0.2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
                             Reject Listing
                         </button>
@@ -692,8 +692,8 @@ window.loadInternListings = async function() {
                     <td>${getStatusBadge(l.approval_status)}</td>
                     <td>
                         <div style="display:flex; gap:6px;">
-                            <button class="btn-primary" onclick="openReviewModal(${l.id})" style="font-size:12px; padding:5px 10px;">Review</button>
-                            <button title="Delete" onclick="adminDeleteListing(${l.id})" style="width:30px; height:30px; border:1px solid var(--border-color); border-radius:6px; background:white; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#dc2626; flex-shrink:0;" >
+                            <button class="btn-primary" onclick="openReviewModalFix('${l.id}')" style="font-size:12px; padding:5px 10px;">Review</button>
+                            <button title="Delete" onclick="adminDeleteListing('${l.id}')" style="width:30px; height:30px; border:1px solid var(--border-color); border-radius:6px; background:white; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#dc2626; flex-shrink:0;" >
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg>
                             </button>
                         </div>
@@ -721,7 +721,7 @@ window.loadInternListings = async function() {
                         ${l.approval_status === 'Published' ? `<span style="display:inline-flex; align-items:center; background:#dbeafe; color:#1d4ed8; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; margin-left:8px;">Published</span>` : ''}
                     </td>
                     <td>
-                        <button class="btn-secondary" onclick="openReviewModal(${l.id})" style="font-size:12px; padding:5px 10px;">View Details</button>
+                        <button class="btn-secondary" onclick="openReviewModalFix('${l.id}')" style="font-size:12px; padding:5px 10px;">View Details</button>
                     </td>
                 `;
                 appBody.appendChild(tr);
@@ -806,16 +806,13 @@ window.fetchApi = async function(url, options) {
 // ===== FIX openReviewModal to use current listing data =====
 const _origOpenReviewModal = window.openReviewModal;
 window.openReviewModal = function(id) {
-    // Normalize id to number
-    const numId = parseInt(id);
-
     // Search in currentInternDetailData first, then currentInternListings
     let listing = null;
     if (currentInternDetailData) {
-        listing = currentInternDetailData.find(l => parseInt(l.id) === numId);
+        listing = currentInternDetailData.find(l => String(l.id) === String(id));
     }
     if (!listing && window.currentInternListings) {
-        listing = window.currentInternListings.find(l => parseInt(l.id) === numId);
+        listing = window.currentInternListings.find(l => String(l.id) === String(id));
     }
 
     if (!listing) {
@@ -825,7 +822,7 @@ window.openReviewModal = function(id) {
 
     // Use the detail view instead of the modal if we came from intern detail
     if (currentInternDetailId) {
-        openListingDetail(numId);
+        openListingDetail(id);
         return;
     }
 
@@ -1007,3 +1004,93 @@ document.addEventListener('click', (e) => {
 });
 
 console.log('[intern_admin.js] Listing Interns extension loaded.');
+
+
+window.openReviewModalFix = function(id) {
+    let listing = null;
+    if (window.currentInternListings) {
+        listing = window.currentInternListings.find(l => String(l.id) === String(id));
+    }
+    if (!listing) return;
+    
+    window.currentReviewListingId = id;
+    
+    const actionBtns = document.getElementById('rev-action-buttons');
+    const pubStatus = document.getElementById('rev-publish-status');
+    const viewMain = document.getElementById('rev-view-main');
+    
+    if (listing.approval_status === 'Published') {
+        if(actionBtns) actionBtns.style.display = 'none';
+        if(pubStatus) pubStatus.style.display = 'flex';
+    } else {
+        if(actionBtns) actionBtns.style.display = 'flex';
+        if(pubStatus) pubStatus.style.display = 'none';
+    }
+    
+    document.getElementById('rev-title').textContent = listing.title || 'Untitled';
+    document.getElementById('rev-intern').textContent = listing.intern_name || 'Intern';
+    
+    const specs = listing.specs || {};
+    document.getElementById('rev-type').textContent = specs.property_type || listing.property_type || 'N/A';
+    document.getElementById('rev-purpose').textContent = specs.purpose || listing.purpose || 'N/A';
+    document.getElementById('rev-price').textContent = listing.price || 'N/A';
+    document.getElementById('rev-location').textContent = listing.location || 'N/A';
+    
+    const specsGrid = document.getElementById('rev-specs-grid');
+    const specifications = specs.specifications || listing.specifications || [];
+    if (specifications.length > 0) {
+        specsGrid.innerHTML = specifications.map(s => '<span style="background:#f1f5f9; padding:6px 12px; font-size:13px; border-radius:4px; border:1px solid #e2e8f0; color:#334155;">' + s + '</span>').join('');
+    } else {
+        specsGrid.innerHTML = '<span style="color:#94a3b8; font-size:13px;">No specifications provided</span>';
+    }
+    
+    const featuresGrid = document.getElementById('rev-features-grid');
+    const features = specs.features || listing.features || [];
+    if (features.length > 0) {
+        featuresGrid.innerHTML = features.map(f => '<span style="background:#f8fafc; padding:4px 10px; font-size:12px; border-radius:12px; border:1px solid #cbd5e1; color:#475569;"><i data-feather="check" style="width:10px; height:10px; margin-right:4px; color:#10b981;"></i>' + f + '</span>').join('');
+    } else {
+        featuresGrid.innerHTML = '<span style="color:#94a3b8; font-size:13px;">No features provided</span>';
+    }
+    
+    document.getElementById('rev-desc').textContent = listing.description || 'No description provided.';
+    document.getElementById('rev-feedback').value = listing.admin_feedback || '';
+    
+    const photosContainer = document.getElementById('rev-photos');
+    const videoEl = document.getElementById('rev-video');
+    const videoTitle = document.getElementById('rev-video-title');
+    
+    if (photosContainer && videoEl) {
+        photosContainer.innerHTML = '';
+        videoEl.style.display = 'none';
+        videoTitle.style.display = 'none';
+        
+        let hasMedia = false;
+        const photos = (listing.media && listing.media.photos) ? listing.media.photos : listing.photos;
+        if(photos && photos.length > 0) {
+            hasMedia = true;
+            photos.forEach(p => {
+                if(!p) return;
+                const img = document.createElement('img');
+                img.src = p;
+                img.style.width = '100%';
+                img.style.height = '120px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '8px';
+                img.style.cursor = 'pointer';
+                img.onclick = () => window.openLightbox && window.openLightbox('image', p);
+                photosContainer.appendChild(img);
+            });
+        }
+        const video = (listing.media && listing.media.video) ? listing.media.video : listing.video;
+        if (video) {
+            hasMedia = true;
+            videoEl.src = video;
+            videoEl.style.display = 'block';
+            videoTitle.style.display = 'block';
+        }
+        document.getElementById('rev-media-container').style.display = hasMedia ? 'block' : 'none';
+    }
+    
+    document.getElementById('review-modal').classList.add('active');
+    if(window.feather) setTimeout(() => window.feather.replace(), 50);
+};

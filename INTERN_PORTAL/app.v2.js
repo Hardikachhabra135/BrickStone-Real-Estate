@@ -1,4 +1,4 @@
-const API_BASE = window.ENV ? window.ENV.API_URL : 'https://brickstone-real-estate.onrender.com/api';
+const API_BASE = window.ENV ? window.ENV.API_URL : 'http://localhost:5000/api';
 let authToken = localStorage.getItem('internToken');
 let currentUser = null;
 try {
@@ -15,13 +15,39 @@ let editingListingId = null;
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const requestedId = params.get('id');
+
     if (authToken && currentUser) {
+        if (requestedId && currentUser.intern_id !== requestedId) {
+            // Switching interns: clear auth and show login
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('internToken');
+            localStorage.removeItem('internUser');
+            const lv = document.getElementById('login-view');
+            if (lv) {
+                lv.style.display = 'flex';
+                const idEl = document.getElementById('login-id');
+                if (idEl) idEl.value = requestedId;
+            }
+            return;
+        }
+
         const lv = document.getElementById('login-view');
         if (lv) lv.remove();
         showApp();
     } else {
         const lv = document.getElementById('login-view');
-        if (lv) { lv.style.display = 'flex'; }
+        if (lv) { 
+            lv.style.display = 'flex'; 
+            if (requestedId) {
+                const idEl = document.getElementById('login-id');
+                if (idEl) {
+                    idEl.value = requestedId;
+                }
+            }
+        }
     }
     
     // Auth Listener
@@ -322,18 +348,21 @@ function renderListingsGrid(filter) {
         const imgUrl = getPrimaryImage(l);
         
         const deleteHtml = `
-            <div style="display:flex; justify-content:flex-end; padding-top:8px; border-top:1px solid var(--border-color); margin-top:12px;">
+            <div style="display:flex; justify-content:flex-end; gap: 8px; padding-top:8px; border-top:1px solid var(--border-color); margin-top:12px;">
+                <button class="icon-btn" style="font-size:12px; color:var(--brand-blue); background:transparent; border:none; cursor:pointer;" onclick="event.stopPropagation(); editListing('${l.id}')">
+                    <i data-feather="edit-2" style="width:14px; margin-right:4px;"></i> Edit
+                </button>
                 <button class="icon-btn" style="font-size:12px; color:var(--status-rejected); background:transparent; border:none; cursor:pointer;" onclick="event.stopPropagation(); deleteListing('${l.id}', '${l.approval_status}')">
                     <i data-feather="trash-2" style="width:14px; margin-right:4px;"></i> Delete
                 </button>
             </div>`;
             
         let feedbackHtml = '';
-        if (l.approval_status === 'Changes Requested' && l.latest_note) {
+        if (l.approval_status === 'Changes Requested' && (l.latest_note || l.admin_feedback)) {
             feedbackHtml = `
             <div style="background-color:rgba(239, 68, 68, 0.1); color:#ef4444; padding:8px 12px; font-size:12px; border-radius:4px; margin-top:12px; border:1px solid rgba(239, 68, 68, 0.2);">
                 <strong style="display:block; margin-bottom:4px;">Admin Feedback:</strong>
-                ${l.latest_note}
+                ${l.latest_note || l.admin_feedback}
             </div>`;
         }
             
@@ -405,6 +434,13 @@ function resetEditor() {
     document.querySelectorAll('.feature-chip').forEach(c => c.classList.remove('selected'));
     uploadedMedia = { photos: [], video: null };
     editingListingId = null;
+    const feedbackBanner = document.getElementById('admin-feedback-banner');
+    if(feedbackBanner) feedbackBanner.style.display = 'none';
+    const btnSubmit = document.getElementById('btn-submit');
+    if(btnSubmit) {
+        btnSubmit.textContent = 'Submit for Review';
+        btnSubmit.onclick = () => saveListing('SUBMITTED');
+    }
     
     // Clear media slots
     document.querySelectorAll('.media-input').forEach(input => {
@@ -428,38 +464,66 @@ function resetEditor() {
 }
 
 window.editListing = function(id) {
+    console.log("editListing triggered for", id);
     const l = myListings.find(x => x.id === id);
     if (!l) return;
     
     resetEditor();
     editingListingId = l.id;
       
-    const feedbackBanner = document.getElementById('admin-feedback-banner');
-    if (l.admin_feedback && l.admin_feedback.trim() !== '') {
-        document.getElementById('admin-feedback-text').textContent = l.admin_feedback;
+    let feedbackBanner = document.getElementById('admin-feedback-banner');
+    // Dynamically create banner if it doesn't exist due to HTML caching
+    if (!feedbackBanner) {
+        const layout = document.querySelector('.editor-layout');
+        if (layout) {
+            feedbackBanner = document.createElement('div');
+            feedbackBanner.id = 'admin-feedback-banner';
+            feedbackBanner.style = 'display:none; position:absolute; top:10px; left:20px; right:20px; background:rgba(239, 68, 68, 0.1); border:1px solid #ef4444; color:#ef4444; padding:12px; border-radius:6px; z-index:100; font-size:14px;';
+            feedbackBanner.innerHTML = '<strong>Admin Feedback / Requested Changes:</strong><div id="admin-feedback-text" style="margin-top:4px;"></div>';
+            layout.appendChild(feedbackBanner);
+        }
+    }
+    
+    if (feedbackBanner && l.admin_feedback && l.admin_feedback.trim() !== '') {
+        const feedbackText = document.getElementById('admin-feedback-text');
+        if (feedbackText) feedbackText.textContent = l.admin_feedback;
         feedbackBanner.style.display = 'block';
-    } else {
+        const btnSubmit = document.getElementById('btn-submit');
+        if (btnSubmit) {
+            btnSubmit.textContent = 'Resubmit for Review';
+            btnSubmit.onclick = () => saveListing('RESUBMITTED');
+        }
+    } else if (feedbackBanner) {
         feedbackBanner.style.display = 'none';
+        const btnSubmit = document.getElementById('btn-submit');
+        if (btnSubmit) {
+            btnSubmit.textContent = 'Submit for Review';
+            btnSubmit.onclick = () => saveListing('SUBMITTED');
+        }
     }
       
     document.getElementById('f-title').value = l.title || '';
-    document.getElementById('f-type').value = l.property_type || 'Residential';
-    document.getElementById('f-purpose').value = l.purpose || 'Sale';
+    const specs = l.specs || {};
+    document.getElementById('f-type').value = specs.property_type || l.property_type || 'Residential';
+    document.getElementById('f-purpose').value = specs.purpose || l.purpose || 'Sale';
     document.getElementById('f-price').value = l.price || '';
     document.getElementById('f-locality').value = l.location || '';
     document.getElementById('f-desc').value = l.description || '';
     
     // Restore feature chips
-    if (l.features && Array.isArray(l.features)) {
+    const features = specs.features || l.features || [];
+    if (Array.isArray(features)) {
         document.querySelectorAll('.feature-chip').forEach(chip => {
-            if (l.features.includes(chip.textContent)) {
+            if (features.includes(chip.textContent)) {
                 chip.classList.add('selected');
             }
         });
     }
     
-    if(l.photos && Array.isArray(l.photos)) {
-        l.photos.forEach((url, i) => {
+    const media = l.media || {};
+    const photos = media.photos || l.photos || [];
+    if(Array.isArray(photos)) {
+        photos.forEach((url, i) => {
             if(i < 4 && url) {
                 uploadedMedia.photos[i] = url;
                 const slot = document.querySelector(`.media-input[data-type="photo"][data-index="${i}"]`);
@@ -471,11 +535,12 @@ window.editListing = function(id) {
             }
         });
     }
-    if(l.video) {
-        uploadedMedia.video = l.video;
+    const video = media.video || l.video;
+    if(video) {
+        uploadedMedia.video = video;
         const slot = document.querySelector('.media-input[data-type="video"]');
         const preview = slot.nextElementSibling;
-        preview.src = l.video;
+        preview.src = video;
         preview.style.display = 'block';
     }
     
@@ -512,16 +577,23 @@ function setupLivePreview() {
 }
 
 function updateLivePreview() {
-    document.getElementById('pv-title').textContent = document.getElementById('f-title').value || 'Listing Title';
-    document.getElementById('pv-price').textContent = document.getElementById('f-price').value || 'â‚¹ --';
-    document.getElementById('pv-loc').textContent = document.getElementById('f-locality').value || 'Location';
-    document.getElementById('pv-specs').innerHTML = `<span style="background:var(--bg-main); padding:4px 8px; border-radius:4px; border:1px solid var(--border-color);">${document.getElementById('f-type').value || 'Type'}</span>`;
+    const pvTitle = document.getElementById('pv-title');
+    const pvPrice = document.getElementById('pv-price');
+    const pvLoc = document.getElementById('pv-loc');
+    const pvSpecs = document.getElementById('pv-specs');
+    
+    if (pvTitle) pvTitle.textContent = document.getElementById('f-title').value || 'Listing Title';
+    if (pvPrice) pvPrice.textContent = document.getElementById('f-price').value || '₹ --';
+    if (pvLoc) pvLoc.textContent = document.getElementById('f-locality').value || 'Location';
+    if (pvSpecs) pvSpecs.innerHTML = `<span style="background:var(--bg-main); padding:4px 8px; border-radius:4px; border:1px solid var(--border-color);">${document.getElementById('f-type').value || 'Type'}</span>`;
     
     const pvImg = document.getElementById('pv-image');
-    if (uploadedMedia.photos.length > 0 && uploadedMedia.photos[0]) {
-        pvImg.src = uploadedMedia.photos[0];
-    } else {
-        pvImg.src = 'https://via.placeholder.com/400x240/111111/52525b?text=No+Image';
+    if (pvImg) {
+        if (uploadedMedia.photos.length > 0 && uploadedMedia.photos[0]) {
+            pvImg.src = uploadedMedia.photos[0];
+        } else {
+            pvImg.src = 'https://placehold.co/400x240/111111/52525b?text=No+Image';
+        }
     }
 }
 

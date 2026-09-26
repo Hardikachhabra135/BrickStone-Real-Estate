@@ -29,25 +29,22 @@ exports.createProperty = async (req, res) => {
 // Retrieve all properties
 exports.getAllProperties = async (req, res) => {
     try {
-        let rows;
-        try {
-            [rows] = await pool.query("SELECT * FROM Properties WHERE approval_status = 'Approved' OR approval_status IS NULL ORDER BY created_at DESC");
-        } catch (dbError) {
-            if (dbError.code === 'ER_BAD_FIELD_ERROR' || String(dbError).includes('Unknown column')) {
-                // Fallback for older database schema
-                [rows] = await pool.query("SELECT * FROM Properties ORDER BY created_at DESC");
-            } else {
-                throw dbError;
-            }
+        const fs = require('fs');
+        const path = require('path');
+        const propsPath = path.join(__dirname, '../properties.json');
+        
+        let properties = [];
+        if (fs.existsSync(propsPath)) {
+            properties = JSON.parse(fs.readFileSync(propsPath, 'utf8'));
         }
         
-        // Parse JSON specs back to arrays for the response
-        const properties = rows.map(row => ({
+        // Parse JSON specs back to arrays for the response if they are stringified
+        const mappedProperties = properties.map(row => ({
             ...row,
             specs: typeof row.specs === 'string' ? JSON.parse(row.specs) : (row.specs || [])
         }));
 
-        res.status(200).json({ success: true, data: properties });
+        res.status(200).json({ success: true, data: mappedProperties });
     } catch (error) {
         console.error('Error fetching properties:', error);
         res.status(500).json({ success: false, message: 'Server error' });

@@ -5,14 +5,22 @@ const jwt = require('jsonwebtoken');
 exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
-        const [interns] = await pool.query('SELECT * FROM Interns WHERE intern_id = ? OR email = ?', [username, username]);
+        const fs = require('fs');
+        const path = require('path');
+        const internsPath = path.join(__dirname, '../interns.json');
         
-        if (interns.length === 0) {
+        let interns = [];
+        if (fs.existsSync(internsPath)) {
+            interns = JSON.parse(fs.readFileSync(internsPath, 'utf8'));
+        }
+        
+        const intern = interns.find(i => i.intern_id === username || i.email === username);
+        
+        if (!intern) {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
-        const intern = interns[0];
-        if (intern.status !== 'Active') {
+        if (intern.status !== 'Active' && intern.status !== 'ACTIVE') {
             return res.status(403).json({ success: false, message: 'Account is deactivated. Contact admin.' });
         }
 
@@ -36,19 +44,26 @@ exports.login = async (req, res) => {
 
 exports.getMe = async (req, res) => {
     try {
-        const [interns] = await pool.query('SELECT id, name, intern_id, email, phone, territory, monthly_target, status FROM Interns WHERE id = ?', [req.intern.id]);
-        if (!interns.length) return res.status(404).json({ success: false, message: 'Intern not found' });
+        const fs = require('fs');
+        const path = require('path');
+        const internsPath = path.join(__dirname, '../interns.json');
+        let interns = [];
+        if (fs.existsSync(internsPath)) {
+            interns = JSON.parse(fs.readFileSync(internsPath, 'utf8'));
+        }
         
-        const [stats] = await pool.query(`
-            SELECT 
-                COUNT(*) as total_properties,
-                SUM(CASE WHEN approval_status = 'Under Review' THEN 1 ELSE 0 END) as pending_properties,
-                SUM(CASE WHEN approval_status = 'Approved' THEN 1 ELSE 0 END) as approved_properties,
-                SUM(CASE WHEN approval_status = 'Changes Requested' THEN 1 ELSE 0 END) as changes_requested,
-                SUM(CASE WHEN approval_status = 'Rejected' THEN 1 ELSE 0 END) as rejected_properties
-            FROM Properties WHERE intern_id = ?`, [req.intern.id]);
+        const intern = interns.find(i => i.id === String(req.intern.id) || i.intern_id === String(req.intern.id));
+        if (!intern) return res.status(404).json({ success: false, message: 'Intern not found' });
+        
+        const stats = {
+            total_properties: 0,
+            pending_properties: 0,
+            approved_properties: 0,
+            changes_requested: 0,
+            rejected_properties: 0
+        };
 
-        res.json({ success: true, intern: interns[0], stats: stats[0] });
+        res.json({ success: true, intern: intern, stats: stats });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to fetch details' });
     }
@@ -69,13 +84,14 @@ exports.getNotifications = async (req, res) => {
 
 exports.getProperties = async (req, res) => {
     try {
-        const [properties] = await pool.query(
-            `SELECT p.*, (SELECT note FROM PropertyReviewNotes WHERE property_id = p.id ORDER BY created_at DESC LIMIT 1) as latest_note 
-             FROM Properties p 
-             WHERE intern_id = ? 
-             ORDER BY created_at DESC`,
-            [req.intern.id]
-        );
+        const fs = require('fs');
+        const path = require('path');
+        const listingsPath = path.join(__dirname, '../intern_listings.json');
+        let properties = [];
+        if (fs.existsSync(listingsPath)) {
+            let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
+            properties = listings.filter(p => String(p.intern_id) === String(req.intern.intern_id || req.intern.id));
+        }
         res.json({ success: true, data: properties });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to fetch properties' });
@@ -84,13 +100,17 @@ exports.getProperties = async (req, res) => {
 
 exports.getPropertyById = async (req, res) => {
     try {
-        const [properties] = await pool.query('SELECT * FROM Properties WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
-        if (!properties.length) return res.status(404).json({ success: false, message: 'Property not found' });
-        
-        // Fetch notes if any
-        const [notes] = await pool.query('SELECT * FROM PropertyReviewNotes WHERE property_id = ? ORDER BY created_at DESC', [req.params.id]);
-        
-        res.json({ success: true, property: properties[0], notes });
+        const fs = require('fs');
+        const path = require('path');
+        const listingsPath = path.join(__dirname, '../intern_listings.json');
+        if (fs.existsSync(listingsPath)) {
+            let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
+            const prop = listings.find(p => p.id === req.params.id && String(p.intern_id) === String(req.intern.intern_id || req.intern.id));
+            if (prop) {
+                return res.json({ success: true, property: prop, notes: [] });
+            }
+        }
+        res.status(404).json({ success: false, message: 'Property not found' });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to fetch property' });
     }
@@ -99,11 +119,36 @@ exports.getPropertyById = async (req, res) => {
 exports.createProperty = async (req, res) => {
     try {
         const { title, description, price, location, badge, image, specs, media } = req.body;
-        const [result] = await pool.query(
-            'INSERT INTO Properties (title, description, price, location, badge, image, specs, media, intern_id, approval_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, "Draft")',
-            [title, description, price, location, badge, image, JSON.stringify(specs || {}), JSON.stringify(media || { photos: [], video: '' }), req.intern.id]
-        );
-        res.status(201).json({ success: true, message: 'Property created as Draft', property_id: result.insertId });
+        const fs = require('fs');
+        const path = require('path');
+        const listingsPath = path.join(__dirname, '../intern_listings.json');
+        
+        let listings = [];
+        if (fs.existsSync(listingsPath)) {
+            listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
+        }
+        
+        const newProperty = {
+            id: 'BRK-L-' + Math.floor(Math.random() * 9000 + 1000),
+            intern_id: String(req.intern.intern_id || req.intern.id),
+            title: title || '',
+            description: description || '',
+            price: price || '',
+            location: location || '',
+            badge: badge || '',
+            image: image || '',
+            specs: specs || {},
+            media: media || { photos: [], video: '' },
+            approval_status: 'Draft',
+            status: 'DRAFT',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        };
+        
+        listings.push(newProperty);
+        fs.writeFileSync(listingsPath, JSON.stringify(listings, null, 2));
+        
+        res.status(201).json({ success: true, message: 'Property created as Draft', property_id: newProperty.id });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Failed to create property' });
@@ -113,38 +158,55 @@ exports.createProperty = async (req, res) => {
 exports.updateProperty = async (req, res) => {
     try {
         const { title, description, price, location, badge, image, specs, media } = req.body;
-        // Verify ownership and status
-        const [props] = await pool.query('SELECT approval_status FROM Properties WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
-        if (!props.length) return res.status(404).json({ success: false, message: 'Property not found' });
+        const fs = require('fs');
+        const path = require('path');
+        const listingsPath = path.join(__dirname, '../intern_listings.json');
         
-        if (['Under Review', 'Approved'].includes(props[0].approval_status)) {
-            return res.status(403).json({ success: false, message: 'Cannot edit property in this status' });
+        if (fs.existsSync(listingsPath)) {
+            let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
+            const propId = req.params.id;
+            const prop = listings.find(p => p.id === propId && String(p.intern_id) === String(req.intern.intern_id || req.intern.id));
+            if (prop) {
+                if (['Under Review', 'Approved'].includes(prop.approval_status)) {
+                    return res.status(403).json({ success: false, message: 'Cannot edit property in this status' });
+                }
+                prop.title = title || prop.title;
+                prop.description = description || prop.description;
+                prop.price = price || prop.price;
+                prop.location = location || prop.location;
+                prop.badge = badge || prop.badge;
+                prop.image = image || prop.image;
+                prop.specs = specs || prop.specs;
+                prop.media = media || prop.media;
+                prop.updated_at = new Date().toISOString();
+                fs.writeFileSync(listingsPath, JSON.stringify(listings, null, 2));
+                return res.json({ success: true, message: 'Property updated' });
+            }
         }
-
-        await pool.query(
-            'UPDATE Properties SET title=?, description=?, price=?, location=?, badge=?, image=?, specs=?, media=? WHERE id=? AND intern_id=?',
-            [title, description, price, location, badge, image, JSON.stringify(specs || {}), JSON.stringify(media || { photos: [], video: '' }), req.params.id, req.intern.id]
-        );
-        res.json({ success: true, message: 'Property updated' });
+        res.status(404).json({ success: false, message: 'Property not found' });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ success: false, message: 'Failed to update property' });
     }
 };
 
 exports.submitProperty = async (req, res) => {
     try {
-        const [props] = await pool.query('SELECT approval_status FROM Properties WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
-        if (!props.length) return res.status(404).json({ success: false, message: 'Property not found' });
-        
-        await pool.query('UPDATE Properties SET approval_status = "Under Review" WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
-        
-        // Notify Admins
-        await pool.query(
-            'INSERT INTO Notifications (user_type, title, message, link) VALUES ("admin", "New Listing Submitted", ?, ?)',
-            [`Intern ID ${req.intern.id} submitted property #${req.params.id} for review`, '/admin-panel/listing-interns.html']
-        );
-        
-        res.json({ success: true, message: 'Property submitted for review' });
+        const fs = require('fs');
+        const path = require('path');
+        const listingsPath = path.join(__dirname, '../intern_listings.json');
+        if (fs.existsSync(listingsPath)) {
+            let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
+            const propId = req.params.id;
+            const prop = listings.find(p => p.id === propId && String(p.intern_id) === String(req.intern.intern_id || req.intern.id));
+            if (prop) {
+                prop.approval_status = "Under Review";
+                prop.status = "SUBMITTED";
+                fs.writeFileSync(listingsPath, JSON.stringify(listings, null, 2));
+                return res.json({ success: true, message: 'Property submitted for review' });
+            }
+        }
+        res.status(404).json({ success: false, message: 'Property not found' });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to submit property' });
     }
@@ -152,22 +214,25 @@ exports.submitProperty = async (req, res) => {
 
 exports.resubmitProperty = async (req, res) => {
     try {
-        const [props] = await pool.query('SELECT approval_status FROM Properties WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
-        if (!props.length) return res.status(404).json({ success: false, message: 'Property not found' });
-        
-        if (props[0].approval_status !== 'Changes Requested') {
-            return res.status(400).json({ success: false, message: 'Property is not in Changes Requested status' });
+        const fs = require('fs');
+        const path = require('path');
+        const listingsPath = path.join(__dirname, '../intern_listings.json');
+        if (fs.existsSync(listingsPath)) {
+            let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
+            const propId = req.params.id;
+            const prop = listings.find(p => p.id === propId && String(p.intern_id) === String(req.intern.intern_id || req.intern.id));
+            if (prop) {
+                if (prop.approval_status !== 'Changes Requested') {
+                    return res.status(400).json({ success: false, message: 'Property is not in Changes Requested state' });
+                }
+                prop.approval_status = "Under Review";
+                prop.status = "SUBMITTED";
+                prop.updated_at = new Date().toISOString();
+                fs.writeFileSync(listingsPath, JSON.stringify(listings, null, 2));
+                return res.json({ success: true, message: 'Property resubmitted for review' });
+            }
         }
-
-        await pool.query('UPDATE Properties SET approval_status = "Under Review" WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
-        
-        // Notify Admins
-        await pool.query(
-            'INSERT INTO Notifications (user_type, title, message, link) VALUES ("admin", "Listing Resubmitted", ?, ?)',
-            [`Intern ID ${req.intern.id} resubmitted property #${req.params.id} after changes`, '/admin-panel/listing-interns.html']
-        );
-        
-        res.json({ success: true, message: 'Property resubmitted for review' });
+        res.status(404).json({ success: false, message: 'Property not found' });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to resubmit property' });
     }

@@ -23,9 +23,14 @@
     "primary_photo": "http://localhost:5000/uploads/files-1789698718865-625123654.jpg",
     "video": "http://localhost:5000/uploads/files-1789698737733-719909859.mp4",
     "status": "APPROVED",
-    "admin_feedback": "",
+    "admin_feedback": "Please fix photos",
     "created_at": "2026-09-18T02:32:24.105Z",
-    "updated_at": "2026-09-18T04:37:25.189Z"
+    "updated_at": "2026-09-26T07:46:35.527Z",
+    "approval_status": "Published",
+    "specs": {
+      "category": "flat",
+      "subcategory": "1 BHK"
+    }
   },
   {
     "id": "BRK-L-9957",
@@ -48,5 +53,72 @@
     "admin_feedback": "",
     "created_at": "2026-09-18T04:38:52.252Z",
     "updated_at": "2026-09-18T04:39:14.666Z"
+  },
+  {
+    "id": "BRK-L-3702",
+    "intern_id": "BRK-LI-7295",
+    "title": "LISTING 1",
+    "description": "hiiiiiiiiiiiiii",
+    "price": "1.2 CR",
+    "location": "NOIDA",
+    "badge": "New",
+    "image": "http://localhost:5000/uploads/files-1790405459421-120562419.jpg",
+    "specs": {
+      "property_type": "Residential",
+      "purpose": "Rent",
+      "specifications": [
+        " sq ft",
+        "Freehold"
+      ],
+      "features": [],
+      "category": "flat",
+      "subcategory": "1 BHK"
+    },
+    "media": {
+      "photos": [
+        "http://localhost:5000/uploads/files-1790405459421-120562419.jpg",
+        "http://localhost:5000/uploads/files-1790405462360-90456198.jpg"
+      ],
+      "video": "http://localhost:5000/uploads/files-1790405471196-679343896.mp4"
+    },
+    "approval_status": "Published",
+    "status": "APPROVED",
+    "created_at": "2026-09-26T06:56:08.138Z",
+    "updated_at": "2026-09-26T07:47:12.400Z",
+    "admin_feedback": "CHANGE PHOTOS"
+  },
+  {
+    "id": "BRK-L-5737",
+    "intern_id": "BRK-LI-7295",
+    "title": "LISTING 2",
+    "description": "",
+    "price": "1.2 CR",
+    "location": "NOIDA",
+    "badge": "New",
+    "image": "http://localhost:5000/uploads/files-1790405843394-858729352.jpg",
+    "specs": {
+      "property_type": "Residential",
+      "purpose": "Sale",
+      "specifications": [
+        " sq ft",
+        "Freehold"
+      ],
+      "features": [
+        "Corner Plot"
+      ],
+      "category": "flat",
+      "subcategory": "1 BHK"
+    },
+    "media": {
+      "photos": [
+        "http://localhost:5000/uploads/files-1790405843394-858729352.jpg",
+        "http://localhost:5000/uploads/files-1790405848616-40162279.jpg"
+      ],
+      "video": ""
+    },
+    "approval_status": "Published",
+    "status": "APPROVED",
+    "created_at": "2026-09-26T06:57:39.136Z",
+    "updated_at": "2026-09-26T07:47:16.742Z"
   }
 ]

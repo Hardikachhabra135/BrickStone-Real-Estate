@@ -168,6 +168,10 @@
         <!-- NEW LISTING VIEW (EDITOR) -->
         <div id="new-listing-view" class="workspace-view" style="padding:0; position:relative;">
             <div class="editor-layout">
+                <div id="admin-feedback-banner" style="display:none; position:absolute; top:10px; left:20px; right:20px; background:rgba(239, 68, 68, 0.1); border:1px solid #ef4444; color:#ef4444; padding:12px; border-radius:6px; z-index:100; font-size:14px;">
+                    <strong>Admin Feedback / Requested Changes:</strong>
+                    <div id="admin-feedback-text" style="margin-top:4px;"></div>
+                </div>
                 <div class="editor-sidebar">
                     <div class="nav-label" style="margin-bottom:1.5rem;">Workflow</div>
                     <ul class="step-list">
@@ -437,11 +441,14 @@
                     <div class="nav-label" style="margin-bottom:1rem;">Live Preview</div>
                     <div class="preview-card">
                         <div class="preview-hero">
-                            <img id="pv-image" src="https://via.placeholder.com/400x240/111111/52525b?text=No+Image">
+                            <img id="pv-image" src="https://placehold.co/400x240/111111/52525b?text=No+Image" style="width:100%; height:100%; object-fit:cover;">
                             <div class="card-status status-draft" style="position:absolute; top:12px; right:12px;">DRAFT</div>
                         </div>
                         <div class="preview-body">
-                            <div style="font-size:14px; margin-bottom:12px;" id="pv-title">Listing Title</div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                <div style="font-size:14px; font-weight:600;" id="pv-title">Listing Title</div>
+                                <div style="font-size:14px; font-weight:700; color:var(--brand-blue);" id="pv-price">₹ --</div>
+                            </div>
                             <div style="font-size:12px; color:var(--text-secondary); display:flex; align-items:center; gap:4px; margin-bottom:1rem;"><i data-feather="map-pin" style="width:12px;"></i> <span id="pv-loc">Location</span></div>
                             
                             <div style="display:flex; gap:10px; font-size:11px; margin-bottom:1rem;" id="pv-specs">
@@ -510,7 +517,7 @@
 </div>
 
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script src="app.v2.js?v=3"></script>
+<script src="app.v2.js?v=6"></script>
 <script>
     feather.replace();
 </script>
