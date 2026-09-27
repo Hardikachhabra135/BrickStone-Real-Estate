@@ -120,7 +120,7 @@ window.loadInterns = async function() {
                     <div style="display:flex; align-items:center; gap:12px;">
                         <div style="width:38px; height:38px; background:linear-gradient(135deg,#3b2f29,#b89c72); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; color:white; flex-shrink:0;">${initials}</div>
                         <div>
-                            <button onclick="openInternDetail(${i.id})" style="background:none; border:none; cursor:pointer; font-weight:600; color:var(--primary-color); font-size:14px; padding:0; text-align:left; text-decoration:underline; text-underline-offset:2px;">${i.name}</button>
+                            <button onclick="openInternDetail(${i.id})" style="background:none; border:none; cursor:pointer; font-weight:600; color:var(--obsidian); font-size:14px; padding:0; text-align:left; text-decoration:underline; text-underline-offset:2px;">${i.name}</button>
                             <div style="font-size:11px; font-family:monospace; background:var(--surface-light); padding:2px 6px; border-radius:4px; display:inline-block; margin-top:4px;">${i.intern_id}</div>
                         </div>
                     </div>
@@ -365,7 +365,7 @@ window.renderInternDetailListings = function(filter) {
         return `<tr>
             <td style="font-family:monospace; font-size:12px; color:var(--text-light);">#${p.id}</td>
             <td>
-                <button onclick="openListingDetail('${p.id}')" style="background:none; border:none; cursor:pointer; font-weight:500; color:var(--primary-color); font-size:13px; padding:0; text-align:left; text-decoration:underline; text-underline-offset:2px;">${p.title || 'Untitled'}</button>
+                <button onclick="openListingDetail('${p.id}')" style="background:none; border:none; cursor:pointer; font-weight:500; color:var(--obsidian); font-size:13px; padding:0; text-align:left; text-decoration:underline; text-underline-offset:2px;">${p.title || 'Untitled'}</button>
             </td>
             <td style="font-size:13px; color:var(--text-secondary);">${p.location || '--'}</td>
             <td style="font-size:13px; font-weight:500;">${p.price || '--'}</td>
@@ -898,7 +898,7 @@ window.loadChatInternsList = async function() {
         listDiv.innerHTML = json.data.map(intern => `
             <div class="intern-chat-item" onclick="openInternChat('${intern.id}', '${intern.name}')" 
                 style="padding: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s;">
-                <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--primary-color);">
+                <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--obsidian);">
                     ${intern.name.substring(0, 2).toUpperCase()}
                 </div>
                 <div style="flex: 1;">
