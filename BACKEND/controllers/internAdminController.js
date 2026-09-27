@@ -54,6 +54,18 @@ exports.getInterns = async (req, res) => {
         if (fs.existsSync(internsPath)) {
             interns = JSON.parse(fs.readFileSync(internsPath, 'utf8'));
         }
+        
+        const messagesPath = path.join(__dirname, '../messages.json');
+        let messages = [];
+        if (fs.existsSync(messagesPath)) {
+            messages = JSON.parse(fs.readFileSync(messagesPath, 'utf8'));
+        }
+        
+        interns = interns.map(intern => {
+            const unreadCount = messages.filter(m => String(m.conversation_id) === String(intern.id) && m.sender_type === 'intern' && !m.is_read).length;
+            return { ...intern, unread_count: unreadCount };
+        });
+
         res.json({ success: true, data: interns });
     } catch (err) {
         console.error(err);

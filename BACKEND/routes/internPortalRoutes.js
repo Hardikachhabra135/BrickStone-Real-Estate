@@ -53,6 +53,11 @@ router.delete('/properties/:id', internPortalController.deleteListing);
 router.post('/properties/:id/submit', internPortalController.submitProperty);
 router.post('/properties/:id/resubmit', internPortalController.resubmitProperty);
 
+router.get('/chat/unread', (req, res) => {
+    req.params.internId = req.intern.id;
+    return chatController.getUnreadCount(req, res);
+});
+
 router.get('/chat', (req, res) => {
     req.params.internId = req.intern.id;
     return chatController.getMessages(req, res);

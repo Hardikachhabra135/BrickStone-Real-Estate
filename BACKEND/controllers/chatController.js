@@ -21,12 +21,25 @@ const saveMessages = (msgs) => {
 exports.getMessages = async (req, res) => {
     try {
         const internId = req.params.internId;
+        const callerType = req.intern ? 'intern' : 'admin';
         const messages = readMessages();
+        
+        let changed = false;
         
         // Filter messages for this intern
         const internMessages = messages.filter(m => m.conversation_id === internId);
-
-        // Mark as read could be done here, but let's keep it simple
+        
+        // Mark as read based on who is fetching
+        internMessages.forEach(m => {
+            if (m.sender_type !== callerType && !m.is_read) {
+                m.is_read = true;
+                changed = true;
+            }
+        });
+        
+        if (changed) {
+            saveMessages(messages);
+        }
         
         res.json({ success: true, data: internMessages });
     } catch (err) {
@@ -73,5 +86,20 @@ exports.sendMessage = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Failed to send message' });
+    }
+};
+
+exports.getUnreadCount = async (req, res) => {
+    try {
+        const internId = req.params.internId;
+        const callerType = req.intern ? 'intern' : 'admin';
+        const messages = readMessages();
+        
+        const unreadCount = messages.filter(m => String(m.conversation_id) === String(internId) && m.sender_type !== callerType && !m.is_read).length;
+        
+        res.json({ success: true, count: unreadCount });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to fetch unread count' });
     }
 };
