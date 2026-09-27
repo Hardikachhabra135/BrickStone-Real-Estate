@@ -897,10 +897,10 @@ window.loadChatInternsList = async function() {
         }
 
         listDiv.innerHTML = json.data.map(intern => `
-            <div class="intern-chat-item" onclick="openInternChat('${intern.id}', '${intern.name}')" 
+            <div class="intern-chat-item" onclick="openInternChat('${intern.id}', '${intern.name}', this)" 
                 style="padding: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s;">
                 <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--obsidian);">
-                    ${intern.name.substring(0, 2).toUpperCase()}
+                    ${(intern.name || "").substring(0, 2).toUpperCase()}
                 </div>
                 <div style="flex: 1;">
                     <div style="font-weight: 500; font-size: 14px;">${intern.name}</div>
@@ -913,7 +913,7 @@ ${intern.unread_count > 0 ? `<div style="background: #dc2626; color: white; font
     }
 };
 
-window.openInternChat = async function(internId, internName) {
+window.openInternChat = async function(internId, internName, element) {
     currentChatInternId = internId;
     document.getElementById('chat-header').textContent = `Chat with ${internName}`;
     
@@ -924,7 +924,7 @@ window.openInternChat = async function(internId, internName) {
 
     // Highlight selected item
     document.querySelectorAll('.intern-chat-item').forEach(el => el.style.background = 'transparent');
-    event.currentTarget.style.background = 'var(--bg-main)';
+    if (element) element.style.background = 'var(--bg-main)';
 
     const container = document.getElementById('admin-chat-messages');
     container.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-light);">Loading...</div>';

@@ -133,7 +133,7 @@ async function fetchApi(endpoint, options = {}) {
     const response = await fetch(`${API_BASE}${endpoint}`, {
         ...options,
         headers,
-        cache: 'no-store'
+        // cache: 'no-store' removed for Safari compatibility
     });
     
     if (response.status === 401 || response.status === 403) {
