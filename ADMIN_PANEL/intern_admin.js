@@ -904,8 +904,8 @@ window.loadChatInternsList = async function() {
                 </div>
                 <div style="flex: 1;">
                     <div style="font-weight: 500; font-size: 14px;">${intern.name}</div>
-                    <div style="font-size: 12px; color: var(--text-light);">${intern.intern_id}</div>
-                </div>
+                    <div style="font-size: 12px; color: var(--text-light);">${intern.intern_id}</div></div>
+${intern.unread_count > 0 ? `<div style="background: #dc2626; color: white; font-size: 11px; font-weight: 600; border-radius: 10px; padding: 2px 6px; min-width: 18px; text-align: center; margin-left: auto;">${intern.unread_count}</div>` : ''}
             </div>
         `).join('');
     } catch(err) {
