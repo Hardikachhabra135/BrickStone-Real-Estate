@@ -896,8 +896,8 @@ window.loadChatInternsList = async function() {
         }
 
         listDiv.innerHTML = json.data.map(intern => `
-            <div class="intern-chat-item" onclick="openInternChat(${intern.id}, '${intern.name}')" 
-                style="padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s;">
+            <div class="intern-chat-item" onclick="openInternChat('${intern.id}', '${intern.name}')" 
+                style="padding: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s;">
                 <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--primary-color);">
                     ${intern.name.substring(0, 2).toUpperCase()}
                 </div>

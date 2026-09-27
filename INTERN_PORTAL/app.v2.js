@@ -829,7 +829,7 @@ function appendMessageToUI(msg, container) {
 
 async function loadChat() {
     try {
-        const res = await fetchApi('/chat');
+        const res = await fetchApi('/intern/chat');
         const data = await res.json();
         if (data.success) {
             const container = document.getElementById('chat-messages');
@@ -857,7 +857,7 @@ window.sendChatMessage = async function() {
     input.value = '';
     
     try {
-        const res = await fetchApi('/chat', {
+        const res = await fetchApi('/intern/chat', {
             method: 'POST',
             body: JSON.stringify({ message: msg, senderType: 'intern' })
         });
