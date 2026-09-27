@@ -172,8 +172,13 @@ function setupSocket() {
                 container.innerHTML = '';
             }
             appendMessageToUI(msg, container);
-        } else {
+                } else {
             showToast('New message from Admin', 'message-circle');
+            const badge = document.getElementById('intern-chat-unread-badge');
+            if (badge) {
+                badge.style.display = 'inline-block';
+                badge.textContent = parseInt(badge.textContent || '0') + 1;
+            }
         }
     });
 }
@@ -209,6 +214,20 @@ function setupNavigation() {
 
 async function loadNotifications() {
     try {
+        const chatRes = await fetchApi('/intern/chat/unread');
+        if (chatRes.status === 200) {
+            const chatData = await chatRes.json();
+            const badge = document.getElementById('intern-chat-unread-badge');
+            if (badge) {
+                if (chatData.success && chatData.count > 0) {
+                    badge.style.display = 'inline-block';
+                    badge.textContent = chatData.count;
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+        
         const res = await fetchApi('/intern/notifications');
         const data = await res.json();
         const container = document.getElementById('notifications-container');
@@ -829,6 +848,8 @@ function appendMessageToUI(msg, container) {
 
 async function loadChat() {
     try {
+        const badge = document.getElementById('intern-chat-unread-badge');
+        if(badge) badge.style.display = 'none';
         const res = await fetchApi('/intern/chat');
         const data = await res.json();
         if (data.success) {
