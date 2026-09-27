@@ -815,7 +815,7 @@ function showToast(msg, icon) {
 function appendMessageToUI(msg, container) {
     const align = msg.sender_type === 'intern' ? 'flex-end' : 'flex-start';
     const bg = msg.sender_type === 'intern' ? 'var(--accent-color)' : 'var(--bg-main)';
-    const color = msg.sender_type === 'intern' ? '#fff' : 'var(--text-primary)';
+    const color = msg.sender_type === 'intern' ? 'var(--bg-main)' : 'var(--text-primary)';
     
     const div = document.createElement('div');
     div.style.cssText = `align-self: ${align}; background: ${bg}; color: ${color}; padding: 10px 14px; border-radius: 8px; max-width: 70%; margin-bottom: 8px;`;

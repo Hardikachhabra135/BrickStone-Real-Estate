@@ -857,7 +857,7 @@ let adminChatSocket = null;
 // let currentChatInternId = null; // already defined in app.min.js
 
 function setupAdminChatSocket() {
-    if (!adminToken) return;
+    if (!authToken) return;
     const baseUrl = API_BASE.replace('/api', '');
     if (!adminChatSocket) {
         adminChatSocket = io(baseUrl);
