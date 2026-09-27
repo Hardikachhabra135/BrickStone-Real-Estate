@@ -6,10 +6,10 @@ const getMessagesFile = () => path.join(__dirname, '../messages.json');
 const readMessages = () => {
     try {
         if (fs.existsSync(getMessagesFile())) {
-            return JSON.parse(fs.readFileSync(getMessagesFile(), 'utf8'));
+            return JSON.parse(fs.readFileSync(getMessagesFile(), 'utf8').replace(/^\uFEFF/, ''));
         }
     } catch (err) {
-        console.error(err);
+        console.error('Error parsing messages.json in readMessages:', err);
     }
     return [];
 };

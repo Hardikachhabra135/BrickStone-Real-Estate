@@ -11,11 +11,15 @@ exports.createIntern = async (req, res) => {
         
         const fs = require('fs');
         const path = require('path');
-        const internsPath = path.join(__dirname, '../interns.json');
-        
+                const internsPath = path.join(__dirname, '../interns.json');
         let interns = [];
         if (fs.existsSync(internsPath)) {
-            interns = JSON.parse(fs.readFileSync(internsPath, 'utf8'));
+            try {
+                const rawInterns = fs.readFileSync(internsPath, 'utf8');
+                interns = JSON.parse(rawInterns.replace(/^\uFEFF/, ''));
+            } catch(e) {
+                console.error('Error parsing interns.json in getInterns:', e);
+            }
         }
         
         if (interns.some(i => i.email === email || i.intern_id === intern_id)) {
@@ -49,16 +53,26 @@ exports.getInterns = async (req, res) => {
     try {
         const fs = require('fs');
         const path = require('path');
-        const internsPath = path.join(__dirname, '../interns.json');
+                const internsPath = path.join(__dirname, '../interns.json');
         let interns = [];
         if (fs.existsSync(internsPath)) {
-            interns = JSON.parse(fs.readFileSync(internsPath, 'utf8'));
+            try {
+                const rawInterns = fs.readFileSync(internsPath, 'utf8');
+                interns = JSON.parse(rawInterns.replace(/^\uFEFF/, ''));
+            } catch(e) {
+                console.error('Error parsing interns.json in getInterns:', e);
+            }
         }
         
-        const messagesPath = path.join(__dirname, '../messages.json');
+                const messagesPath = path.join(__dirname, '../messages.json');
         let messages = [];
         if (fs.existsSync(messagesPath)) {
-            messages = JSON.parse(fs.readFileSync(messagesPath, 'utf8'));
+            try {
+                const rawMsgs = fs.readFileSync(messagesPath, 'utf8');
+                messages = JSON.parse(rawMsgs.replace(/^\uFEFF/, ''));
+            } catch(e) {
+                console.error('Error parsing messages.json in getInterns:', e);
+            }
         }
         
         interns = interns.map(intern => {
@@ -103,7 +117,7 @@ exports.updateInternStatus = async (req, res) => {
         const path = require('path');
         const internsPath = path.join(__dirname, '../interns.json');
         if (fs.existsSync(internsPath)) {
-            let interns = JSON.parse(fs.readFileSync(internsPath, 'utf8'));
+            let interns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
             const internIdParam = req.params.id;
             const intern = interns.find(i => i.intern_id === internIdParam || i.id === internIdParam);
             if (intern) {
@@ -123,7 +137,7 @@ exports.deleteIntern = async (req, res) => {
         const path = require('path');
         const internsPath = path.join(__dirname, '../interns.json');
         if (fs.existsSync(internsPath)) {
-            let interns = JSON.parse(fs.readFileSync(internsPath, 'utf8'));
+            let interns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
             const internIdParam = req.params.id;
             const index = interns.findIndex(i => i.intern_id === internIdParam || i.id === internIdParam);
             if (index !== -1) {
@@ -154,7 +168,7 @@ exports.resetInternPassword = async (req, res) => {
         const internsPath = path.join(__dirname, '../interns.json');
         
         if (fs.existsSync(internsPath)) {
-            let interns = JSON.parse(fs.readFileSync(internsPath, 'utf8'));
+            let interns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
             const internIdParam = req.params.id;
             const intern = interns.find(i => i.intern_id === internIdParam || i.id === internIdParam);
             if (intern) {

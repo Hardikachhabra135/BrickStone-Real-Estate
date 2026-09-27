@@ -857,7 +857,8 @@ let adminChatSocket = null;
 // let currentChatInternId = null; // already defined in app.min.js
 
 function setupAdminChatSocket() {
-    if (!authToken) return;
+    const token = localStorage.getItem('brickstone_admin_token');
+    if (!token) return;
     const baseUrl = API_BASE.replace('/api', '');
     if (!adminChatSocket) {
         adminChatSocket = io(baseUrl);
