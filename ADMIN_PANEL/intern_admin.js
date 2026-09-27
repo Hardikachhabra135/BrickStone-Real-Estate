@@ -953,7 +953,7 @@ function appendAdminChatMessageUI(msg) {
 
     const isMe = msg.sender_type === 'admin';
     const align = isMe ? 'flex-end' : 'flex-start';
-    const bg = isMe ? 'var(--primary-color)' : 'var(--bg-main)';
+    const bg = isMe ? 'var(--obsidian)' : 'var(--bg-main)';
     const color = isMe ? '#fff' : 'var(--text-primary)';
     
     const div = document.createElement('div');
