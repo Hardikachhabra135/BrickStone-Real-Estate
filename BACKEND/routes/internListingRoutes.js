@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
@@ -44,6 +44,11 @@ router.post('/', auth.verifyToken, (req, res) => {
     const listings = readListings();
     const payload = req.body;
     
+    // Do NOT trust an arbitrary intern ID sent by the frontend
+    if (payload.intern_id) {
+        delete payload.intern_id;
+    }
+    
     if (payload.id) {
         // Update existing
         const index = listings.findIndex(l => l.id === payload.id && l.intern_id === req.user.id);
@@ -58,6 +63,7 @@ router.post('/', auth.verifyToken, (req, res) => {
         listings[index] = {
             ...listings[index],
             ...payload,
+            intern_id: req.user.id, // Ensure it stays associated with the logged-in intern
             updated_at: new Date().toISOString()
         };
         writeListings(listings);
@@ -66,8 +72,8 @@ router.post('/', auth.verifyToken, (req, res) => {
         // Create new
         const newList = {
             id: 'BRK-L-' + Math.floor(1000 + Math.random() * 9000), // e.g. BRK-L-4921
-            intern_id: req.user.id,
             ...payload,
+            intern_id: req.user.id, // Explicitly set intern_id from auth after payload spread
             status: payload.status || 'DRAFT',
             admin_feedback: '',
             created_at: new Date().toISOString(),

@@ -74,10 +74,21 @@ exports.getInterns = async (req, res) => {
                 console.error('Error parsing messages.json in getInterns:', e);
             }
         }
+        const listingsPath = path.join(__dirname, '../intern_listings.json');
+        let listings = [];
+        if (fs.existsSync(listingsPath)) {
+            try {
+                const rawListings = fs.readFileSync(listingsPath, 'utf8');
+                listings = JSON.parse(rawListings.replace(/^\uFEFF/, ''));
+            } catch(e) {
+                console.error('Error parsing intern_listings.json in getInterns:', e);
+            }
+        }
         
         interns = interns.map(intern => {
             const unreadCount = messages.filter(m => String(m.conversation_id) === String(intern.id) && m.sender_type === 'intern' && !m.is_read).length;
-            return { ...intern, unread_count: unreadCount };
+            const listingCount = listings.filter(l => String(l.intern_id) === String(intern.intern_id) || String(l.intern_id) === String(intern.id)).length;
+            return { ...intern, unread_count: unreadCount, listingCount: listingCount };
         });
 
         res.json({ success: true, data: interns });
@@ -267,10 +278,26 @@ exports.getInternPropertiesToReview = async (req, res) => {
         const listingsPath = path.join(__dirname, '../intern_listings.json');
         let properties = [];
         if (fs.existsSync(listingsPath)) {
-            properties = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
+            const rawListings = fs.readFileSync(listingsPath, 'utf8');
+            properties = JSON.parse(rawListings.replace(/^\uFEFF/, ''));
         }
+        
+        // Add intern name logic here
+        const internsPath = path.join(__dirname, '../interns.json');
+        let interns = [];
+        if (fs.existsSync(internsPath)) {
+            const rawInterns = fs.readFileSync(internsPath, 'utf8');
+            interns = JSON.parse(rawInterns.replace(/^\uFEFF/, ''));
+        }
+        
+        properties = properties.map(p => {
+            const intern = interns.find(i => String(i.id) === String(p.intern_id) || String(i.intern_id) === String(p.intern_id));
+            return { ...p, intern_name: intern ? intern.name : '--' };
+        });
+
         res.json({ success: true, data: properties });
     } catch (err) {
+        console.error('Error in getInternPropertiesToReview:', err);
         res.status(500).json({ success: false, message: 'Failed to fetch properties for review' });
     }
 };

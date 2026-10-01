@@ -130,7 +130,7 @@ exports.createProperty = async (req, res) => {
         
         const newProperty = {
             id: 'BRK-L-' + Math.floor(Math.random() * 9000 + 1000),
-            intern_id: String(req.intern.intern_id || req.intern.id),
+            intern_id: String(req.intern.id), // Use the authenticated user's ID to establish ownership
             title: title || '',
             description: description || '',
             price: price || '',
@@ -240,15 +240,28 @@ exports.resubmitProperty = async (req, res) => {
 
 exports.deleteListing = async (req, res) => {
     try {
-        const [props] = await pool.query('SELECT approval_status FROM Properties WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
-        if (!props.length) return res.status(404).json({ success: false, message: 'Property not found or access denied.' });
+        const fs = require('fs');
+        const path = require('path');
+        const listingsPath = path.join(__dirname, '../intern_listings.json');
+        if (!fs.existsSync(listingsPath)) {
+            return res.status(404).json({ success: false, message: 'Property not found.' });
+        }
         
-        const status = props[0].approval_status;
+        let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
+        const propIndex = listings.findIndex(p => p.id === req.params.id && String(p.intern_id) === String(req.intern.intern_id || req.intern.id));
+        
+        if (propIndex === -1) {
+            return res.status(404).json({ success: false, message: 'Property not found or access denied.' });
+        }
+        
+        const status = listings[propIndex].approval_status;
         if (status === 'Approved' || status === 'Published') {
             return res.status(403).json({ success: false, message: 'Cannot delete a published or approved listing. Please contact admin.' });
         }
 
-        await pool.query('DELETE FROM Properties WHERE id = ? AND intern_id = ?', [req.params.id, req.intern.id]);
+        listings.splice(propIndex, 1);
+        fs.writeFileSync(listingsPath, JSON.stringify(listings, null, 2));
+        
         res.json({ success: true, message: 'Listing deleted successfully.' });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to delete listing.' });
