@@ -248,7 +248,7 @@ exports.deleteListing = async (req, res) => {
         }
         
         let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
-        const propIndex = listings.findIndex(p => p.id === req.params.id && String(p.intern_id) === String(req.intern.intern_id || req.intern.id));
+        const propIndex = listings.findIndex(p => p.id === req.params.id && (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id)));
         
         if (propIndex === -1) {
             return res.status(404).json({ success: false, message: 'Property not found or access denied.' });
