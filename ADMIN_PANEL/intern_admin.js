@@ -690,7 +690,10 @@ window.loadInternListings = async function() {
                 tr.innerHTML = `
                     <td style="font-family:monospace; font-size:12px;">#${l.id}</td>
                     <td style="font-size:12px;">${dateStr}</td>
-                    <td style="font-weight:500;">${l.intern_name || '--'}</td>
+                    <td>
+                        <div style="font-weight:500;">${l.intern_name || '--'}</div>
+                        <div style="font-size:11px; font-family:monospace; color:var(--text-light); margin-top:2px;">${l.intern_id || '--'}</div>
+                    </td>
                     <td>${l.title || '--'}</td>
                     <td>${getStatusBadge(l.approval_status)}</td>
                     <td>
@@ -718,7 +721,10 @@ window.loadInternListings = async function() {
                 tr.innerHTML = `
                     <td style="font-family:monospace; font-size:12px;">#${l.id}</td>
                     <td style="font-size:12px;">${dateStr}</td>
-                    <td style="font-weight:500;">${l.intern_name || '--'}</td>
+                    <td>
+                        <div style="font-weight:500;">${l.intern_name || '--'}</div>
+                        <div style="font-size:11px; font-family:monospace; color:var(--text-light); margin-top:2px;">${l.intern_id || '--'}</div>
+                    </td>
                     <td>
                         ${l.title || '--'}
                         ${l.approval_status === 'Published' ? `<span style="display:inline-flex; align-items:center; background:#dbeafe; color:#1d4ed8; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; margin-left:8px;">Published</span>` : ''}
@@ -1032,7 +1038,7 @@ window.openReviewModalFix = function(id) {
     }
     
     document.getElementById('rev-title').textContent = listing.title || 'Untitled';
-    document.getElementById('rev-intern').textContent = listing.intern_name || 'Intern';
+    document.getElementById('rev-intern').textContent = (listing.intern_name || 'Intern') + ' (' + (listing.intern_id || 'ID') + ')';
     
     const specs = listing.specs || {};
     document.getElementById('rev-type').textContent = specs.property_type || listing.property_type || 'N/A';

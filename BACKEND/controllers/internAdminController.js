@@ -306,7 +306,11 @@ exports.getInternPropertiesToReview = async (req, res) => {
         
         properties = properties.map(p => {
             const intern = interns.find(i => String(i.id) === String(p.intern_id) || String(i.intern_id) === String(p.intern_id));
-            return { ...p, intern_name: intern ? intern.name : '--' };
+            return { 
+                ...p, 
+                intern_name: intern ? intern.name : '--',
+                intern_id: intern ? intern.intern_id : p.intern_id 
+            };
         });
 
         res.json({ success: true, data: properties });
