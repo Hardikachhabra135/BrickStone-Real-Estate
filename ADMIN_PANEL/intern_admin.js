@@ -8,7 +8,9 @@
 // ===== CONFIGURATION =====
 window._IAD_PORTAL_URL = 'https://brickstone-intern-portal-opal.vercel.app/';
 // Keep a local alias for convenience
-var PORTAL_LOCAL_URL = window._IAD_PORTAL_URL;
+var PORTAL_LOCAL_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.')) 
+    ? `http://${window.location.hostname}:8003/` 
+    : window._IAD_PORTAL_URL;
 
 // ===== TOAST UTILITY =====
 function showAdminToast(msg, type) {
@@ -90,7 +92,7 @@ window.loadInterns = async function() {
         }
 
         json.data.forEach(i => {
-            const totalListings = (i.total_properties || 0);
+            const totalListings = (i.listingCount !== undefined ? i.listingCount : (i.total_properties || 0));
             const pendingListings = (i.pending_properties || 0);
             const approvedListings = (i.approved_properties || 0);
             const changesListings = (i.changes_requested || 0);
@@ -105,6 +107,7 @@ window.loadInterns = async function() {
             if (approvedListings > 0) listingPill += `<span style="background:#dcfce7; color:#15803d; padding:2px 6px; border-radius:8px; font-size:10px; font-weight:600;">${approvedListings} approved</span>`;
             if (publishedListings > 0) listingPill += `<span style="background:#dbeafe; color:#1d4ed8; padding:2px 6px; border-radius:8px; font-size:10px; font-weight:600;">${publishedListings} published</span>`;
             if (totalListings === 0) listingPill += `<span style="color:var(--text-light); font-size:11px;">No listings yet</span>`;
+            else listingPill += `<span style="color:var(--text-light); font-size:11px;">${totalListings} listings</span>`;
             listingPill += `</div></div>`;
 
             const statusBadge = i.status === 'Active'
@@ -120,7 +123,7 @@ window.loadInterns = async function() {
                     <div style="display:flex; align-items:center; gap:12px;">
                         <div style="width:38px; height:38px; background:linear-gradient(135deg,#3b2f29,#b89c72); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; color:white; flex-shrink:0;">${initials}</div>
                         <div>
-                            <button onclick="openInternDetail(${i.id})" style="background:none; border:none; cursor:pointer; font-weight:600; color:var(--obsidian); font-size:14px; padding:0; text-align:left; text-decoration:underline; text-underline-offset:2px;">${i.name}</button>
+                            <div style="font-weight:600; color:var(--obsidian); font-size:14px; padding:0; text-align:left;">${i.name}</div>
                             <div style="font-size:11px; font-family:monospace; background:var(--surface-light); padding:2px 6px; border-radius:4px; display:inline-block; margin-top:4px;">${i.intern_id}</div>
                         </div>
                     </div>

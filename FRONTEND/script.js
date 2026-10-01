@@ -454,13 +454,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch(`${API_BASE}/properties`);
         const data = await res.json();
         
+        const resolveImageUrl = (url) => {
+          if (!url || typeof url !== 'string') return url;
+          const base = window.ENV?.BASE_URL || 'http://localhost:5000';
+          if (url.includes('brickstone-real-estate-m8w1.onrender.com/uploads/')) {
+              return base + url.split('.com')[1];
+          }
+          if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
+              return base + (url.startsWith('/') ? url : '/' + url);
+          }
+          return url;
+        };
+
         const apiProperties = data.success ? data.data.map(p => ({
           id: p.id,
           type: 'property',
           title: p.title,
           subtitle: `${p.location} • ${p.price}`,
           status: p.badge || p.status,
-          image: p.image,
+          image: resolveImageUrl(p.image),
           url: getPropertyUrl(p.id),
           searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${p.specs ? p.specs.join(' ') : ''}`.toLowerCase()
         })) : [];
@@ -474,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
             title: p.title,
             subtitle: `${p.location} • ${p.price}`,
             status: p.badge,
-            image: p.image,
+            image: resolveImageUrl(p.image),
             url: getPropertyUrl(k),
             searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${p.specs.join(' ')}`.toLowerCase(),
             isLocal: true
@@ -496,7 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
         searchableData = [...staticData, ...Object.keys(propertiesData).map(k => {
           const p = propertiesData[k];
           return {
-            id: k, type: 'property', title: p.title, subtitle: `${p.location} • ${p.price}`, status: p.badge, image: p.image, url: getPropertyUrl(k), searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${p.specs.join(' ')}`.toLowerCase(), isLocal: true
+            id: k, type: 'property', title: p.title, subtitle: `${p.location} • ${p.price}`, status: p.badge, image: resolveImageUrl(p.image), url: getPropertyUrl(k), searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${p.specs.join(' ')}`.toLowerCase(), isLocal: true
           };
         })];
         isDataLoaded = true;

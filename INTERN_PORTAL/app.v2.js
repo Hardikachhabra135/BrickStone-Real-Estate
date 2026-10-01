@@ -1,4 +1,17 @@
 const API_BASE = window.ENV ? window.ENV.API_URL : 'http://localhost:5000/api';
+
+function resolveImageUrl(url) {
+    if (!url || typeof url !== 'string') return url;
+    const base = window.ENV?.BASE_URL || 'http://localhost:5000';
+    if (url.includes('brickstone-real-estate-m8w1.onrender.com/uploads/')) {
+        return base + url.split('.com')[1];
+    }
+    if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
+        return base + (url.startsWith('/') ? url : '/' + url);
+    }
+    return url;
+}
+
 let authToken = localStorage.getItem('internToken');
 let currentUser = null;
 try {
@@ -304,13 +317,15 @@ function updateDashboardKPIs() {
 }
 
 function getPrimaryImage(l) {
-    if (l.image) return l.image;
-    if (l.media) {
+    let img = '';
+    if (l.image) img = l.image;
+    else if (l.media) {
         try {
             const mediaObj = typeof l.media === 'string' ? JSON.parse(l.media) : l.media;
-            if (mediaObj && mediaObj.photos && mediaObj.photos.length > 0) return mediaObj.photos[0];
+            if (mediaObj && mediaObj.photos && mediaObj.photos.length > 0) img = mediaObj.photos[0];
         } catch(e) {}
     }
+    if (img) return resolveImageUrl(img);
     return 'https://via.placeholder.com/400x200/111111/52525b';
 }
 
@@ -548,7 +563,7 @@ window.editListing = function(id) {
                 const slot = document.querySelector(`.media-input[data-type="photo"][data-index="${i}"]`);
                 if(slot) {
                     const preview = slot.nextElementSibling;
-                    preview.src = url;
+                    preview.src = resolveImageUrl(url);
                     preview.style.display = 'block';
                 }
             }
@@ -559,7 +574,7 @@ window.editListing = function(id) {
         uploadedMedia.video = video;
         const slot = document.querySelector('.media-input[data-type="video"]');
         const preview = slot.nextElementSibling;
-        preview.src = video;
+        preview.src = resolveImageUrl(video);
         preview.style.display = 'block';
     }
     
@@ -609,7 +624,7 @@ function updateLivePreview() {
     const pvImg = document.getElementById('pv-image');
     if (pvImg) {
         if (uploadedMedia.photos.length > 0 && uploadedMedia.photos[0]) {
-            pvImg.src = uploadedMedia.photos[0];
+            pvImg.src = resolveImageUrl(uploadedMedia.photos[0]);
         } else {
             pvImg.src = 'https://placehold.co/400x240/111111/52525b?text=No+Image';
         }
@@ -682,7 +697,7 @@ async function handleFileUpload(file, inputElement) {
                 uploadedMedia.video = url;
             }
             
-            preview.src = url;
+            preview.src = resolveImageUrl(url);
             preview.style.display = 'block';
             progress.style.width = '100%';
             

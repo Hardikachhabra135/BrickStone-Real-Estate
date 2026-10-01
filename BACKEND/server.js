@@ -7,9 +7,17 @@ const allowedOrigins = [
     'https://brickstone-admin-panel.vercel.app',
     'https://brickstone-frontend.vercel.app',
     'https://brickstone-intern-portal-opal.vercel.app',
+    'http://localhost:8001',
     'http://localhost:8002',
     'http://localhost:8003',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'http://127.0.0.1:8001',
+    'http://127.0.0.1:8002',
+    'http://127.0.0.1:8003',
+    'http://192.168.1.6:8001',
+    'http://192.168.1.6:8002',
+    'http://192.168.1.6:8003',
+    'http://192.168.1.6:3000'
 ];
 
 const corsOptions = {

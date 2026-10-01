@@ -566,7 +566,30 @@
             }
 
             /**
-             * Resolve image src.
+             * Resolve image src dynamically for local vs production environments.
+             */
+            function resolveImageUrl(url) {
+                if (!url || typeof url !== 'string') return url;
+                
+                const base = window.ENV && window.ENV.BASE_URL ? window.ENV.BASE_URL : 'http://localhost:5000';
+                
+                // Rewrite hardcoded render URLs to use local base URL
+                if (url.includes('brickstone-real-estate-m8w1.onrender.com/uploads/')) {
+                    const pathPart = url.split('.com')[1]; // gets /uploads/...
+                    return base + pathPart;
+                }
+                
+                // Rewrite relative upload paths
+                if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
+                    const cleanPath = url.startsWith('/') ? url : '/' + url;
+                    return base + cleanPath;
+                }
+                
+                return url;
+            }
+
+            /**
+             * Resolve image src for main property image.
              * - null / undefined  → fallback image
              * - absolute URL       → use as-is
              * - relative path      → use as-is (relative to FRONTEND folder)
@@ -580,7 +603,7 @@
                     if (title.includes('business') || title.includes('hub') || title.includes('penthouse')) return 'images/business.jpg';
                     return 'images/villa.jpg';
                 }
-                return img;
+                return resolveImageUrl(img);
             }
 
             /** Build specs array from DB specs + fallback derivation */
@@ -763,15 +786,17 @@
                 // Build Gallery Array
                 currentGalleryItems = [];
                 if (d.image && d.image !== 'images/default.jpg') {
+                    // d.image is already resolved when added to store
                     currentGalleryItems.push({ type: 'photo', url: d.image });
                 }
                 if (d.media && d.media.photos && d.media.photos.length > 0) {
                     d.media.photos.forEach(photo => {
-                        if (photo && photo !== d.image) currentGalleryItems.push({ type: 'photo', url: photo });
+                        const resolvedPhoto = resolveImageUrl(photo);
+                        if (resolvedPhoto && resolvedPhoto !== d.image) currentGalleryItems.push({ type: 'photo', url: resolvedPhoto });
                     });
                 }
                 if (d.media && d.media.video) {
-                    currentGalleryItems.push({ type: 'video', url: d.media.video });
+                    currentGalleryItems.push({ type: 'video', url: resolveImageUrl(d.media.video) });
                 }
                 
                 // Fallback if empty
