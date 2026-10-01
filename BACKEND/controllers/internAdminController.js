@@ -198,21 +198,35 @@ exports.resetInternPassword = async (req, res) => {
 
 exports.getInternProperties = async (req, res) => {
     try {
-        // Verify intern exists
-        const [intern] = await pool.query(
-            'SELECT id, name, intern_id, territory, monthly_target FROM Interns WHERE id = ?',
-            [req.params.id]
-        );
-        if (!intern.length) return res.status(404).json({ success: false, message: 'Intern not found' });
+        const fs = require('fs');
+        const path = require('path');
+        const internsPath = path.join(__dirname, '../interns.json');
+        const listingsPath = path.join(__dirname, '../intern_listings.json');
 
-        const [properties] = await pool.query(
-            `SELECT p.*, 
-             (SELECT note FROM PropertyReviewNotes WHERE property_id = p.id ORDER BY created_at DESC LIMIT 1) as latest_review_note
-             FROM Properties p
-             WHERE p.intern_id = ?
-             ORDER BY p.created_at DESC`,
-            [req.params.id]
-        );
+        let interns = [];
+        if (fs.existsSync(internsPath)) {
+            interns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
+        }
+        
+        const internIdParam = req.params.id;
+        const intern = interns.find(i => String(i.id) === String(internIdParam));
+
+        if (!intern) return res.status(404).json({ success: false, message: 'Intern not found' });
+
+        let properties = [];
+        if (fs.existsSync(listingsPath)) {
+            let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8').replace(/^\uFEFF/, ''));
+            properties = listings.filter(l => String(l.intern_id) === String(intern.intern_id) || String(l.intern_id) === String(intern.id));
+        }
+
+        // Add dummy latest_review_note for compatibility
+        properties = properties.map(p => ({
+            ...p,
+            latest_review_note: p.admin_feedback || null
+        }));
+
+        // Sort descending by created_at
+        properties.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
         // Count stats
         const stats = {
@@ -224,9 +238,9 @@ exports.getInternProperties = async (req, res) => {
             drafts: properties.filter(p => p.approval_status === 'Draft').length
         };
 
-        res.json({ success: true, data: properties, intern: intern[0], stats });
+        res.json({ success: true, data: properties, intern: intern, stats });
     } catch (err) {
-        console.error(err);
+        console.error('Error in getInternProperties:', err);
         res.status(500).json({ success: false, message: 'Failed to fetch properties' });
     }
 };

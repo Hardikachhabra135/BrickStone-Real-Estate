@@ -140,5 +140,27 @@
     "category": "villa",
     "subcategory": "4 bhk",
     "created_at": "2026-01-01T00:00:05.000Z"
+  },
+  {
+    "id": 1790856080500,
+    "title": "3BHK villa",
+    "description": "Ready to move",
+    "price": "4000000",
+    "location": "Motti Bagh",
+    "badge": "New",
+    "image": "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1790856013916-708911433.png",
+    "media": {
+      "photos": [
+        "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1790856013916-708911433.png",
+        "https://brickstone-real-estate-m8w1.onrender.com/uploads/files-1790856032324-618176582.png"
+      ],
+      "video": ""
+    },
+    "specs": "[\"180 sq ft\",\"West\",\"Freehold\",\"Corner Plot\"]",
+    "is_verified": true,
+    "status": "Available",
+    "category": "flat",
+    "subcategory": "3 bhk",
+    "created_at": "2026-10-01T12:01:20.500Z"
   }
 ]
