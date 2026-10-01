@@ -90,7 +90,7 @@ exports.getProperties = async (req, res) => {
         let properties = [];
         if (fs.existsSync(listingsPath)) {
             let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
-            properties = listings.filter(p => String(p.intern_id) === String(req.intern.intern_id || req.intern.id));
+            properties = listings.filter(p => (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id)));
         }
         res.json({ success: true, data: properties });
     } catch (err) {
@@ -105,7 +105,7 @@ exports.getPropertyById = async (req, res) => {
         const listingsPath = path.join(__dirname, '../intern_listings.json');
         if (fs.existsSync(listingsPath)) {
             let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
-            const prop = listings.find(p => p.id === req.params.id && String(p.intern_id) === String(req.intern.intern_id || req.intern.id));
+            const prop = listings.find(p => p.id === req.params.id && (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id)));
             if (prop) {
                 return res.json({ success: true, property: prop, notes: [] });
             }
@@ -165,7 +165,7 @@ exports.updateProperty = async (req, res) => {
         if (fs.existsSync(listingsPath)) {
             let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
             const propId = req.params.id;
-            const prop = listings.find(p => p.id === propId && String(p.intern_id) === String(req.intern.intern_id || req.intern.id));
+            const prop = listings.find(p => p.id === propId && (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id)));
             if (prop) {
                 if (['Under Review', 'Approved'].includes(prop.approval_status)) {
                     return res.status(403).json({ success: false, message: 'Cannot edit property in this status' });
@@ -198,7 +198,7 @@ exports.submitProperty = async (req, res) => {
         if (fs.existsSync(listingsPath)) {
             let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
             const propId = req.params.id;
-            const prop = listings.find(p => p.id === propId && String(p.intern_id) === String(req.intern.intern_id || req.intern.id));
+            const prop = listings.find(p => p.id === propId && (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id)));
             if (prop) {
                 prop.approval_status = "Under Review";
                 prop.status = "SUBMITTED";
@@ -220,7 +220,7 @@ exports.resubmitProperty = async (req, res) => {
         if (fs.existsSync(listingsPath)) {
             let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
             const propId = req.params.id;
-            const prop = listings.find(p => p.id === propId && String(p.intern_id) === String(req.intern.intern_id || req.intern.id));
+            const prop = listings.find(p => p.id === propId && (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id)));
             if (prop) {
                 if (prop.approval_status !== 'Changes Requested') {
                     return res.status(400).json({ success: false, message: 'Property is not in Changes Requested state' });
