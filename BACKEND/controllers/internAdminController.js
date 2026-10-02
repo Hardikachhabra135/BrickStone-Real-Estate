@@ -8,41 +8,49 @@ exports.createIntern = async (req, res) => {
     try {
         const { name, intern_id, password, email, phone, territory, monthly_target } = req.body;
         const password_hash = await bcrypt.hash(password, 10);
-        
-        const fs = require('fs');
-        const path = require('path');
-                const internsPath = path.join(__dirname, '../interns.json');
-        let interns = [];
-        if (fs.existsSync(internsPath)) {
-            try {
-                const rawInterns = fs.readFileSync(internsPath, 'utf8');
-                interns = JSON.parse(rawInterns.replace(/^\uFEFF/, ''));
-            } catch(e) {
-                console.error('Error parsing interns.json in getInterns:', e);
+
+        // Test DB availability
+        let dbAvailable = false;
+        try { await pool.query('SELECT 1'); dbAvailable = true; } catch(e) {}
+
+        if (!dbAvailable) {
+            // JSON fallback
+            const fs = require('fs');
+            const path = require('path');
+            const internsPath = path.join(__dirname, '../interns.json');
+            let interns = [];
+            if (fs.existsSync(internsPath)) {
+                try { interns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, '')); } catch(e) {}
             }
+            if (interns.some(i => i.email === email || i.intern_id === intern_id)) {
+                return res.status(400).json({ success: false, message: 'Intern ID or Email already exists' });
+            }
+            const newIntern = {
+                id: Date.now().toString(),
+                name, intern_id, email,
+                phone: phone || '',
+                password_hash,
+                territory: territory || '',
+                monthly_target: monthly_target || 0,
+                status: 'ACTIVE',
+                created_at: new Date().toISOString()
+            };
+            interns.push(newIntern);
+            fs.writeFileSync(internsPath, JSON.stringify(interns, null, 2));
+            return res.status(201).json({ success: true, message: 'Intern created successfully', intern_id: newIntern.id });
         }
-        
-        if (interns.some(i => i.email === email || i.intern_id === intern_id)) {
+
+        const [existing] = await pool.query('SELECT id FROM Interns WHERE intern_id = ? OR email = ?', [intern_id, email]);
+        if (existing.length > 0) {
             return res.status(400).json({ success: false, message: 'Intern ID or Email already exists' });
         }
         
-        const newIntern = {
-            id: Date.now().toString(),
-            name,
-            intern_id,
-            email,
-            phone: phone || '',
-            password_hash,
-            territory: territory || '',
-            monthly_target: monthly_target || 0,
-            status: 'ACTIVE',
-            created_at: new Date().toISOString()
-        };
+        const [result] = await pool.query(
+            'INSERT INTO Interns (name, intern_id, email, phone, password_hash, territory, monthly_target, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [name, intern_id, email, phone || '', password_hash, territory || '', monthly_target || 0, 'Active']
+        );
         
-        interns.push(newIntern);
-        fs.writeFileSync(internsPath, JSON.stringify(interns, null, 2));
-        
-        res.status(201).json({ success: true, message: 'Intern created successfully', intern_id: newIntern.id });
+        res.status(201).json({ success: true, message: 'Intern created successfully', intern_id: result.insertId });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Failed to create intern' });
@@ -50,51 +58,113 @@ exports.createIntern = async (req, res) => {
 };
 
 exports.getInterns = async (req, res) => {
-    try {
-        const fs = require('fs');
-        const path = require('path');
-                const internsPath = path.join(__dirname, '../interns.json');
-        let interns = [];
-        if (fs.existsSync(internsPath)) {
-            try {
-                const rawInterns = fs.readFileSync(internsPath, 'utf8');
-                interns = JSON.parse(rawInterns.replace(/^\uFEFF/, ''));
-            } catch(e) {
-                console.error('Error parsing interns.json in getInterns:', e);
-            }
-        }
-        
-                const messagesPath = path.join(__dirname, '../messages.json');
-        let messages = [];
-        if (fs.existsSync(messagesPath)) {
-            try {
-                const rawMsgs = fs.readFileSync(messagesPath, 'utf8');
-                messages = JSON.parse(rawMsgs.replace(/^\uFEFF/, ''));
-            } catch(e) {
-                console.error('Error parsing messages.json in getInterns:', e);
-            }
-        }
-        const listingsPath = path.join(__dirname, '../intern_listings.json');
-        let listings = [];
-        if (fs.existsSync(listingsPath)) {
-            try {
-                const rawListings = fs.readFileSync(listingsPath, 'utf8');
-                listings = JSON.parse(rawListings.replace(/^\uFEFF/, ''));
-            } catch(e) {
-                console.error('Error parsing intern_listings.json in getInterns:', e);
-            }
-        }
-        
-        interns = interns.map(intern => {
-            const unreadCount = messages.filter(m => String(m.conversation_id) === String(intern.id) && m.sender_type === 'intern' && !m.is_read).length;
-            const listingCount = listings.filter(l => String(l.intern_id) === String(intern.intern_id) || String(l.intern_id) === String(intern.id)).length;
-            return { ...intern, unread_count: unreadCount, listingCount: listingCount };
-        });
+    const fs = require('fs');
+    const path = require('path');
+    const internsPath = path.join(__dirname, '../interns.json');
+    const messagesPath = path.join(__dirname, '../messages.json');
+    const listingsPath = path.join(__dirname, '../intern_listings.json');
 
-        res.json({ success: true, data: interns });
+    // Helper to load JSON file safely
+    const loadJson = (filePath) => {
+        try {
+            if (fs.existsSync(filePath)) {
+                return JSON.parse(fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, ''));
+            }
+        } catch(e) { console.error('loadJson error:', filePath, e.message); }
+        return [];
+    };
+
+    // Helper to decorate interns with listing/message counts
+    const decorateInterns = (interns, listings, messages, legacyInterns = []) => {
+        return interns.map(intern => {
+            const legacyIntern = legacyInterns.find(i => i.intern_id === intern.intern_id);
+            const legacyId = legacyIntern ? legacyIntern.id : null;
+            const unreadCount = messages.filter(m =>
+                String(m.conversation_id) === String(intern.id) && m.sender_type === 'intern' && !m.is_read
+            ).length;
+            const listingCount = listings.filter(l =>
+                String(l.intern_id) === String(intern.intern_id) ||
+                String(l.intern_id) === String(intern.id) ||
+                (legacyId && String(l.intern_id) === String(legacyId))
+            ).length;
+            return {
+                ...intern,
+                status: intern.status ? intern.status.toUpperCase() : 'ACTIVE',
+                unread_count: unreadCount,
+                listingCount
+            };
+        });
+    };
+
+    try {
+        // --- Test DB connectivity first ---
+        let dbAvailable = false;
+        try {
+            await pool.query('SELECT 1');
+            dbAvailable = true;
+        } catch(connErr) {
+            console.warn('DB not available, falling back to interns.json:', connErr.message);
+        }
+
+        if (!dbAvailable) {
+            // ---- JSON FALLBACK (local dev / DB offline) ----
+            const interns = loadJson(internsPath);
+            const messages = loadJson(messagesPath);
+            const listings = loadJson(listingsPath);
+            const decorated = decorateInterns(interns, listings, messages);
+            return res.json({ success: true, data: decorated });
+        }
+
+        // ---- DB PATH (production) ----
+
+        // Sync legacy JSON interns into DB (one-time migration, idempotent)
+        const fileInterns = loadJson(internsPath);
+        for (const fi of fileInterns) {
+            try {
+                const [exists] = await pool.query('SELECT id FROM Interns WHERE intern_id = ?', [fi.intern_id]);
+                if (exists.length === 0) {
+                    await pool.query(
+                        'INSERT INTO Interns (name, intern_id, email, phone, password_hash, territory, monthly_target, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                        [
+                            fi.name,
+                            fi.intern_id,
+                            fi.email,
+                            fi.phone || '',
+                            fi.password_hash,
+                            fi.territory || '',
+                            fi.monthly_target || 0,
+                            fi.status === 'ACTIVE' || fi.status === 'Active' ? 'Active' : 'Inactive',
+                            fi.created_at ? new Date(fi.created_at) : new Date()
+                        ]
+                    );
+                }
+            } catch(syncErr) {
+                console.error('Sync error for intern', fi.intern_id, syncErr.message);
+            }
+        }
+
+        const [dbInterns] = await pool.query(
+            'SELECT id, name, intern_id, email, phone, territory, monthly_target, status, created_at FROM Interns ORDER BY created_at DESC'
+        );
+
+        const messages = loadJson(messagesPath);
+        const listings = loadJson(listingsPath);
+        const legacyInterns = loadJson(internsPath);
+
+        const formattedInterns = decorateInterns(dbInterns, listings, messages, legacyInterns);
+        res.json({ success: true, data: formattedInterns });
+
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, message: 'Failed to fetch interns' });
+        console.error('getInterns error:', err);
+        // Last-resort fallback: serve from JSON so the admin panel never shows a hard error
+        try {
+            const interns = loadJson(internsPath);
+            const messages = loadJson(messagesPath);
+            const listings = loadJson(listingsPath);
+            return res.json({ success: true, data: decorateInterns(interns, listings, messages) });
+        } catch(fallbackErr) {
+            res.status(500).json({ success: false, message: 'Failed to fetch interns' });
+        }
     }
 };
 
@@ -124,18 +194,23 @@ exports.updateIntern = async (req, res) => {
 exports.updateInternStatus = async (req, res) => {
     try {
         const { status } = req.body;
-        const fs = require('fs');
-        const path = require('path');
-        const internsPath = path.join(__dirname, '../interns.json');
-        if (fs.existsSync(internsPath)) {
-            let interns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
-            const internIdParam = req.params.id;
-            const intern = interns.find(i => i.intern_id === internIdParam || i.id === internIdParam);
-            if (intern) {
-                intern.status = status;
-                fs.writeFileSync(internsPath, JSON.stringify(interns, null, 2));
+        const normalizedStatus = (status === 'ACTIVE' || status === 'Active') ? 'Active' : 'Inactive';
+
+        let dbAvailable = false;
+        try { await pool.query('SELECT 1'); dbAvailable = true; } catch(e) {}
+
+        if (!dbAvailable) {
+            const fs = require('fs'); const path = require('path');
+            const internsPath = path.join(__dirname, '../interns.json');
+            if (fs.existsSync(internsPath)) {
+                let interns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
+                const intern = interns.find(i => i.intern_id === req.params.id || i.id === req.params.id);
+                if (intern) { intern.status = normalizedStatus.toUpperCase(); fs.writeFileSync(internsPath, JSON.stringify(interns, null, 2)); }
             }
+            return res.json({ success: true, message: 'Status updated' });
         }
+
+        await pool.query('UPDATE Interns SET status = ? WHERE id = ?', [normalizedStatus, req.params.id]);
         res.json({ success: true, message: 'Status updated' });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to update status' });
@@ -144,25 +219,27 @@ exports.updateInternStatus = async (req, res) => {
 
 exports.deleteIntern = async (req, res) => {
     try {
-        const fs = require('fs');
-        const path = require('path');
-        const internsPath = path.join(__dirname, '../interns.json');
-        if (fs.existsSync(internsPath)) {
-            let interns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
-            const internIdParam = req.params.id;
-            const index = interns.findIndex(i => i.intern_id === internIdParam || i.id === internIdParam);
-            if (index !== -1) {
+        let dbAvailable = false;
+        try { await pool.query('SELECT 1'); dbAvailable = true; } catch(e) {}
+
+        if (!dbAvailable) {
+            const fs = require('fs'); const path = require('path');
+            const internsPath = path.join(__dirname, '../interns.json');
+            if (fs.existsSync(internsPath)) {
+                let interns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
+                const index = interns.findIndex(i => i.intern_id === req.params.id || i.id === req.params.id);
+                if (index === -1) return res.status(404).json({ success: false, message: 'Intern not found' });
                 interns.splice(index, 1);
                 fs.writeFileSync(internsPath, JSON.stringify(interns, null, 2));
-            } else {
-                return res.status(404).json({ success: false, message: 'Intern not found' });
             }
+            return res.json({ success: true, message: 'Intern deleted successfully.', published_count: 0 });
         }
-        res.json({
-            success: true,
-            message: 'Intern deleted successfully.',
-            published_count: 0
-        });
+
+        const [result] = await pool.query('DELETE FROM Interns WHERE id = ?', [req.params.id]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Intern not found' });
+        }
+        res.json({ success: true, message: 'Intern deleted successfully.', published_count: 0 });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Failed to deactivate intern' });
@@ -174,21 +251,24 @@ exports.resetInternPassword = async (req, res) => {
         const { new_password } = req.body;
         if (!new_password) return res.status(400).json({ success: false, message: 'New password required' });
         
-        const fs = require('fs');
-        const path = require('path');
-        const internsPath = path.join(__dirname, '../interns.json');
-        
-        if (fs.existsSync(internsPath)) {
-            let interns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
-            const internIdParam = req.params.id;
-            const intern = interns.find(i => i.intern_id === internIdParam || i.id === internIdParam);
-            if (intern) {
-                const bcrypt = require('bcryptjs');
-                intern.password_hash = await bcrypt.hash(new_password, 10);
-                fs.writeFileSync(internsPath, JSON.stringify(interns, null, 2));
-                return res.json({ success: true, message: 'Password reset successful' });
+        const password_hash = await bcrypt.hash(new_password, 10);
+
+        let dbAvailable = false;
+        try { await pool.query('SELECT 1'); dbAvailable = true; } catch(e) {}
+
+        if (!dbAvailable) {
+            const fs = require('fs'); const path = require('path');
+            const internsPath = path.join(__dirname, '../interns.json');
+            if (fs.existsSync(internsPath)) {
+                let interns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
+                const intern = interns.find(i => i.intern_id === req.params.id || i.id === req.params.id);
+                if (intern) { intern.password_hash = password_hash; fs.writeFileSync(internsPath, JSON.stringify(interns, null, 2)); return res.json({ success: true, message: 'Password reset successful' }); }
             }
+            return res.status(404).json({ success: false, message: 'Intern not found' });
         }
+
+        const [result] = await pool.query('UPDATE Interns SET password_hash = ? WHERE id = ?', [password_hash, req.params.id]);
+        if (result.affectedRows > 0) return res.json({ success: true, message: 'Password reset successful' });
         return res.status(404).json({ success: false, message: 'Intern not found' });
     } catch (err) {
         console.error(err);
@@ -200,23 +280,46 @@ exports.getInternProperties = async (req, res) => {
     try {
         const fs = require('fs');
         const path = require('path');
-        const internsPath = path.join(__dirname, '../interns.json');
         const listingsPath = path.join(__dirname, '../intern_listings.json');
+        const internsPath = path.join(__dirname, '../interns.json');
 
-        let interns = [];
-        if (fs.existsSync(internsPath)) {
-            interns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
+        let dbAvailable = false;
+        try { await pool.query('SELECT 1'); dbAvailable = true; } catch(e) {}
+
+        let intern;
+        if (!dbAvailable) {
+            // JSON fallback: find intern by id or intern_id string
+            if (fs.existsSync(internsPath)) {
+                const allInterns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
+                intern = allInterns.find(i => String(i.id) === String(req.params.id) || String(i.intern_id) === String(req.params.id));
+            }
+            if (!intern) return res.status(404).json({ success: false, message: 'Intern not found' });
+        } else {
+            const [dbInterns] = await pool.query('SELECT * FROM Interns WHERE id = ?', [req.params.id]);
+            if (!dbInterns.length) return res.status(404).json({ success: false, message: 'Intern not found' });
+            intern = dbInterns[0];
         }
-        
-        const internIdParam = req.params.id;
-        const intern = interns.find(i => String(i.id) === String(internIdParam));
-
-        if (!intern) return res.status(404).json({ success: false, message: 'Intern not found' });
 
         let properties = [];
         if (fs.existsSync(listingsPath)) {
             let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8').replace(/^\uFEFF/, ''));
-            properties = listings.filter(l => String(l.intern_id) === String(intern.intern_id) || String(l.intern_id) === String(intern.id));
+            
+            // For backwards compatibility mapping
+            const internsPath = path.join(__dirname, '../interns.json');
+            let legacyId = null;
+            if (fs.existsSync(internsPath)) {
+                try {
+                    const legacyInterns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
+                    const legacyIntern = legacyInterns.find(i => i.intern_id === intern.intern_id);
+                    if (legacyIntern) legacyId = legacyIntern.id;
+                } catch(e) {}
+            }
+            
+            properties = listings.filter(l => 
+                String(l.intern_id) === String(intern.intern_id) || 
+                String(l.intern_id) === String(intern.id) ||
+                (legacyId && String(l.intern_id) === String(legacyId))
+            );
         }
 
         // Add dummy latest_review_note for compatibility
@@ -296,20 +399,48 @@ exports.getInternPropertiesToReview = async (req, res) => {
             properties = JSON.parse(rawListings.replace(/^\uFEFF/, ''));
         }
         
-        // Add intern name logic here
+        let dbAvailable = false;
+        try { await pool.query('SELECT 1'); dbAvailable = true; } catch(e) {}
+        
+        let dbInterns = [];
+        if (dbAvailable) {
+            const [rows] = await pool.query('SELECT id, intern_id, name FROM Interns');
+            dbInterns = rows;
+        }
+
+        // Backwards compatibility for legacy IDs
         const internsPath = path.join(__dirname, '../interns.json');
-        let interns = [];
+        let legacyInterns = [];
         if (fs.existsSync(internsPath)) {
-            const rawInterns = fs.readFileSync(internsPath, 'utf8');
-            interns = JSON.parse(rawInterns.replace(/^\uFEFF/, ''));
+             try { legacyInterns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, '')); } catch(e) {}
         }
         
         properties = properties.map(p => {
-            const intern = interns.find(i => String(i.id) === String(p.intern_id) || String(i.intern_id) === String(p.intern_id));
+            let internName = '--';
+            let internId = p.intern_id;
+
+            if (dbAvailable) {
+                let intern = dbInterns.find(i => String(i.id) === String(p.intern_id) || String(i.intern_id) === String(p.intern_id));
+                if (!intern) {
+                    const legacy = legacyInterns.find(i => String(i.id) === String(p.intern_id));
+                    if (legacy) intern = dbInterns.find(i => String(i.intern_id) === String(legacy.intern_id));
+                }
+                if (intern) {
+                    internName = intern.name;
+                    internId = intern.intern_id;
+                }
+            } else {
+                let intern = legacyInterns.find(i => String(i.id) === String(p.intern_id) || String(i.intern_id) === String(p.intern_id));
+                if (intern) {
+                    internName = intern.name;
+                    internId = intern.intern_id;
+                }
+            }
+            
             return { 
                 ...p, 
-                intern_name: intern ? intern.name : '--',
-                intern_id: intern ? intern.intern_id : p.intern_id 
+                intern_name: internName,
+                intern_id: internId 
             };
         });
 

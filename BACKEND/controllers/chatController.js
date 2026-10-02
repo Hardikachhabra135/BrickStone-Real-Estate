@@ -24,10 +24,28 @@ exports.getMessages = async (req, res) => {
         const callerType = req.intern ? 'intern' : 'admin';
         const messages = readMessages();
         
+        // --- Legacy ID resolution ---
+        const pool = require('../config/db');
+        let legacyId = null;
+        try {
+            const [dbInterns] = await pool.query('SELECT intern_id FROM Interns WHERE id = ?', [internId]);
+            if (dbInterns.length > 0) {
+                const i_id = dbInterns[0].intern_id;
+                const fs = require('fs');
+                const internsPath = path.join(__dirname, '../interns.json');
+                if (fs.existsSync(internsPath)) {
+                    const legacyInterns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
+                    const legacyIntern = legacyInterns.find(i => i.intern_id === i_id);
+                    if (legacyIntern) legacyId = String(legacyIntern.id);
+                }
+            }
+        } catch(e) {}
+        // -----------------------------
+
         let changed = false;
         
         // Filter messages for this intern
-        const internMessages = messages.filter(m => m.conversation_id === internId);
+        const internMessages = messages.filter(m => String(m.conversation_id) === String(internId) || (legacyId && String(m.conversation_id) === legacyId));
         
         // Mark as read based on who is fetching
         internMessages.forEach(m => {
@@ -64,9 +82,29 @@ exports.sendMessage = async (req, res) => {
         const messages = readMessages();
         const senderId = senderType === 'intern' ? internId : 0;
         
+        // --- Legacy ID resolution ---
+        const pool = require('../config/db');
+        let legacyId = null;
+        try {
+            const [dbInterns] = await pool.query('SELECT intern_id FROM Interns WHERE id = ?', [internId]);
+            if (dbInterns.length > 0) {
+                const i_id = dbInterns[0].intern_id;
+                const fs = require('fs');
+                const internsPath = path.join(__dirname, '../interns.json');
+                if (fs.existsSync(internsPath)) {
+                    const legacyInterns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
+                    const legacyIntern = legacyInterns.find(i => i.intern_id === i_id);
+                    if (legacyIntern) legacyId = String(legacyIntern.id);
+                }
+            }
+        } catch(e) {}
+        // -----------------------------
+
+        const activeConvId = legacyId ? legacyId : internId;
+        
         const newMessage = {
             id: Date.now(),
-            conversation_id: internId,
+            conversation_id: activeConvId,
             sender_type: senderType,
             sender_id: senderId,
             message: message.trim(),
@@ -95,7 +133,25 @@ exports.getUnreadCount = async (req, res) => {
         const callerType = req.intern ? 'intern' : 'admin';
         const messages = readMessages();
         
-        const unreadCount = messages.filter(m => String(m.conversation_id) === String(internId) && m.sender_type !== callerType && !m.is_read).length;
+        // --- Legacy ID resolution ---
+        const pool = require('../config/db');
+        let legacyId = null;
+        try {
+            const [dbInterns] = await pool.query('SELECT intern_id FROM Interns WHERE id = ?', [internId]);
+            if (dbInterns.length > 0) {
+                const i_id = dbInterns[0].intern_id;
+                const fs = require('fs');
+                const internsPath = path.join(__dirname, '../interns.json');
+                if (fs.existsSync(internsPath)) {
+                    const legacyInterns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
+                    const legacyIntern = legacyInterns.find(i => i.intern_id === i_id);
+                    if (legacyIntern) legacyId = String(legacyIntern.id);
+                }
+            }
+        } catch(e) {}
+        // -----------------------------
+        
+        const unreadCount = messages.filter(m => (String(m.conversation_id) === String(internId) || (legacyId && String(m.conversation_id) === legacyId)) && m.sender_type !== callerType && !m.is_read).length;
         
         res.json({ success: true, count: unreadCount });
     } catch (err) {

@@ -5,17 +5,41 @@ const jwt = require('jsonwebtoken');
 exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
+
         const fs = require('fs');
         const path = require('path');
         const internsPath = path.join(__dirname, '../interns.json');
-        
-        let interns = [];
-        if (fs.existsSync(internsPath)) {
-            interns = JSON.parse(fs.readFileSync(internsPath, 'utf8'));
+
+        // Test DB availability
+        let dbAvailable = false;
+        try { await pool.query('SELECT 1'); dbAvailable = true; } catch(e) {}
+
+        let intern;
+        let legacyId = null;
+
+        if (!dbAvailable) {
+            // JSON fallback
+            let allInterns = [];
+            if (fs.existsSync(internsPath)) {
+                try { allInterns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, '')); } catch(e) {}
+            }
+            intern = allInterns.find(i => i.intern_id === username || i.email === username);
+            if (intern) legacyId = intern.id; // id IS the legacy id in JSON
+        } else {
+            const [interns] = await pool.query('SELECT * FROM Interns WHERE intern_id = ? OR email = ?', [username, username]);
+            if (interns.length) {
+                intern = interns[0];
+                // Look up legacy id from JSON for listing compatibility
+                if (fs.existsSync(internsPath)) {
+                    try {
+                        const legacyInterns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
+                        const legacyIntern = legacyInterns.find(i => i.intern_id === intern.intern_id);
+                        if (legacyIntern) legacyId = legacyIntern.id;
+                    } catch(e) {}
+                }
+            }
         }
-        
-        const intern = interns.find(i => i.intern_id === username || i.email === username);
-        
+
         if (!intern) {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
@@ -30,7 +54,7 @@ exports.login = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: intern.id, intern_id: intern.intern_id, email: intern.email, role: 'intern' },
+            { id: intern.id, intern_id: intern.intern_id, email: intern.email, legacy_id: legacyId, role: 'intern' },
             process.env.JWT_SECRET || 'brickstone_secret_key',
             { expiresIn: '24h' }
         );
@@ -44,15 +68,22 @@ exports.login = async (req, res) => {
 
 exports.getMe = async (req, res) => {
     try {
-        const fs = require('fs');
-        const path = require('path');
-        const internsPath = path.join(__dirname, '../interns.json');
-        let interns = [];
-        if (fs.existsSync(internsPath)) {
-            interns = JSON.parse(fs.readFileSync(internsPath, 'utf8'));
+        let dbAvailable = false;
+        try { await pool.query('SELECT 1'); dbAvailable = true; } catch(e) {}
+
+        let intern;
+        if (!dbAvailable) {
+            const fs = require('fs'); const path = require('path');
+            const internsPath = path.join(__dirname, '../interns.json');
+            if (fs.existsSync(internsPath)) {
+                const allInterns = JSON.parse(fs.readFileSync(internsPath, 'utf8').replace(/^\uFEFF/, ''));
+                intern = allInterns.find(i => String(i.id) === String(req.intern.id) || i.intern_id === String(req.intern.intern_id));
+            }
+        } else {
+            const [interns] = await pool.query('SELECT id, name, intern_id, email, phone, territory, monthly_target, status, created_at FROM Interns WHERE id = ?', [req.intern.id]);
+            if (interns.length) intern = interns[0];
         }
-        
-        const intern = interns.find(i => i.id === String(req.intern.id) || i.intern_id === String(req.intern.id));
+
         if (!intern) return res.status(404).json({ success: false, message: 'Intern not found' });
         
         const stats = {
@@ -90,7 +121,7 @@ exports.getProperties = async (req, res) => {
         let properties = [];
         if (fs.existsSync(listingsPath)) {
             let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
-            properties = listings.filter(p => (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id)));
+            properties = listings.filter(p => (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id) || (req.intern.legacy_id && String(p.intern_id) === String(req.intern.legacy_id))));
         }
         res.json({ success: true, data: properties });
     } catch (err) {
@@ -105,7 +136,7 @@ exports.getPropertyById = async (req, res) => {
         const listingsPath = path.join(__dirname, '../intern_listings.json');
         if (fs.existsSync(listingsPath)) {
             let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
-            const prop = listings.find(p => p.id === req.params.id && (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id)));
+            const prop = listings.find(p => p.id === req.params.id && (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id) || (req.intern.legacy_id && String(p.intern_id) === String(req.intern.legacy_id))));
             if (prop) {
                 return res.json({ success: true, property: prop, notes: [] });
             }
@@ -165,7 +196,7 @@ exports.updateProperty = async (req, res) => {
         if (fs.existsSync(listingsPath)) {
             let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
             const propId = req.params.id;
-            const prop = listings.find(p => p.id === propId && (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id)));
+            const prop = listings.find(p => p.id === propId && (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id) || (req.intern.legacy_id && String(p.intern_id) === String(req.intern.legacy_id))));
             if (prop) {
                 if (['Under Review', 'Approved'].includes(prop.approval_status)) {
                     return res.status(403).json({ success: false, message: 'Cannot edit property in this status' });
@@ -198,7 +229,7 @@ exports.submitProperty = async (req, res) => {
         if (fs.existsSync(listingsPath)) {
             let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
             const propId = req.params.id;
-            const prop = listings.find(p => p.id === propId && (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id)));
+            const prop = listings.find(p => p.id === propId && (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id) || (req.intern.legacy_id && String(p.intern_id) === String(req.intern.legacy_id))));
             if (prop) {
                 prop.approval_status = "Under Review";
                 prop.status = "SUBMITTED";
@@ -220,7 +251,7 @@ exports.resubmitProperty = async (req, res) => {
         if (fs.existsSync(listingsPath)) {
             let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
             const propId = req.params.id;
-            const prop = listings.find(p => p.id === propId && (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id)));
+            const prop = listings.find(p => p.id === propId && (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id) || (req.intern.legacy_id && String(p.intern_id) === String(req.intern.legacy_id))));
             if (prop) {
                 if (prop.approval_status !== 'Changes Requested') {
                     return res.status(400).json({ success: false, message: 'Property is not in Changes Requested state' });
@@ -248,7 +279,7 @@ exports.deleteListing = async (req, res) => {
         }
         
         let listings = JSON.parse(fs.readFileSync(listingsPath, 'utf8'));
-        const propIndex = listings.findIndex(p => p.id === req.params.id && (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id)));
+        const propIndex = listings.findIndex(p => p.id === req.params.id && (String(p.intern_id) === String(req.intern.intern_id) || String(p.intern_id) === String(req.intern.id) || (req.intern.legacy_id && String(p.intern_id) === String(req.intern.legacy_id))));
         
         if (propIndex === -1) {
             return res.status(404).json({ success: false, message: 'Property not found or access denied.' });

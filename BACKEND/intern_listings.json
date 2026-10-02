@@ -191,5 +191,32 @@
     "status": "SUBMITTED",
     "created_at": "2026-10-01T13:32:28.534Z",
     "updated_at": "2026-10-01T13:32:28.534Z"
+  },
+  {
+    "id": "BRK-L-4891",
+    "intern_id": "1790957173122",
+    "title": "dewcc",
+    "description": "",
+    "price": "dcwacdc",
+    "location": "",
+    "badge": "New",
+    "image": "",
+    "specs": {
+      "property_type": "Residential",
+      "purpose": "Sale",
+      "specifications": [
+        " sq ft",
+        "Freehold"
+      ],
+      "features": []
+    },
+    "media": {
+      "photos": [],
+      "video": ""
+    },
+    "approval_status": "Under Review",
+    "status": "SUBMITTED",
+    "created_at": "2026-10-02T16:07:39.296Z",
+    "updated_at": "2026-10-02T16:07:39.296Z"
   }
 ]
