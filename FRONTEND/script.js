@@ -5,15 +5,86 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- Mobile menu toggle ---------- */
   const menuBtn = document.querySelector('.mobile-menu-btn');
   const navLinksEl = document.querySelector('.nav-links');
+  const navMenuEl = document.querySelector('.nav-menu');
 
   if (menuBtn && navLinksEl) {
     menuBtn.addEventListener('click', () => {
-      navLinksEl.classList.toggle('active');
+      const expanded = navLinksEl.classList.toggle('active');
+      if (navMenuEl) navMenuEl.classList.toggle('active', expanded);
+      menuBtn.setAttribute('aria-expanded', expanded);
     });
     navLinksEl.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => navLinksEl.classList.remove('active'));
+      link.addEventListener('click', () => {
+        navLinksEl.classList.remove('active');
+        if (navMenuEl) navMenuEl.classList.remove('active');
+        menuBtn.setAttribute('aria-expanded', 'false');
+      });
     });
   }
+
+  /* ---------- Listings Dropdown & Submenu Hover Grace Period ---------- */
+  const dropdownItems = document.querySelectorAll('.nav-item-dropdown');
+  dropdownItems.forEach((dropdown) => {
+    let timeoutId = null;
+
+    const openDropdown = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      dropdown.classList.add('is-open');
+      const toggle = dropdown.querySelector('.dropdown-toggle');
+      if (toggle) toggle.setAttribute('aria-expanded', 'true');
+    };
+
+    const closeDropdown = () => {
+      timeoutId = setTimeout(() => {
+        dropdown.classList.remove('is-open');
+        const toggle = dropdown.querySelector('.dropdown-toggle');
+        if (toggle) toggle.setAttribute('aria-expanded', 'false');
+      }, 250);
+    };
+
+    dropdown.addEventListener('mouseenter', openDropdown);
+    dropdown.addEventListener('mouseleave', closeDropdown);
+
+    dropdown.addEventListener('focusin', openDropdown);
+    dropdown.addEventListener('focusout', (e) => {
+      if (!dropdown.contains(e.relatedTarget)) {
+        dropdown.classList.remove('is-open');
+        const toggle = dropdown.querySelector('.dropdown-toggle');
+        if (toggle) toggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    const subDropdowns = dropdown.querySelectorAll('.dropdown-item-has-sub');
+    subDropdowns.forEach((sub) => {
+      let subTimeoutId = null;
+
+      const openSub = () => {
+        if (subTimeoutId) {
+          clearTimeout(subTimeoutId);
+          subTimeoutId = null;
+        }
+        sub.classList.add('is-open');
+      };
+
+      const closeSub = () => {
+        subTimeoutId = setTimeout(() => {
+          sub.classList.remove('is-open');
+        }, 220);
+      };
+
+      sub.addEventListener('mouseenter', openSub);
+      sub.addEventListener('mouseleave', closeSub);
+      sub.addEventListener('focusin', openSub);
+      sub.addEventListener('focusout', (e) => {
+        if (!sub.contains(e.relatedTarget)) {
+          sub.classList.remove('is-open');
+        }
+      });
+    });
+  });
 
   /* ---------- Navbar: visible on Home, hidden elsewhere ---------- */
   const navbar = document.querySelector('.navbar');
@@ -149,58 +220,58 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- Property Modal (Featured Properties — hardcoded) ---------- */
   const propertiesData = {
     "hillside-villa": {
-      badge: "For Sale",
-      image: "images/villa.jpg",
-      title: "Hillside Villa",
-      price: "$2.4M",
-      location: "Malibu, California",
-      specs: ["4 Beds", "3 Baths", "3,200 sqft"],
-      description: "A private hillside estate framed by ocean views on every level. Floor-to-ceiling glass opens onto an infinity pool and terrace built for evening entertaining, with warm wood interiors and designer lighting throughout."
+      badge: "PG",
+      image: "images/delhi-gk-pg-room.jpg",
+      title: "Aura Luxury PG",
+      price: "₹25,000/mo",
+      location: "Greater Kailash, New Delhi",
+      specs: ["1 Bed", "1 Bath", "450 sqft"],
+      description: "An upscale, fully furnished executive PG suite in Greater Kailash, South Delhi. Featuring bespoke walnut wood furnishings, private en-suite bathroom, high-speed fiber internet, daily housekeeping, and quiet ambient lighting designed for discerning professionals."
     },
     "skyline-penthouse": {
-      badge: "For Rent",
-      image: "images/business.jpg",
-      title: "Skyline Penthouse",
-      price: "$8,500/mo",
-      location: "Downtown, Delhi",
-      specs: ["3 Beds", "2 Baths", "2,100 sqft"],
-      description: "A glass-walled penthouse in the heart of the city, with panoramic skyline views, a private elevator entrance, and premium finishes throughout. Walking distance to the city's best dining and business districts."
+      badge: "PG",
+      image: "images/delhi-ivy-pg-room.jpg",
+      title: "The Ivy House PG",
+      price: "₹22,000/mo",
+      location: "Hauz Khas, New Delhi",
+      specs: ["1 Bed", "1 Bath", "400 sqft"],
+      description: "A tranquil, boutique PG residence nestled in Hauz Khas, South Delhi. Thoughtfully appointed with bespoke oak furniture, private en-suite bathroom, high-speed WiFi, nutritious chef-prepared meals, daily housekeeping, and lush tree-lined views."
     },
     "coastal-retreat": {
       badge: "For Sale",
-      image: "images/hero.jpg",
-      title: "Coastal Retreat",
-      price: "$1.8M",
-      location: "Goa, India",
-      specs: ["5 Beds", "4 Baths", "4,000 sqft"],
-      description: "An open-plan coastal home designed around indoor-outdoor living, with sliding glass walls, a wraparound terrace, and sweeping sea views from nearly every room. Ideal as a family residence or luxury rental."
+      image: "images/delhi-ncr-flat-camellias-street.jpg",
+      title: "The Camellias Sky Residence",
+      price: "₹12.5 Cr",
+      location: "Golf Course Road, Gurugram (NCR)",
+      specs: ["4 Beds", "4 Baths", "5,400 sqft"],
+      description: "An iconic high-floor residence at The Camellias on Golf Course Road, Gurugram. Featuring soaring double-height ceilings, Statuario marble salons, private wraparound balcony overlooking manicured golf greens, bespoke Italian kitchen, and master bedroom suite with integrated dressing lounge."
     },
     "urban-loft": {
       badge: "For Sale",
-      image: "images/business.jpg",
-      title: "Urban Loft",
-      price: "$650K",
-      location: "Bangalore, Karnataka",
-      specs: ["2 Beds", "2 Baths", "1,200 sqft"],
-      description: "A compact, design-forward loft in a converted commercial building, close to the city's tech corridor. Exposed concrete finishes, large industrial windows, and an efficient open-plan layout."
+      image: "images/delhi-flat-vasant-street.jpg",
+      title: "The Vasant Vihar Residence",
+      price: "₹8.5 Cr",
+      location: "Vasant Vihar, New Delhi",
+      specs: ["4 Beds", "4 Baths", "4,200 sqft"],
+      description: "A sprawling full-floor luxury residence in Vasant Vihar, South Delhi. Featuring Italian marble living salons, floor-to-ceiling glass wrapping around a landscaped private terrace, bespoke modular kitchen, automated climate control, and four expansive en-suite bedrooms with walk-in dressing suites."
     },
     "garden-bungalow": {
-      badge: "For Rent",
-      image: "images/villa.jpg",
-      title: "Garden Bungalow",
-      price: "$2,200/mo",
-      location: "Pune, Maharashtra",
-      specs: ["3 Beds", "2 Baths", "1,800 sqft"],
-      description: "A quiet single-storey bungalow set around a private garden, with covered parking and a peaceful, tree-lined street. Well suited to families looking for space without the height of an apartment block."
+      badge: "For Sale",
+      image: "images/delhi-flat-golflinks-street.jpg",
+      title: "The Golf Links Manor",
+      price: "₹6.2 Cr",
+      location: "Golf Links, New Delhi",
+      specs: ["3 Beds", "3 Baths", "2,800 sqft"],
+      description: "An architectural masterpiece in Golf Links, New Delhi. Featuring high ceilings, sun-bathed open-concept living and dining areas, designer smoked oak finishes, private elevator access, and serene leafy views in one of the capital's most prestigious enclaves."
     },
     "heritage-townhouse": {
-      badge: "For Sale",
-      image: "images/about.jpg",
-      title: "Heritage Townhouse",
-      price: "$980K",
-      location: "Jaipur, Rajasthan",
-      specs: ["4 Beds", "3 Baths", "2,600 sqft"],
-      description: "A restored heritage townhouse blending traditional Rajasthani architecture with modern interiors — carved balconies, courtyard light wells, and a fully updated kitchen and bathrooms."
+      badge: "PG",
+      image: "images/delhi-arbour-twin-room.jpg",
+      title: "The Arbour Executive PG",
+      price: "₹26,000/mo",
+      location: "DLF Cyber City, Gurugram (NCR)",
+      specs: ["Twin Sharing", "1 Bath", "420 sqft"],
+      description: "A premier executive twin sharing PG studio suite situated adjacent to DLF Cyber City, Gurugram. Designed for corporate professionals, featuring dedicated ergonomic work pods, high-speed leased line internet, housekeeping, healthy meal plans, and exclusive resident terrace lounge access."
     },
     "skyline-penthouse-mumbai": {
       badge: "For Sale",
@@ -297,29 +368,35 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => openModal(btn.dataset.property));
   });
 
-  modalCloseBtn.addEventListener('click', closeModal);
+  if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
 
   // Click outside the box closes it
-  modalOverlay.addEventListener('click', (e) => {
-    if (e.target === modalOverlay) closeModal();
-  });
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
 
-  // Escape key closes it
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modalOverlay.classList.contains('active')) closeModal();
-  });
+    // Escape key closes it
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modalOverlay.classList.contains('active')) closeModal();
+    });
+  }
 
   // Switch to enquiry form
-  enquireBtn.addEventListener('click', () => {
-    panelDetails.style.display = 'none';
-    panelForm.style.display = 'block';
-  });
+  if (enquireBtn && panelDetails && panelForm) {
+    enquireBtn.addEventListener('click', () => {
+      panelDetails.style.display = 'none';
+      panelForm.style.display = 'block';
+    });
+  }
 
   // Back to details
-  backToDetailsBtn.addEventListener('click', () => {
-    panelForm.style.display = 'none';
-    panelDetails.style.display = 'block';
-  });
+  if (backToDetailsBtn && panelDetails && panelForm) {
+    backToDetailsBtn.addEventListener('click', () => {
+      panelForm.style.display = 'none';
+      panelDetails.style.display = 'block';
+    });
+  }
 
   /* ---------- Featured Properties Enquiry form → POST /api/enquiries ---------- */
   if (enquiryForm) {
@@ -418,32 +495,25 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ==========================================================================
      UNIVERSAL SEARCH COMPONENT
      ========================================================================== */
-  const searchInput = document.getElementById('universal-search-input');
-  const searchContainer = document.getElementById('universal-search-container');
-  const searchBar = document.getElementById('universal-search-bar');
-  const resultsDropdown = document.getElementById('search-results-dropdown');
-  const resultsContent = document.getElementById('search-results-content');
-  const clearBtn = document.getElementById('search-clear-btn');
-  const hintKey = document.getElementById('search-shortcut-hint');
+  const searchContainers = document.querySelectorAll('.universal-search-container');
+  const searchTrigger = document.getElementById('nav-search-btn');
+  const searchPanel = document.getElementById('nav-search-panel');
 
-  if (searchInput) {
+  if (searchContainers.length > 0) {
     let searchableData = [];
     let isDataLoaded = false;
-    let selectedIndex = -1;
-    let searchDebounceTimer = null;
-    let currentResults = [];
 
     // Static pages/categories to always include in search
     const staticData = [
-      { id: 'page-home', type: 'page', title: 'Home', subtitle: 'Brickstone Real Estate', url: '#home', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>' },
-      { id: 'page-about', type: 'page', title: 'About Us', subtitle: 'Learn more about Brickstone', url: '#about', icon: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>' },
-      { id: 'page-contact', type: 'page', title: 'Contact Us', subtitle: 'Get in touch with our team', url: '#contact', icon: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline>' },
-      { id: 'cat-properties', type: 'category', title: 'All Properties', subtitle: 'View our curated listings', url: 'allproperties.html', icon: '<line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line>' },
-      { id: 'cat-flat', type: 'category', title: 'Flats & Apartments', subtitle: 'Residential Flats', url: 'allproperties.html?category=Flat', icon: '<path d="M3 21h18"></path><path d="M9 8h1"></path><path d="M9 12h1"></path><path d="M9 16h1"></path><path d="M14 8h1"></path><path d="M14 12h1"></path><path d="M14 16h1"></path><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path>' }
+      { id: 'page-home', type: 'page', title: 'Home', subtitle: 'Brickstone Real Estate', url: 'index.html#home', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>' },
+      { id: 'page-about', type: 'page', title: 'About Us', subtitle: 'Learn more about Brickstone', url: 'index.html#about', icon: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>' },
+      { id: 'page-contact', type: 'page', title: 'Contact Us', subtitle: 'Get in touch with our team', url: 'index.html#contact', icon: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline>' },
+      { id: 'cat-properties', type: 'category', title: 'Listings - All Properties', subtitle: 'View our curated collection', url: 'allproperties.html', icon: '<line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line>' },
+      { id: 'cat-pg', type: 'category', title: 'PG Accommodations', subtitle: 'Sharing & Non-Sharing PG', url: 'allproperties.html?category=PG', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>' },
+      { id: 'cat-flat', type: 'category', title: 'Flats & Apartments', subtitle: 'Residential Flats (1, 2, 3 BHK+)', url: 'allproperties.html?category=Flat', icon: '<path d="M3 21h18"></path><path d="M9 8h1"></path><path d="M9 12h1"></path><path d="M9 16h1"></path><path d="M14 8h1"></path><path d="M14 12h1"></path><path d="M14 16h1"></path><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path>' }
     ];
 
     const getPropertyUrl = (propertyId) => {
-      // One canonical source of truth for routing to a property
       return `allproperties.html?id=${propertyId}`;
     };
 
@@ -477,7 +547,6 @@ document.addEventListener('DOMContentLoaded', () => {
           searchString: `${p.title} ${p.location} ${p.description} ${p.price} ${p.specs ? p.specs.join(' ') : ''}`.toLowerCase()
         })) : [];
         
-        // Also map hardcoded fallback if API fails or returns few
         const localProperties = Object.keys(propertiesData).map(k => {
           const p = propertiesData[k];
           return {
@@ -493,7 +562,6 @@ document.addEventListener('DOMContentLoaded', () => {
           };
         });
 
-        // Merge, avoiding duplicates by title
         const mergedProps = [...apiProperties];
         localProperties.forEach(lp => {
           if (!mergedProps.some(ap => ap.title === lp.title)) {
@@ -504,7 +572,6 @@ document.addEventListener('DOMContentLoaded', () => {
         searchableData = [...staticData, ...mergedProps];
         isDataLoaded = true;
       } catch (err) {
-        // Fallback to local only
         searchableData = [...staticData, ...Object.keys(propertiesData).map(k => {
           const p = propertiesData[k];
           return {
@@ -515,243 +582,268 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    // Keyboard Shortcut (Ctrl+K or Cmd+K)
+    searchContainers.forEach(container => {
+      const searchInput = container.querySelector('input[type="text"]');
+      const searchBar = container.querySelector('.universal-search-bar');
+      const resultsDropdown = container.querySelector('.search-results-dropdown');
+      const resultsContent = container.querySelector('.search-results-content');
+      const clearBtn = container.querySelector('.search-clear-btn');
+      const hintKey = container.querySelector('.keyboard-hints, #search-shortcut-hint');
+
+      if (!searchInput || !resultsDropdown || !resultsContent) return;
+
+      let selectedIndex = -1;
+      let searchDebounceTimer = null;
+      let currentResults = [];
+
+      const closeSearch = () => {
+        resultsDropdown.style.display = 'none';
+        if (searchBar) searchBar.classList.remove('focused');
+        if (searchPanel && container.closest('#nav-search-panel')) {
+          searchPanel.classList.remove('active');
+        }
+        selectedIndex = -1;
+      };
+
+      searchInput.addEventListener('focus', () => {
+        if (searchPanel && container.closest('#nav-search-panel')) {
+          searchPanel.classList.add('active');
+        }
+        if (searchBar) searchBar.classList.add('focused');
+        if (hintKey) hintKey.style.display = 'none';
+        if (!isDataLoaded) loadSearchData();
+        if (searchInput.value.trim().length > 0) performSearch(searchInput.value);
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!container.contains(e.target) && (!searchTrigger || !searchTrigger.contains(e.target))) {
+          closeSearch();
+          if (hintKey) hintKey.style.display = 'block';
+        }
+      });
+
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          searchInput.value = '';
+          clearBtn.style.display = 'none';
+          searchInput.focus();
+          resultsDropdown.style.display = 'none';
+        });
+      }
+
+      searchInput.addEventListener('input', (e) => {
+        const val = e.target.value;
+        if (clearBtn) clearBtn.style.display = val.length > 0 ? 'flex' : 'none';
+        
+        clearTimeout(searchDebounceTimer);
+        if (val.trim().length === 0) {
+          resultsDropdown.style.display = 'none';
+          return;
+        }
+        
+        if (!isDataLoaded) {
+          resultsDropdown.style.display = 'flex';
+          resultsContent.innerHTML = '<div class="search-loading">Searching...</div>';
+        }
+        
+        searchDebounceTimer = setTimeout(() => {
+          performSearch(val);
+        }, 250);
+      });
+
+      const performSearch = async (query) => {
+        if (!isDataLoaded) await loadSearchData();
+        
+        const q = query.toLowerCase().trim();
+        if (!q) return;
+
+        if (typeof trackEvent === 'function') trackEvent('search_query', null, { query: q });
+
+        let results = [];
+        const exactMatches = [];
+        const partialMatches = [];
+
+        searchableData.forEach(item => {
+          let score = 0;
+          const itemStr = item.searchString ? item.searchString : `${item.title} ${item.subtitle}`.toLowerCase();
+          
+          if (item.title.toLowerCase() === q) score += 100;
+          else if (item.title.toLowerCase().startsWith(q)) score += 50;
+          else if (item.title.toLowerCase().includes(q)) score += 20;
+          
+          if (item.subtitle.toLowerCase().includes(q)) score += 10;
+          if (item.searchString && item.searchString.includes(q)) score += 5;
+
+          if (score > 0) {
+            if (score >= 50) exactMatches.push({...item, score});
+            else partialMatches.push({...item, score});
+          }
+        });
+
+        exactMatches.sort((a,b) => b.score - a.score);
+        partialMatches.sort((a,b) => b.score - a.score);
+        results = [...exactMatches, ...partialMatches].slice(0, 8);
+        
+        currentResults = results;
+        renderResults(results, query);
+      };
+
+      const renderResults = (results, query) => {
+        resultsDropdown.style.display = 'flex';
+        selectedIndex = -1;
+        
+        if (results.length === 0) {
+          resultsContent.innerHTML = `
+            <div class="search-empty-state">
+              <div class="empty-title">No results found for "${query}"</div>
+              <p>Try a different property name, location or category.</p>
+            </div>
+          `;
+          if (typeof trackEvent === 'function') trackEvent('search_no_results', null, { query });
+          return;
+        }
+
+        let html = '';
+        const grouped = { property: [], category: [], page: [] };
+        results.forEach(r => grouped[r.type].push(r));
+
+        if (grouped.property.length > 0) {
+          html += '<div class="search-section-title">Properties</div>';
+          grouped.property.forEach((p, i) => html += createResultItem(p, results.indexOf(p)));
+        }
+        
+        if (grouped.category.length > 0) {
+          html += '<div class="search-section-title">Categories</div>';
+          grouped.category.forEach((c, i) => html += createResultItem(c, results.indexOf(c)));
+        }
+        
+        if (grouped.page.length > 0) {
+          html += '<div class="search-section-title">Pages</div>';
+          grouped.page.forEach((p, i) => html += createResultItem(p, results.indexOf(p)));
+        }
+
+        resultsContent.innerHTML = html;
+        
+        const resultEls = resultsContent.querySelectorAll('.search-result-item');
+        resultEls.forEach((el, index) => {
+          el.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleResultSelection(index);
+          });
+          el.addEventListener('mouseenter', () => updateSelection(index));
+        });
+      };
+
+      const createResultItem = (item, index) => {
+        const media = item.type === 'property' 
+          ? `<img src="${item.image}" alt="${item.title}" class="result-thumb">`
+          : `<div class="result-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg></div>`;
+          
+        const statusBadge = item.status ? `<span class="result-status">${item.status}</span>` : '';
+        
+        return `
+          <a href="${item.url}" class="search-result-item" data-index="${index}">
+            ${media}
+            <div class="result-info">
+              <div class="result-title">${item.title}</div>
+              <div class="result-subtitle">${item.subtitle}</div>
+            </div>
+            ${statusBadge}
+          </a>
+        `;
+      };
+
+      const updateSelection = (index) => {
+        const items = resultsContent.querySelectorAll('.search-result-item');
+        items.forEach(el => el.classList.remove('selected'));
+        
+        if (index >= 0 && index < currentResults.length) {
+          selectedIndex = index;
+          if (items[index]) {
+            items[index].classList.add('selected');
+            items[index].scrollIntoView({ block: 'nearest' });
+          }
+        } else {
+          selectedIndex = -1;
+        }
+      };
+
+      const handleResultSelection = (index) => {
+        if (index >= 0 && index < currentResults.length) {
+          const item = currentResults[index];
+          if (typeof trackEvent === 'function') trackEvent('search_result_click', item.id, { title: item.title });
+          
+          closeSearch();
+          
+          if (item.url.startsWith('#')) {
+            const target = document.querySelector(item.url);
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth' });
+              history.pushState(null, null, item.url);
+            } else {
+              window.location.href = `index.html${item.url}`;
+            }
+          } else {
+            window.location.href = item.url;
+          }
+        }
+      };
+
+      searchInput.addEventListener('keydown', (e) => {
+        if (resultsDropdown.style.display === 'none' && e.key === 'Enter') {
+          if (searchInput.value.trim().length > 0) {
+            e.preventDefault();
+            setTimeout(() => {
+              if (currentResults.length > 0) handleResultSelection(0);
+            }, 100);
+          }
+          return;
+        }
+
+        if (resultsDropdown.style.display !== 'none') {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            updateSelection(selectedIndex < currentResults.length - 1 ? selectedIndex + 1 : 0);
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            updateSelection(selectedIndex > 0 ? selectedIndex - 1 : currentResults.length - 1);
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (selectedIndex >= 0) {
+              handleResultSelection(selectedIndex);
+            } else if (currentResults.length > 0) {
+              handleResultSelection(0);
+            } else {
+              window.location.href = `allproperties.html?q=${encodeURIComponent(searchInput.value)}`;
+            }
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            closeSearch();
+          }
+        }
+      });
+    });
+
+    if (searchTrigger) {
+      searchTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (searchPanel) {
+          const isOpen = searchPanel.classList.toggle('active');
+          if (isOpen) {
+            const panelInput = searchPanel.querySelector('input[type="text"]');
+            if (panelInput) panelInput.focus();
+          }
+        }
+      });
+    }
+
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
-        searchInput.focus();
-      }
-    });
-
-    const closeSearch = () => {
-      resultsDropdown.style.display = 'none';
-      searchBar.classList.remove('focused');
-      selectedIndex = -1;
-    };
-
-    // Handle focus/blur
-    searchInput.addEventListener('focus', () => {
-      searchBar.classList.add('focused');
-      if (hintKey) hintKey.style.display = 'none';
-      if (!isDataLoaded) loadSearchData();
-      if (searchInput.value.trim().length > 0) performSearch(searchInput.value);
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!searchContainer.contains(e.target)) {
-        closeSearch();
-        if (hintKey) hintKey.style.display = 'block';
-      }
-    });
-
-    clearBtn.addEventListener('click', () => {
-      searchInput.value = '';
-      clearBtn.style.display = 'none';
-      searchInput.focus();
-      resultsDropdown.style.display = 'none';
-    });
-
-    // Handle typing
-    searchInput.addEventListener('input', (e) => {
-      const val = e.target.value;
-      clearBtn.style.display = val.length > 0 ? 'flex' : 'none';
-      
-      clearTimeout(searchDebounceTimer);
-      if (val.trim().length === 0) {
-        resultsDropdown.style.display = 'none';
-        return;
-      }
-      
-      // Show loading state for slow networks if not loaded
-      if (!isDataLoaded) {
-        resultsDropdown.style.display = 'flex';
-        resultsContent.innerHTML = '<div class="search-loading">Searching...</div>';
-      }
-      
-      searchDebounceTimer = setTimeout(() => {
-        performSearch(val);
-      }, 250);
-    });
-
-    const performSearch = async (query) => {
-      if (!isDataLoaded) await loadSearchData();
-      
-      const q = query.toLowerCase().trim();
-      if (!q) return;
-
-      // Track search if the function exists
-      if (typeof trackEvent === 'function') trackEvent('search_query', null, { query: q });
-
-      let results = [];
-      const exactMatches = [];
-      const partialMatches = [];
-
-      searchableData.forEach(item => {
-        let score = 0;
-        const itemStr = item.searchString ? item.searchString : `${item.title} ${item.subtitle}`.toLowerCase();
-        
-        if (item.title.toLowerCase() === q) score += 100;
-        else if (item.title.toLowerCase().startsWith(q)) score += 50;
-        else if (item.title.toLowerCase().includes(q)) score += 20;
-        
-        if (item.subtitle.toLowerCase().includes(q)) score += 10;
-        if (item.searchString && item.searchString.includes(q)) score += 5;
-
-        if (score > 0) {
-          if (score >= 50) exactMatches.push({...item, score});
-          else partialMatches.push({...item, score});
-        }
-      });
-
-      exactMatches.sort((a,b) => b.score - a.score);
-      partialMatches.sort((a,b) => b.score - a.score);
-      results = [...exactMatches, ...partialMatches].slice(0, 8); // Top 8
-      
-      currentResults = results;
-      renderResults(results, query);
-    };
-
-    const renderResults = (results, query) => {
-      resultsDropdown.style.display = 'flex';
-      selectedIndex = -1;
-      
-      if (results.length === 0) {
-        resultsContent.innerHTML = `
-          <div class="search-empty-state">
-            <div class="empty-title">No results found for "${query}"</div>
-            <p>Try a different property name, location or category.</p>
-          </div>
-        `;
-        if (typeof trackEvent === 'function') trackEvent('search_no_results', null, { query });
-        return;
-      }
-
-      let html = '';
-      const grouped = { property: [], category: [], page: [] };
-      results.forEach(r => grouped[r.type].push(r));
-
-      if (grouped.property.length > 0) {
-        html += '<div class="search-section-title">Properties</div>';
-        grouped.property.forEach((p, i) => html += createResultItem(p, results.indexOf(p)));
-      }
-      
-      if (grouped.category.length > 0) {
-        html += '<div class="search-section-title">Categories</div>';
-        grouped.category.forEach((c, i) => html += createResultItem(c, results.indexOf(c)));
-      }
-      
-      if (grouped.page.length > 0) {
-        html += '<div class="search-section-title">Pages</div>';
-        grouped.page.forEach((p, i) => html += createResultItem(p, results.indexOf(p)));
-      }
-
-      resultsContent.innerHTML = html;
-      
-      // Bind clicks
-      const resultEls = resultsContent.querySelectorAll('.search-result-item');
-      resultEls.forEach((el, index) => {
-        el.addEventListener('click', (e) => {
-          e.preventDefault();
-          handleResultSelection(index);
-        });
-        el.addEventListener('mouseenter', () => updateSelection(index));
-      });
-    };
-
-    const createResultItem = (item, index) => {
-      const media = item.type === 'property' 
-        ? `<img src="${item.image}" alt="${item.title}" class="result-thumb">`
-        : `<div class="result-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg></div>`;
-        
-      const statusBadge = item.status ? `<span class="result-status">${item.status}</span>` : '';
-      
-      return `
-        <a href="${item.url}" class="search-result-item" data-index="${index}" id="search-res-${index}">
-          ${media}
-          <div class="result-info">
-            <div class="result-title">${item.title}</div>
-            <div class="result-subtitle">${item.subtitle}</div>
-          </div>
-          ${statusBadge}
-        </a>
-      `;
-    };
-
-    const updateSelection = (index) => {
-      const items = resultsContent.querySelectorAll('.search-result-item');
-      items.forEach(el => el.classList.remove('selected'));
-      
-      if (index >= 0 && index < currentResults.length) {
-        selectedIndex = index;
-        const selectedEl = document.getElementById(`search-res-${index}`);
-        if (selectedEl) {
-          selectedEl.classList.add('selected');
-          // Ensure it's in view
-          selectedEl.scrollIntoView({ block: 'nearest' });
-        }
-      } else {
-        selectedIndex = -1;
-      }
-    };
-
-    const handleResultSelection = (index) => {
-      if (index >= 0 && index < currentResults.length) {
-        const item = currentResults[index];
-        if (typeof trackEvent === 'function') trackEvent('search_result_click', item.id, { title: item.title });
-        
-        closeSearch();
-        
-        if (item.url.startsWith('#')) {
-          // Smooth scroll to section
-          const target = document.querySelector(item.url);
-          if (target) {
-            target.scrollIntoView({ behavior: 'smooth' });
-            // Update URL hash without jumping
-            history.pushState(null, null, item.url);
-          } else {
-            window.location.href = `index.html${item.url}`;
-          }
-        } else {
-          // Normal navigation
-          window.location.href = item.url;
-        }
-      }
-    };
-
-    // Keyboard navigation
-    searchInput.addEventListener('keydown', (e) => {
-      if (resultsDropdown.style.display === 'none' && e.key === 'Enter') {
-        if (searchInput.value.trim().length > 0) {
-          e.preventDefault();
-          // Wait a tick for search to populate if they hit Enter really fast
-          setTimeout(() => {
-            if (currentResults.length > 0) handleResultSelection(0);
-          }, 100);
-        }
-        return;
-      }
-
-      if (resultsDropdown.style.display !== 'none') {
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          updateSelection(selectedIndex < currentResults.length - 1 ? selectedIndex + 1 : 0);
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          updateSelection(selectedIndex > 0 ? selectedIndex - 1 : currentResults.length - 1);
-        } else if (e.key === 'Enter') {
-          e.preventDefault();
-          if (selectedIndex >= 0) {
-            handleResultSelection(selectedIndex);
-          } else if (currentResults.length > 0) {
-            // Auto select the first if none selected
-            handleResultSelection(0);
-          } else {
-            // No results, maybe redirect to a generic search page
-            window.location.href = `allproperties.html?q=${encodeURIComponent(searchInput.value)}`;
-          }
-        } else if (e.key === 'Escape') {
-          e.preventDefault();
-          closeSearch();
+        if (searchPanel) {
+          searchPanel.classList.add('active');
+          const panelInput = searchPanel.querySelector('input[type="text"]');
+          if (panelInput) panelInput.focus();
         }
       }
     });

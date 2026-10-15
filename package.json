@@ -1,4 +1,11 @@
 {
+  "name": "brickstone-real-estate",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node serve_all.js",
+    "backend": "node BACKEND/server.js",
+    "dev": "node BACKEND/server.js & node serve_all.js"
+  },
   "dependencies": {
     "jsdom": "^30.1.0"
   }

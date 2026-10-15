@@ -55,6 +55,23 @@ exports.getAllProperties = async (req, res) => {
 exports.getPropertyById = async (req, res) => {
     try {
         const { id } = req.params;
+        const fs = require('fs');
+        const path = require('path');
+        const propsPath = path.join(__dirname, '../properties.json');
+        if (fs.existsSync(propsPath)) {
+            const properties = JSON.parse(fs.readFileSync(propsPath, 'utf8'));
+            const match = properties.find(p => String(p.id) === String(id));
+            if (match) {
+                return res.status(200).json({
+                    success: true,
+                    data: {
+                        ...match,
+                        specs: typeof match.specs === 'string' ? JSON.parse(match.specs) : (match.specs || [])
+                    }
+                });
+            }
+        }
+
         let rows;
         try {
             [rows] = await pool.query("SELECT * FROM Properties WHERE id = ? AND (approval_status = 'Approved' OR approval_status IS NULL)", [id]);

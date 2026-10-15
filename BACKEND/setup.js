@@ -102,7 +102,7 @@ async function setupDatabase() {
             // Seed properties
             await connection.query(`
                 INSERT INTO Properties (title, description, price, location, badge, image, specs, is_verified, status)
-                SELECT 'Luxury Villa', 'Beautiful luxury villa in the hills.', '$1,200,000', 'Beverly Hills', 'For Sale', 'images/villa.jpg', '["4 Beds", "3 Baths", "3000 sqft"]', true, 'Available'
+                SELECT 'Luxury Villa', 'Beautiful luxury villa in the hills.', '₹1.2 Cr', 'Beverly Hills', 'For Sale', 'images/villa.jpg', '["4 Beds", "3 Baths", "3000 sqft"]', true, 'Available'
                 WHERE NOT EXISTS (SELECT 1 FROM Properties WHERE title = 'Luxury Villa');
             `);
             
