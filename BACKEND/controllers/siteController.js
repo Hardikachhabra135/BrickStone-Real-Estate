@@ -160,13 +160,19 @@ exports.getTestimonials = async (req, res) => {
             testimonials = loadLocalTestimonials();
         }
 
+        // Normalize image fields for all items
+        const normalized = testimonials.map(t => ({
+            ...t,
+            image: t.image || t.image_url || t.imageUrl || t.photo || t.avatar || ''
+        }));
+
         // Return all for admin panel (?all=true or ?status=all), or filter published for public website
         const showAll = req.query.all === 'true' || req.query.status === 'all';
         if (showAll) {
-            return res.status(200).json({ success: true, data: testimonials });
+            return res.status(200).json({ success: true, data: normalized });
         }
 
-        const published = testimonials.filter(t => t.isActive === true || t.status === 'PUBLISHED' || t.status === 'Active');
+        const published = normalized.filter(t => t.isActive === true || t.status === 'PUBLISHED' || t.status === 'Active');
         return res.status(200).json({ success: true, data: published });
     } catch (error) {
         console.error('Error fetching testimonials:', error);
@@ -181,9 +187,18 @@ exports.updateTestimonials = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Body must be an array of testimonials' });
         }
 
+        // Normalize image field on every item
+        const sanitizedList = updatedList.map(t => {
+            const img = t.image || t.image_url || t.imageUrl || t.photo || t.avatar || '';
+            return {
+                ...t,
+                image: img
+            };
+        });
+
         // 1. Save to JSON file for guaranteed persistence
         try {
-            fs.writeFileSync(testimonialsFilePath, JSON.stringify(updatedList, null, 2), 'utf8');
+            fs.writeFileSync(testimonialsFilePath, JSON.stringify(sanitizedList, null, 2), 'utf8');
         } catch (fsErr) {
             console.error('Failed to write testimonials.json:', fsErr);
         }
@@ -192,15 +207,15 @@ exports.updateTestimonials = async (req, res) => {
         try {
             const [existing] = await pool.query("SELECT id FROM SiteSettings WHERE section_key = 'testimonials'");
             if (existing.length > 0) {
-                await pool.query("UPDATE SiteSettings SET content = ? WHERE section_key = 'testimonials'", [JSON.stringify(updatedList)]);
+                await pool.query("UPDATE SiteSettings SET content = ? WHERE section_key = 'testimonials'", [JSON.stringify(sanitizedList)]);
             } else {
-                await pool.query("INSERT INTO SiteSettings (section_key, content) VALUES ('testimonials', ?)", [JSON.stringify(updatedList)]);
+                await pool.query("INSERT INTO SiteSettings (section_key, content) VALUES ('testimonials', ?)", [JSON.stringify(sanitizedList)]);
             }
         } catch (dbErr) {
             console.log('Database update skipped or failed, saved to JSON file fallback:', dbErr.message);
         }
 
-        res.status(200).json({ success: true, message: 'Testimonials updated successfully', data: updatedList });
+        res.status(200).json({ success: true, message: 'Testimonials updated successfully', data: sanitizedList });
     } catch (error) {
         console.error('Error updating testimonials:', error);
         res.status(500).json({ success: false, message: 'Server error' });
@@ -222,10 +237,16 @@ exports.updateSingleTestimonial = async (req, res) => {
         } catch (e) {}
 
         const index = testimonials.findIndex(t => String(t.id) === String(id));
+        const img = updates.image || updates.image_url || updates.imageUrl || updates.photo || updates.avatar;
+        const normalizedUpdates = { ...updates };
+        if (img !== undefined) {
+            normalizedUpdates.image = img;
+        }
+
         if (index !== -1) {
-            testimonials[index] = { ...testimonials[index], ...updates, id: testimonials[index].id };
+            testimonials[index] = { ...testimonials[index], ...normalizedUpdates, id: testimonials[index].id };
         } else {
-            testimonials.push({ id: id || 'bt-' + Date.now(), ...updates });
+            testimonials.push({ id: id || 'bt-' + Date.now(), ...normalizedUpdates });
         }
 
         // Save to file

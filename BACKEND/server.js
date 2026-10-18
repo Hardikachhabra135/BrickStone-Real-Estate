@@ -38,7 +38,8 @@ const app = express();
 
 // Middleware
 app.use(cors(corsOptions));
-app.use(express.json()); // To parse JSON bodies
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Socket.IO Setup
 const http = require('http');

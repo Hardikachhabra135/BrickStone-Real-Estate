@@ -9,6 +9,7 @@ router.patch('/about', authMiddleware.verifyToken, siteController.updateAboutCon
 // Testimonials Endpoints
 router.get('/testimonials', siteController.getTestimonials);
 router.patch('/testimonials', siteController.updateTestimonials);
+router.put('/testimonials', siteController.updateTestimonials);
 router.put('/testimonials/:id', siteController.updateSingleTestimonial);
 
 module.exports = router;

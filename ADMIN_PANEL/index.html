@@ -957,13 +957,17 @@
                         <textarea id="test-quote" class="premium-input" rows="4" maxlength="280"></textarea>
                     </div>
                     <div class="input-group">
-                        <label>Client Photo (Optional)</label>
-                        <div style="display:flex; gap:1rem; align-items:center;">
+                        <label>Client Photo (URL or Upload)</label>
+                        <div style="display:flex; gap:0.6rem; align-items:center;">
+                            <input type="text" id="test-image-url" class="premium-input" placeholder="Image URL (https://...) or upload" oninput="onTestImageUrlChange(event)" style="flex:1;">
                             <input type="file" id="test-image-file" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
-                            <button type="button" class="btn-ghost" onclick="document.getElementById('test-image-file').click()" style="padding: 0.4rem 1rem; font-size: 0.85rem; display:flex; align-items:center;">
+                            <button type="button" class="btn-ghost" onclick="document.getElementById('test-image-file').click()" style="padding: 0.5rem 0.8rem; font-size: 0.85rem; display:flex; align-items:center; white-space:nowrap;">
                                 <i data-feather="upload" style="width:14px; height:14px; margin-right:0.4rem;"></i> Upload
                             </button>
-                            <img id="test-image-preview" src="" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; display: none; border: 1px solid var(--border-color);">
+                            <button type="button" class="btn-ghost" onclick="clearTestimonialImage()" title="Remove Photo" style="padding: 0.5rem; font-size: 0.85rem; display:flex; align-items:center; color:#dc2626;">
+                                <i data-feather="trash-2" style="width:14px; height:14px;"></i>
+                            </button>
+                            <img id="test-image-preview" src="" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; display: none; border: 1px solid var(--border-color); flex-shrink: 0;">
                             <input type="hidden" id="test-image-base64">
                         </div>
                     </div>

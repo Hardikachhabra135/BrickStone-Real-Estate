@@ -900,13 +900,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const emptyStars = '&#9734;'.repeat(5 - rating);
     const quoteText = t.quote ? t.quote.replace(/^["']|["']$/g, '') : '';
     const service = (t.serviceType || 'BUYING').toUpperCase();
+    const photoUrl = (t.image || t.image_url || t.imageUrl || t.photo || t.avatar || '').trim();
 
     return `
       <div class="t-card">
         <div class="t-stars">${filledStars}${emptyStars}</div>
         <div class="t-quote">"${escapeHtml(quoteText)}"</div>
         <div class="t-author">
-          ${t.image ? `<img class="t-avatar" src="${escapeHtml(t.image)}" alt="${escapeHtml(t.name || '')}">` : ''}
+          ${photoUrl ? `<img class="t-avatar" src="${escapeHtml(photoUrl)}" alt="${escapeHtml(t.name || '')}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop';">` : `<img class="t-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop" alt="${escapeHtml(t.name || '')}">`}
           <div class="t-info">
             <h4>${escapeHtml(t.name || '')}</h4>
             <p>${escapeHtml(t.role || '')}</p>
@@ -922,7 +923,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!marquee) return;
 
     try {
-      const res = await fetch(`${API_BASE}/site/testimonials`);
+      const res = await fetch(`${API_BASE}/site/testimonials?_t=${Date.now()}`, { cache: 'no-store' });
       if (!res.ok) return;
       const json = await res.json();
       if (json.success && Array.isArray(json.data) && json.data.length > 0) {
