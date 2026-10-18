@@ -883,4 +883,68 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   loadPublicAbout();
 
+  // ---------- Load Testimonials Section ----------
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function renderTestimonialCard(t) {
+    const rating = Math.min(5, Math.max(1, parseInt(t.rating) || 5));
+    const filledStars = '&#9733;'.repeat(rating);
+    const emptyStars = '&#9734;'.repeat(5 - rating);
+    const quoteText = t.quote ? t.quote.replace(/^["']|["']$/g, '') : '';
+    const service = (t.serviceType || 'BUYING').toUpperCase();
+
+    return `
+      <div class="t-card">
+        <div class="t-stars">${filledStars}${emptyStars}</div>
+        <div class="t-quote">"${escapeHtml(quoteText)}"</div>
+        <div class="t-author">
+          ${t.image ? `<img class="t-avatar" src="${escapeHtml(t.image)}" alt="${escapeHtml(t.name || '')}">` : ''}
+          <div class="t-info">
+            <h4>${escapeHtml(t.name || '')}</h4>
+            <p>${escapeHtml(t.role || '')}</p>
+            <span class="t-badge">${escapeHtml(service)}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadPublicTestimonials() {
+    const marquee = document.getElementById('public-testimonials-marquee') || document.querySelector('.t-marquee');
+    if (!marquee) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/site/testimonials`);
+      if (!res.ok) return;
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        // Filter published testimonials
+        const published = json.data.filter(t => t.isActive === true || t.status === 'PUBLISHED' || t.status === 'Active');
+        if (published.length > 0) {
+          const cardsHtml = published.map(renderTestimonialCard).join('\n');
+          // Duplicate once for seamless infinite marquee scroll
+          marquee.innerHTML = `<!-- Set 1 -->\n${cardsHtml}\n<!-- Set 2 (Duplicate for infinite scroll) -->\n${cardsHtml}`;
+        }
+      }
+    } catch (e) {
+      console.warn("Using default testimonials content:", e);
+    }
+  }
+  loadPublicTestimonials();
+
+  // Listen for storage events if admin panel runs in same browser origin
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'brickstone_testimonials') {
+      loadPublicTestimonials();
+    }
+  });
+
 });

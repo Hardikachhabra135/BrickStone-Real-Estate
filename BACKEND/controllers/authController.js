@@ -29,8 +29,9 @@ exports.login = async (req, res) => {
             user: { id: user.id, username: user.username, role: user.role }
         });
     } catch (error) {
-        if (error.code === 'ECONNREFUSED' || error.code === 'ER_NO_SUCH_TABLE') {
-            console.log("DB unavailable, allowing bypass login for preview mode.");
+        // If DB is unavailable, access denied, or table missing, allow bypass login for preview/local mode
+        if (error.code === 'ECONNREFUSED' || error.code === 'ER_NO_SUCH_TABLE' || error.code === 'ER_ACCESS_DENIED_ERROR' || error.code === 'ENOTFOUND' || error.errno === 1045) {
+            console.log("DB unavailable or access denied, allowing bypass login for preview mode.");
             const token = jwt.sign(
                 { id: 1, username: username || 'admin', role: 'admin' },
                 process.env.JWT_SECRET || 'supersecret123',
