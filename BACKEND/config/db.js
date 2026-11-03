@@ -10,7 +10,12 @@ const dbConfig = {
     database: process.env.DB_NAME ? process.env.DB_NAME.trim() : 'real_estate_db',
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    maxIdle: 10,
+    idleTimeout: 60000,
+    queueLimit: 0,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 10000,
+    connectTimeout: 20000
 };
 
 // Configure SSL for TiDB Cloud / Production

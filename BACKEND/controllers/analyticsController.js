@@ -3,31 +3,38 @@ const pool = require('../config/db');
 // Track an event (page_view, property_view, contact_submit, etc.)
 exports.trackEvent = async (req, res) => {
     try {
-        const { event_type, page, property_id, session_id, device_type, referrer, metadata } = req.body;
+        const { event_type, page, property_id, session_id, device_type, referrer, metadata } = req.body || {};
         
-        // Fail gracefully if table doesn't exist yet
+        const safeEventType = String(event_type || 'page_view').substring(0, 50);
+        const safePage = String(page || '/').substring(0, 255);
+        const safeSessionId = String(session_id || ('sess_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 8))).substring(0, 100);
+        const safeDeviceType = String(device_type || 'desktop').substring(0, 20);
+        const safeReferrer = referrer ? String(referrer).substring(0, 255) : null;
+        const safeMetadata = metadata ? JSON.stringify(metadata) : null;
+        const safePropertyId = (property_id !== undefined && property_id !== null && property_id !== '') ? property_id : null;
+
+        // Fail gracefully if table doesn't exist yet or DB issue
         try {
             await pool.query(
                 `INSERT INTO analytics_events 
                 (event_type, page, property_id, session_id, device_type, referrer, metadata) 
                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                [event_type, page, property_id || null, session_id, device_type, referrer, metadata ? JSON.stringify(metadata) : null]
+                [safeEventType, safePage, safePropertyId, safeSessionId, safeDeviceType, safeReferrer, safeMetadata]
             );
         } catch(dbErr) {
             if (dbErr.code === 'ER_NO_SUCH_TABLE') {
-                // Table not created yet, just fallback to old website_clicks increment if it's a page_view
-                if (event_type === 'page_view') {
+                if (safeEventType === 'page_view') {
                     await pool.query('UPDATE Analytics SET website_clicks = website_clicks + 1').catch(() => {});
                 }
             } else {
-                throw dbErr;
+                console.warn('Analytics DB warning:', dbErr.message);
             }
         }
         
-        res.status(200).json({ success: true, message: 'Event tracked' });
+        return res.status(200).json({ success: true, message: 'Event tracked' });
     } catch (error) {
-        console.error('Error tracking event:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+        console.warn('Non-fatal error tracking event:', error.message);
+        return res.status(200).json({ success: true, message: 'Event tracked' });
     }
 };
 

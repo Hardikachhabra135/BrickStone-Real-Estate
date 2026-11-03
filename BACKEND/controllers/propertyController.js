@@ -35,18 +35,46 @@ exports.getAllProperties = async (req, res) => {
         
         let properties = [];
         if (fs.existsSync(propsPath)) {
-            properties = JSON.parse(fs.readFileSync(propsPath, 'utf8'));
+            try {
+                properties = JSON.parse(fs.readFileSync(propsPath, 'utf8'));
+            } catch (fileErr) {
+                console.warn('Failed to parse properties.json, will check database fallback:', fileErr.message);
+            }
+        }
+
+        // Fallback to database if properties.json is not present or empty
+        if (!properties || properties.length === 0) {
+            try {
+                const [dbRows] = await pool.query(
+                    "SELECT * FROM Properties WHERE (approval_status = 'Approved' OR approval_status IS NULL OR approval_status = 'Published') AND status != 'Draft' ORDER BY id DESC"
+                );
+                properties = dbRows;
+            } catch (dbErr) {
+                console.warn('Database query fallback for properties failed:', dbErr.message);
+            }
         }
         
         // Parse JSON specs back to arrays for the response if they are stringified
-        const mappedProperties = properties.map(row => ({
-            ...row,
-            specs: typeof row.specs === 'string' ? JSON.parse(row.specs) : (row.specs || [])
-        }));
+        const mappedProperties = (properties || []).map(row => {
+            let specs = [];
+            if (Array.isArray(row.specs)) {
+                specs = row.specs;
+            } else if (typeof row.specs === 'string') {
+                try {
+                    specs = JSON.parse(row.specs);
+                } catch (e) {
+                    specs = [row.specs];
+                }
+            }
+            return {
+                ...row,
+                specs: Array.isArray(specs) ? specs : []
+            };
+        });
 
         res.status(200).json({ success: true, data: mappedProperties });
     } catch (error) {
-        console.error('Error fetching properties:', error);
+        console.error('Error fetching properties:', error.message);
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };

@@ -1012,13 +1012,22 @@
                 });
             });
 
-            async function loadProperties() {
+            let isRetrying = false;
+
+            async function loadProperties(isAutoRetry = false) {
                 showState(stateLoading);
                 grid.innerHTML = '';
                 Object.keys(propertyStore).forEach(k => delete propertyStore[k]);
 
+                if (retryBtn) {
+                    retryBtn.textContent = 'Connecting...';
+                    retryBtn.disabled = true;
+                }
+
                 try {
-                    const res = await fetch(API_URL);
+                    // Cache buster ensures retry bypasses any browser-cached HTTP 500
+                    const fetchUrl = API_URL + (API_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
+                    const res = await fetch(fetchUrl);
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
                     const json = await res.json();
@@ -1049,12 +1058,36 @@
                     renderFilteredProperties('All');
 
                 } catch (err) {
-                    console.error('[Brickstone] Failed to load properties:', err);
+                    console.error('[Brickstone] Failed to load properties:', err.message, API_URL);
+
+                    // Automatic one-shot retry for cold-start wakeups if first load failed
+                    if (!isAutoRetry && !isRetrying) {
+                        isRetrying = true;
+                        const loadingP = stateLoading ? stateLoading.querySelector('p') : null;
+                        if (loadingP) loadingP.textContent = 'Connecting to server, please wait a moment...';
+                        setTimeout(() => {
+                            loadProperties(true);
+                        }, 2500);
+                        return;
+                    }
+
                     showState(stateError);
+                } finally {
+                    if (retryBtn) {
+                        retryBtn.textContent = 'Try Again';
+                        retryBtn.disabled = false;
+                    }
+                    const loadingP = stateLoading ? stateLoading.querySelector('p') : null;
+                    if (loadingP) loadingP.textContent = 'Loading properties...';
                 }
             }
 
-            retryBtn.addEventListener('click', loadProperties);
+            if (retryBtn) {
+                retryBtn.addEventListener('click', () => {
+                    isRetrying = false;
+                    loadProperties(false);
+                });
+            }
 
             // Kick off on page load
             loadProperties();
