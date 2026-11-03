@@ -119,6 +119,50 @@
             <!-- Subline -->
             <p class="hero-subline">Premium real estate. Personally curated for you.</p>
 
+            <!-- Hero Interactive Glassmorphism Search Component -->
+            <div class="hero-search-wrapper" id="hero-search-wrapper">
+                <div class="hero-search-bar" id="hero-search-bar">
+                    <span class="hero-search-icon" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </span>
+                    <input type="text"
+                           id="hero-search-input"
+                           class="hero-search-input"
+                           placeholder="Discover your next property by name, location or type..."
+                           autocomplete="off"
+                           spellcheck="false"
+                           aria-label="Search properties by name, location or type"
+                           aria-expanded="false"
+                           aria-haspopup="listbox"
+                           aria-autocomplete="list"
+                           aria-controls="hero-search-dropdown">
+                    <button type="button" class="hero-search-clear" id="hero-search-clear" aria-label="Clear search" style="display:none;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="hero-search-spinner" id="hero-search-spinner" style="display:none;" aria-hidden="true"></div>
+                    <button type="button" class="hero-search-submit" id="hero-search-submit" aria-label="Search properties">
+                        <span>Search</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Suggestions Dropdown -->
+                <div class="hero-search-dropdown" id="hero-search-dropdown" style="display:none;" role="listbox" aria-label="Property suggestions">
+                    <div class="hero-search-results" id="hero-search-results">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
             <!-- Buttons -->
             <div class="hero-btn-group">
                 <a href="#properties" class="hero-btn-primary">

@@ -849,6 +849,454 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* ==========================================================================
+     HERO INTERACTIVE PROPERTY SEARCH (Live Suggestions, Caching, Keyboard Nav)
+     ========================================================================== */
+  const heroSearchWrapper = document.getElementById('hero-search-wrapper');
+  const heroSearchBar = document.getElementById('hero-search-bar');
+  const heroSearchInput = document.getElementById('hero-search-input');
+  const heroSearchClear = document.getElementById('hero-search-clear');
+  const heroSearchSpinner = document.getElementById('hero-search-spinner');
+  const heroSearchSubmit = document.getElementById('hero-search-submit');
+  const heroSearchDropdown = document.getElementById('hero-search-dropdown');
+  const heroSearchResults = document.getElementById('hero-search-results');
+  const heroBtnGroup = document.querySelector('.hero-btn-group');
+
+  if (heroSearchWrapper && heroSearchInput && heroSearchDropdown && heroSearchResults) {
+    let heroPropertiesCache = null;
+    let isFetchingProps = false;
+    let debounceTimer = null;
+    let activeItemIndex = -1;
+    let currentResultsList = [];
+
+    // Helper: resolve image URL
+    const resolvePropImg = (url) => {
+      if (!url || typeof url !== 'string') return '';
+      const base = window.ENV?.BASE_URL || 'http://localhost:5000';
+      if (url.includes('brickstone-real-estate-m8w1.onrender.com/uploads/')) {
+        return base + url.split('.com')[1];
+      }
+      if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
+        return base + (url.startsWith('/') ? url : '/' + url);
+      }
+      return url;
+    };
+
+    // Helper: escape regex
+    const escapeRegExp = (str) => {
+      return (str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    };
+
+    // Helper: highlight matched terms
+    const highlightMatch = (text, query) => {
+      if (!text) return '';
+      if (!query) return escapeHtml(text);
+      const terms = query.trim().split(/\s+/).filter(t => t.length > 0);
+      if (terms.length === 0) return escapeHtml(text);
+      const pattern = new RegExp(`(${terms.map(escapeRegExp).join('|')})`, 'gi');
+      const escaped = escapeHtml(text);
+      return escaped.replace(pattern, '<mark class="hero-search-hl">$1</mark>');
+    };
+
+    // Fetch and cache properties from API (with fallback to local data)
+    const loadProperties = async () => {
+      if (heroPropertiesCache !== null) return heroPropertiesCache;
+      if (isFetchingProps) return [];
+      isFetchingProps = true;
+      if (heroSearchSpinner) heroSearchSpinner.style.display = 'block';
+
+      try {
+        const res = await fetch(`${API_BASE}/properties`);
+        const json = await res.json();
+        const apiList = (json && json.success && Array.isArray(json.data)) ? json.data : [];
+
+        const normalizedApi = apiList.map(p => {
+          let specsArr = [];
+          if (Array.isArray(p.specs)) {
+            specsArr = p.specs;
+          } else if (typeof p.specs === 'string') {
+            try { specsArr = JSON.parse(p.specs); } catch(e) { specsArr = [p.specs]; }
+          }
+          return {
+            id: p.id,
+            title: p.title || 'Untitled Property',
+            location: p.location || '',
+            category: p.category || '',
+            subcategory: p.subcategory || '',
+            price: p.price || '',
+            badge: p.badge || p.status || '',
+            image: resolvePropImg(p.image),
+            description: p.description || '',
+            specs: specsArr
+          };
+        });
+
+        // Merge with local propertiesData
+        const localList = (typeof propertiesData === 'object' && propertiesData !== null)
+          ? Object.keys(propertiesData).map(k => {
+              const p = propertiesData[k];
+              return {
+                id: k,
+                title: p.title || '',
+                location: p.location || '',
+                category: p.category || '',
+                subcategory: p.subcategory || '',
+                price: p.price || '',
+                badge: p.badge || '',
+                image: resolvePropImg(p.image),
+                description: p.description || '',
+                specs: Array.isArray(p.specs) ? p.specs : []
+              };
+            })
+          : [];
+
+        const combined = [...normalizedApi];
+        localList.forEach(lp => {
+          if (!combined.some(cp => String(cp.id) === String(lp.id) || cp.title.toLowerCase() === lp.title.toLowerCase())) {
+            combined.push(lp);
+          }
+        });
+
+        heroPropertiesCache = combined;
+      } catch (err) {
+        console.warn('[Hero Search] Failed to fetch properties, falling back to local data:', err);
+        if (typeof propertiesData === 'object' && propertiesData !== null) {
+          heroPropertiesCache = Object.keys(propertiesData).map(k => {
+            const p = propertiesData[k];
+            return {
+              id: k,
+              title: p.title || '',
+              location: p.location || '',
+              category: p.category || '',
+              subcategory: p.subcategory || '',
+              price: p.price || '',
+              badge: p.badge || '',
+              image: resolvePropImg(p.image),
+              description: p.description || '',
+              specs: Array.isArray(p.specs) ? p.specs : []
+            };
+          });
+        } else {
+          heroPropertiesCache = [];
+        }
+      } finally {
+        isFetchingProps = false;
+        if (heroSearchSpinner) heroSearchSpinner.style.display = 'none';
+      }
+      return heroPropertiesCache;
+    };
+
+    // Pre-load properties in the background after page loads
+    setTimeout(() => { loadProperties(); }, 1200);
+
+    // Open & close dropdown
+    const openDropdown = () => {
+      heroSearchDropdown.style.display = 'block';
+      heroSearchBar.classList.add('is-focused');
+      heroSearchWrapper.classList.add('is-open');
+      heroSearchInput.setAttribute('aria-expanded', 'true');
+      if (heroBtnGroup) {
+        heroBtnGroup.classList.add('is-hidden');
+      }
+      if (heroSearchInput.value.trim().length > 0) {
+        document.body.classList.add('hero-search-active');
+        if (window.scrollY > 40) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }
+    };
+
+    const closeDropdown = () => {
+      heroSearchDropdown.style.display = 'none';
+      heroSearchBar.classList.remove('is-focused');
+      heroSearchWrapper.classList.remove('is-open');
+      heroSearchInput.setAttribute('aria-expanded', 'false');
+      activeItemIndex = -1;
+      if (heroBtnGroup) {
+        heroBtnGroup.classList.remove('is-hidden');
+      }
+      document.body.classList.remove('hero-search-active');
+    };
+
+    // Update active highlight during keyboard navigation
+    const updateActiveItem = (newIndex) => {
+      const items = heroSearchResults.querySelectorAll('.hero-search-item');
+      if (items.length === 0) return;
+
+      items.forEach(el => el.classList.remove('is-active'));
+      activeItemIndex = newIndex;
+
+      if (activeItemIndex >= 0 && activeItemIndex < items.length) {
+        const activeEl = items[activeItemIndex];
+        activeEl.classList.add('is-active');
+        activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        heroSearchInput.setAttribute('aria-activedescendant', activeEl.id || `hero-item-${activeItemIndex}`);
+      } else {
+        heroSearchInput.removeAttribute('aria-activedescendant');
+      }
+    };
+
+    // Search and rank matching properties
+    const searchProperties = (query, properties) => {
+      if (!query || !query.trim()) return [];
+      const q = query.trim().toLowerCase();
+      const terms = q.split(/\s+/).filter(t => t.length > 0);
+
+      const scored = [];
+      properties.forEach(prop => {
+        const title = (prop.title || '').toLowerCase();
+        const loc = (prop.location || '').toLowerCase();
+        const cat = (prop.category || '').toLowerCase();
+        const subcat = (prop.subcategory || '').toLowerCase();
+        const desc = (prop.description || '').toLowerCase();
+        const specsText = (prop.specs || []).join(' ').toLowerCase();
+        const full = `${title} ${loc} ${cat} ${subcat} ${specsText} ${desc}`;
+
+        const allTermsMatch = terms.every(t => full.includes(t));
+        if (!allTermsMatch) return;
+
+        let score = 0;
+        if (title === q) score += 100;
+        else if (title.startsWith(q)) score += 60;
+        else if (title.includes(q)) score += 40;
+
+        if (loc.startsWith(q)) score += 50;
+        else if (loc.includes(q)) score += 30;
+
+        if (cat === q || subcat === q) score += 35;
+        else if (cat.includes(q) || subcat.includes(q)) score += 20;
+
+        terms.forEach(t => {
+          if (title.includes(t)) score += 10;
+          if (loc.includes(t)) score += 8;
+          if (cat.includes(t) || subcat.includes(t)) score += 6;
+          if (specsText.includes(t)) score += 4;
+        });
+
+        scored.push({ prop, score });
+      });
+
+      scored.sort((a, b) => b.score - a.score);
+      return scored.map(s => s.prop);
+    };
+
+    // Render suggestions dropdown
+    const renderSuggestions = (query, matches) => {
+      currentResultsList = matches;
+      activeItemIndex = -1;
+
+      if (matches.length === 0) {
+        heroSearchResults.innerHTML = `
+          <div class="hero-search-empty">
+            <div class="hero-search-empty-icon">🔍</div>
+            <div class="hero-search-empty-title">No matching properties found</div>
+            <div class="hero-search-empty-desc">
+              We couldn't find any properties matching "${escapeHtml(query)}". Try exploring our popular categories or locations:
+            </div>
+            <div class="hero-search-pills">
+              <button type="button" class="hero-search-pill" data-query="Flat">Flats</button>
+              <button type="button" class="hero-search-pill" data-query="PG">PG</button>
+              <button type="button" class="hero-search-pill" data-query="Noida">Noida</button>
+              <button type="button" class="hero-search-pill" data-query="Delhi">Delhi</button>
+              <button type="button" class="hero-search-pill" data-query="3 BHK">3 BHK</button>
+              <button type="button" class="hero-search-pill" data-query="Gurugram">Gurugram</button>
+            </div>
+          </div>
+        `;
+
+        heroSearchResults.querySelectorAll('.hero-search-pill').forEach(pill => {
+          pill.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const q = pill.getAttribute('data-query');
+            heroSearchInput.value = q;
+            handleInputChange(q);
+            heroSearchInput.focus();
+          });
+        });
+
+        openDropdown();
+        return;
+      }
+
+      const html = matches.slice(0, 7).map((prop, idx) => {
+        const highlightedTitle = highlightMatch(prop.title, query);
+        const highlightedLoc = highlightMatch(prop.location, query);
+        const badgeHtml = prop.badge ? `<span class="hero-search-badge">${escapeHtml(prop.badge)}</span>` : '';
+        const thumbHtml = prop.image
+          ? `<img src="${escapeHtml(prop.image)}" alt="${escapeHtml(prop.title)}" class="hero-search-thumb" onerror="this.outerHTML='<div class=\\'hero-search-thumb-placeholder\\'>🏠</div>'">`
+          : `<div class="hero-search-thumb-placeholder">🏠</div>`;
+
+        return `
+          <a href="allproperties.html?id=${encodeURIComponent(prop.id)}"
+             class="hero-search-item"
+             id="hero-item-${idx}"
+             data-index="${idx}"
+             data-id="${encodeURIComponent(prop.id)}"
+             role="option">
+            ${thumbHtml}
+            <div class="hero-search-info">
+              <div class="hero-search-title-row">
+                <span class="hero-search-title">${highlightedTitle}</span>
+                ${badgeHtml}
+              </div>
+              <div class="hero-search-meta">
+                <span class="hero-search-location">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  ${highlightedLoc || 'Location on request'}
+                </span>
+                ${prop.price ? `<span class="hero-search-price">${escapeHtml(prop.price)}</span>` : ''}
+              </div>
+            </div>
+            <span class="hero-search-action-icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </span>
+          </a>
+        `;
+      }).join('');
+
+      heroSearchResults.innerHTML = html;
+
+      heroSearchResults.querySelectorAll('.hero-search-item').forEach(itemEl => {
+        itemEl.addEventListener('mouseenter', () => {
+          const idx = parseInt(itemEl.dataset.index, 10);
+          updateActiveItem(idx);
+        });
+        itemEl.addEventListener('click', (e) => {
+          const propId = itemEl.dataset.id;
+          if (typeof trackEvent === 'function') {
+            trackEvent('hero_search_click', propId, { query });
+          }
+        });
+      });
+
+      openDropdown();
+    };
+
+    // Perform Search Handler
+    const handleInputChange = async (val) => {
+      const q = (val || '').trim();
+      if (!q) {
+        if (heroSearchClear) heroSearchClear.style.display = 'none';
+        closeDropdown();
+        return;
+      }
+
+      if (heroSearchClear) heroSearchClear.style.display = 'inline-flex';
+      const properties = await loadProperties();
+      const matches = searchProperties(q, properties);
+      renderSuggestions(q, matches);
+
+      if (typeof trackEvent === 'function' && q.length >= 3) {
+        trackEvent('hero_search_query', null, { query: q });
+      }
+    };
+
+    // Debounced input listener
+    heroSearchInput.addEventListener('input', (e) => {
+      const val = e.target.value;
+      clearTimeout(debounceTimer);
+      if (heroSearchSpinner) heroSearchSpinner.style.display = 'block';
+
+      debounceTimer = setTimeout(() => {
+        if (heroSearchSpinner) heroSearchSpinner.style.display = 'none';
+        handleInputChange(val);
+      }, 280);
+    });
+
+    // Focus & Click handlers
+    heroSearchInput.addEventListener('focus', () => {
+      heroSearchBar.classList.add('is-focused');
+      loadProperties();
+      const q = heroSearchInput.value.trim();
+      if (q.length > 0) {
+        handleInputChange(q);
+      }
+    });
+
+    // Clear button
+    if (heroSearchClear) {
+      heroSearchClear.addEventListener('click', (e) => {
+        e.stopPropagation();
+        heroSearchInput.value = '';
+        heroSearchClear.style.display = 'none';
+        closeDropdown();
+        heroSearchInput.focus();
+      });
+    }
+
+    // Submit button & Enter key
+    const submitSearch = () => {
+      const q = heroSearchInput.value.trim();
+      if (q) {
+        window.location.href = `allproperties.html?q=${encodeURIComponent(q)}`;
+      } else {
+        window.location.href = 'allproperties.html';
+      }
+    };
+
+    if (heroSearchSubmit) {
+      heroSearchSubmit.addEventListener('click', (e) => {
+        e.preventDefault();
+        submitSearch();
+      });
+    }
+
+    // Keyboard navigation (ArrowDown, ArrowUp, Enter, Escape)
+    heroSearchInput.addEventListener('keydown', (e) => {
+      const items = heroSearchResults.querySelectorAll('.hero-search-item');
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (heroSearchDropdown.style.display === 'none') {
+          handleInputChange(heroSearchInput.value);
+          return;
+        }
+        if (items.length === 0) return;
+        const nextIndex = activeItemIndex + 1 >= items.length ? 0 : activeItemIndex + 1;
+        updateActiveItem(nextIndex);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (items.length === 0) return;
+        const prevIndex = activeItemIndex - 1 < 0 ? items.length - 1 : activeItemIndex - 1;
+        updateActiveItem(prevIndex);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (activeItemIndex >= 0 && activeItemIndex < items.length) {
+          items[activeItemIndex].click();
+        } else {
+          submitSearch();
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        closeDropdown();
+        heroSearchInput.blur();
+      }
+    });
+
+    // Close on click outside
+    document.addEventListener('click', (e) => {
+      if (!heroSearchWrapper.contains(e.target)) {
+        closeDropdown();
+      }
+    });
+
+    // Check URL parameters for preserved query on page load
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const qParam = urlParams.get('q');
+      if (qParam) {
+        heroSearchInput.value = qParam;
+        if (heroSearchClear) heroSearchClear.style.display = 'inline-flex';
+      }
+    } catch(err) {}
+  }
+
   // ---------- Load About Section ----------
   async function loadPublicAbout() {
     try {
